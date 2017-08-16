@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" Sdk="Microsoft.Docker.Sdk">
   <PropertyGroup Label="Globals">
-    <ProjectGuid>b3d5b0aa-bf30-4382-ba53-07876037209f</ProjectGuid>
+    <ProjectGuid>45887ab6-8f8b-4ee9-b5f4-6f7486cec90f</ProjectGuid>
     <DockerLaunchBrowser>True</DockerLaunchBrowser>
     <DockerServiceUrl>http://localhost:{ServicePort}/api/values</DockerServiceUrl>
-    <DockerServiceName>deepflow.platform</DockerServiceName>
+    <DockerServiceName>webapplication1</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
     <None Include="docker-compose.ci.build.yml" />
