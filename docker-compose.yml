@@ -1,0 +1,8 @@
+version: '2'
+
+services:
+  deepflow.platform:
+    image: deepflow.platform
+    build:
+      context: ./Deepflow.Platform
+      dockerfile: Dockerfile
