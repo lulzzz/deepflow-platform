@@ -36,7 +36,7 @@ namespace Deepflow.Platform.Series
                 return ranges;
             }
 
-            var subtractedRanges = _filterer.SubtractTimeRangeFromRanges(newRange.TimeRange, ranges);
+            var subtractedRanges = _filterer.SubtractTimeRangeFromRanges(ranges, newRange.TimeRange);
             return _joiner.JoinDataRangeToDataRanges(subtractedRanges, newRange);
         }
     }

@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Deepflow.Platform.Abstractions.Realtime;
 using Deepflow.Platform.Abstractions.Series;
-using Deepflow.Platform.Realtime;
 using Deepflow.Platform.Series;
 using Newtonsoft.Json;
 using Orleans;

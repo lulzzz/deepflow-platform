@@ -8,11 +8,21 @@ namespace Deepflow.Platform.Series
     {
         public IEnumerable<DataRange> FilterDataRanges(IEnumerable<DataRange> ranges, TimeRange timeRange)
         {
-            return ranges.Where(dataRange => RangeTouchesRange(dataRange.TimeRange, timeRange)).Select(range => FilterRange(range, timeRange)).Where(x => x.Data.Count > 0);
+            return ranges?.Where(dataRange => RangeTouchesRange(dataRange.TimeRange, timeRange)).Select(range => FilterRange(range, timeRange)).Where(x => x.Data.Count > 0);
         }
 
-        public IEnumerable<DataRange> SubtractTimeRangeFromRanges(TimeRange subtractRange, IEnumerable<DataRange> ranges)
+        public IEnumerable<DataRange> SubtractTimeRangeFromRanges(IEnumerable<DataRange> ranges, TimeRange subtractRange)
         {
+            if (subtractRange == null)
+            {
+                return ranges;
+            }
+
+            if (subtractRange.IsZeroLength())
+            {
+                return ranges;
+            }
+
             IEnumerable<DataRange> remainingRanges = new List<DataRange>();
             foreach (var timeRange in ranges)
             {
@@ -23,7 +33,7 @@ namespace Deepflow.Platform.Series
 
         private DataRange FilterRange(DataRange range, TimeRange timeRange)
         {
-            return new DataRange(range.TimeRange, FilterData(range.Data, timeRange));
+            return new DataRange(range.TimeRange.Insersect(timeRange), FilterData(range.Data, timeRange));
         }
 
         private List<double> FilterData(List<double> data, TimeRange timeRange)
@@ -35,7 +45,7 @@ namespace Deepflow.Platform.Series
             {
                 endIndex = data.Count;
             }
-            else
+            else if (timeRange.Insersects((long)data[endIndex.Value]))
             {
                 endIndex += 2;
             }

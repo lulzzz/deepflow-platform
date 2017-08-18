@@ -40,7 +40,7 @@ namespace Deepflow.Platform
         {
             services.AddMvc();
             services.AddOptions();
-            services.Configure<SeriesConfiguration>(Configuration.GetSection("Series"));
+            services.Configure<SeriesConfiguration>(Configuration.GetSection("AttributeSeries"));
 
             services.AddSingleton<IWebsocketsManager, WebsocketsManager>();
             services.AddSingleton<IWebsocketsSender, WebsocketsManager>();
@@ -77,7 +77,7 @@ namespace Deepflow.Platform
 
     public class OrleansStartup
     {
-        public static OrleansServiceProvider Services;
+        //public static OrleansServiceProvider Services;
 
         public OrleansStartup()
         {
@@ -100,7 +100,7 @@ namespace Deepflow.Platform
         }
     }
 
-    public class OrleansServiceProvider : IServiceProvider
+    /*public class OrleansServiceProvider : IServiceProvider
     {
         private readonly IServiceProvider _fallbackServiceProvider;
         private readonly Dictionary<Type, Type> _types = new Dictionary<Type, Type>();
@@ -145,5 +145,5 @@ namespace Deepflow.Platform
             _instances.Add(implementationType, instance);
             return instance;
         }
-    }
+    }*/
 }

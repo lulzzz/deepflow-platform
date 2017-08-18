@@ -1,14 +1,13 @@
-using System;
 using Deepflow.Platform.Core.Tools;
 using FluentAssertions;
 using Xunit;
 
-namespace Deepflow.Platform.Tests
+namespace Deepflow.Platform.Tests.Core
 {
     public class EnumerableExtensionsTests
     {
         [Fact]
-        public void TestJoinInsertBefore()
+        public void JoinInsertBefore()
         {
             var item = 3;
             var items = new [] { 4, 6, 8 };
@@ -18,7 +17,7 @@ namespace Deepflow.Platform.Tests
         }
 
         [Fact]
-        public void TestJoinInsertStart()
+        public void JoinInsertStart()
         {
             var item = 4;
             var items = new[] { 4, 6, 8 };
@@ -28,7 +27,7 @@ namespace Deepflow.Platform.Tests
         }
 
         [Fact]
-        public void TestJoinInsertStartMiddle()
+        public void JoinInsertStartMiddle()
         {
             var item = 5;
             var items = new[] { 4, 6, 8 };
@@ -38,7 +37,7 @@ namespace Deepflow.Platform.Tests
         }
 
         [Fact]
-        public void TestJoinInsertMiddle()
+        public void JoinInsertMiddle()
         {
             var item = 6;
             var items = new[] { 4, 6, 8 };
@@ -48,7 +47,7 @@ namespace Deepflow.Platform.Tests
         }
 
         [Fact]
-        public void TestJoinInsertMiddleEnd()
+        public void JoinInsertMiddleEnd()
         {
             var item = 7;
             var items = new[] { 4, 6, 8 };
@@ -58,7 +57,7 @@ namespace Deepflow.Platform.Tests
         }
 
         [Fact]
-        public void TestJoinInsertEnd()
+        public void JoinInsertEnd()
         {
             var item = 8;
             var items = new[] { 4, 6, 8 };
@@ -68,7 +67,7 @@ namespace Deepflow.Platform.Tests
         }
 
         [Fact]
-        public void TestJoinInsertAfter()
+        public void JoinInsertAfter()
         {
             var item = 9;
             var items = new[] { 4, 6, 8 };

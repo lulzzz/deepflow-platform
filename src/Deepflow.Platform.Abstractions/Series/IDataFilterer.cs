@@ -6,6 +6,6 @@ namespace Deepflow.Platform.Abstractions.Series
     {
         IEnumerable<DataRange> FilterDataRanges(IEnumerable<DataRange> ranges, TimeRange timeRange);
 
-        IEnumerable<DataRange> SubtractTimeRangeFromRanges(TimeRange subtractRange, IEnumerable<DataRange> ranges);
+        IEnumerable<DataRange> SubtractTimeRangeFromRanges(IEnumerable<DataRange> ranges, TimeRange subtractRange);
     }
 }

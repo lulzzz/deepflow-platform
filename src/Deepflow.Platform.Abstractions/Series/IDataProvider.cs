@@ -6,6 +6,7 @@ namespace Deepflow.Platform.Abstractions.Series
 {
     public interface IDataProvider
     {
-        Task<IEnumerable<DataRange>> GetRanges(Guid series, IEnumerable<TimeRange> timeRanges);
+        Task<IEnumerable<DataRange>> GetAttributeRanges(Guid series, IEnumerable<TimeRange> timeRanges);
+        Task<DataRange> GetAttributeRange(Guid series, TimeRange timeRange);
     }
 }

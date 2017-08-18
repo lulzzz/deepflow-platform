@@ -20,7 +20,7 @@ namespace Deepflow.Platform.Series
 
             if (min == max)
             {
-                return timestamp <= min ? 0 : (int?) null;
+                return timestamp <= data[min] ? 0 : (int?) null;
             }
 
             var maxTime = data[max];

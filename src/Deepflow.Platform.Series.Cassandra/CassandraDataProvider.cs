@@ -54,13 +54,13 @@ namespace Deepflow.Platform.Series.Cassandra
             }
         }
 
-        public async Task<IEnumerable<DataRange>> GetRanges(Guid series, IEnumerable<TimeRange> timeRanges)
+        public async Task<IEnumerable<DataRange>> GetAttributeRanges(Guid series, IEnumerable<TimeRange> timeRanges)
         {
-            IEnumerable<Task<DataRange>> tasks = timeRanges.Select(timeRange => GetRange(series, timeRange));
+            IEnumerable<Task<DataRange>> tasks = timeRanges.Select(timeRange => GetAttributeRange(series, timeRange));
             return await Task.WhenAll(tasks);
         }
 
-        private async Task<DataRange> GetRange(Guid series, TimeRange timeRange)
+        public async Task<DataRange> GetAttributeRange(Guid series, TimeRange timeRange)
         {
             var query = $"SELECT timestamp, value FROM AverageByTimeDesc WHERE guid = {series} AND timestamp >= '{FromUnixTimestampMinutes((int) timeRange.MinSeconds / 60):s}' AND timestamp < '{FromUnixTimestampMinutes((int)timeRange.MaxSeconds / 60):s}';";
 

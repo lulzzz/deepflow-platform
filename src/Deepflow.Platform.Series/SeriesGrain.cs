@@ -1,11 +1,11 @@
-﻿using System;
+﻿/*using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Deepflow.Platform.Abstractions.Series;
+using Deepflow.Platform.Abstractions.AttributeSeries;
 using Orleans;
 
-namespace Deepflow.Platform.Series
+namespace Deepflow.Platform.AttributeSeries
 {
     public class SeriesGrain : Grain, ISeriesGrain
     {
@@ -56,7 +56,7 @@ namespace Deepflow.Platform.Series
 
             var timeRanges = _timeFilterer.SubtractTimeRangesFromRange(timeRange, dataRanges.Select(x => x.TimeRange));
             var seriesGuid = await _seriesKnower.GetSeriesGuid(_entity, _attribute, aggregationSeconds);
-            var loadedRanges = await _provider.GetRanges(seriesGuid, timeRanges);
+            var loadedRanges = await _provider.GetAttributeRanges(seriesGuid, timeRanges);
             dataRanges = _dataJoiner.JoinDataRangesToDataRanges(dataRanges, loadedRanges);
 
             return _dataFilterer.FilterDataRanges(dataRanges, timeRange);
@@ -87,4 +87,4 @@ namespace Deepflow.Platform.Series
             }
         }
     }
-}
+}*/
