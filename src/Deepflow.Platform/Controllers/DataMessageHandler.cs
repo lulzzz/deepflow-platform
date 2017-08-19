@@ -13,14 +13,9 @@ namespace Deepflow.Platform.Controllers
 {
     public class DataMessageHandler : IWebsocketsReceiver, IDataSender
     {
-        private readonly IWebsocketsSender _sender;
+        private IWebsocketsSender _sender;
         private readonly ConcurrentDictionary<string, IEnumerable<DataSubscription>> _socketSubscriptions = new ConcurrentDictionary<string, IEnumerable<DataSubscription>>();
-
-        public DataMessageHandler(IWebsocketsSender sender)
-        {
-            _sender = sender;
-        }
-
+        
         public Task OnConnected(string socketId)
         {
             return Task.FromResult(0);
@@ -31,35 +26,63 @@ namespace Deepflow.Platform.Controllers
             return Task.FromResult(0);
         }
 
-        public Task OnReceive(string socketId, string message)
+        public async Task OnReceive(string socketId, string message)
         {
             var request = JsonConvert.DeserializeObject<DataRequestMessage>(message);
 
-            var subscriptions = _socketSubscriptions.GetOrAdd(socketId, new List<DataSubscription>());
+            /*var subscriptions = _socketSubscriptions.GetOrAdd(socketId, new List<DataSubscription>());
 
             lock (subscriptions)
             {
                 var subscriptionsToAdd = request.Subscriptions.Except(subscriptions);
                 var subscriptionsToRemove = subscriptions.Except(request.Subscriptions);
 
-                var addTasks = subscriptionsToAdd.Select(subscription => Subscribe(socketId, subscription));
-                var removeTasks = subscriptionsToRemove.Select(Unsubscribe);
+                var addTasks = subscriptionsToAdd.Select(subscription => SubscribeToAttribute(socketId, subscription));
+                var removeTasks = subscriptionsToRemove.Select(UnsubscribeFromAttribute);
 
                 return Task.WhenAll(addTasks.Concat(removeTasks));
+            }*/
+
+            if (request.Request != null)
+            {
+                var response = await HandleDataRequest(request.Request).ConfigureAwait(false);
+                var responseText = JsonConvert.SerializeObject(response);
+                await _sender.Send(socketId, responseText).ConfigureAwait(false);
             }
         }
 
-        private async Task Subscribe(string socketId, DataSubscription subscription)
+        public void SetSender(IWebsocketsSender sender)
         {
-            var series = GrainClient.GrainFactory.GetGrain<ISeriesGrain>(SeriesIdHelper.ToSeriesId(subscription.Entity, subscription.Attribute));
+            _sender = sender;
+        }
+
+        public Task<DataResponse> HandleDataRequest(DataRequest request)
+        {
+            if (request.Type == DataRequestType.Attribute)
+            {
+                return HandleAttributeDataRequest(request);
+            }
+            throw new Exception($"Cannot handle data request for {request.Type}");
+        }
+
+        public async Task<DataResponse> HandleAttributeDataRequest(DataRequest request)
+        {
+            var series = GrainClient.GrainFactory.GetGrain<IAttributeSeriesGrain>(SeriesIdHelper.ToAttributeSeriesId(request.Entity, request.Attribute));
+            var data = await series.GetData(new TimeRange(request.MinSeconds, request.MaxSeconds), request.AggregationSeconds).ConfigureAwait(false);
+            return new DataResponse { Id = request.Id, Data = data };
+        }
+
+        private async Task SubscribeToAttribute(string socketId, DataSubscription subscription)
+        {
+            var series = GrainClient.GrainFactory.GetGrain<IAttributeSeriesGrain>(SeriesIdHelper.ToAttributeSeriesId(subscription.Entity, subscription.Attribute));
             var observer = new SeriesObserver(socketId, this);
             var observerRef = await GrainClient.GrainFactory.CreateObjectReference<ISeriesObserver>(observer);
             await series.Subscribe(observerRef);
         }
 
-        private async Task Unsubscribe(DataSubscription subscription)
+        private async Task UnsubscribeFromAttribute(DataSubscription subscription)
         {
-            var series = GrainClient.GrainFactory.GetGrain<ISeriesGrain>(SeriesIdHelper.ToSeriesId(subscription.Entity, subscription.Attribute));
+            var series = GrainClient.GrainFactory.GetGrain<IAttributeSeriesGrain>(SeriesIdHelper.ToCalculationSeriesId(subscription.Entity, subscription.Attribute));
             var observerRef = await GrainClient.GrainFactory.CreateObjectReference<ISeriesObserver>(subscription.Observer);
             await series.Unsubscribe(observerRef);
         }

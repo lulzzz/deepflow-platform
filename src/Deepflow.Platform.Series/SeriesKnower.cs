@@ -4,19 +4,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Deepflow.Platform.Abstractions.Series;
-using Microsoft.Extensions.Options;
 
 namespace Deepflow.Platform.Series
 {
     public class SeriesKnower : ISeriesKnower
     {
-        private readonly IOptions<SeriesConfiguration> _seriesConfiguration;
+        private readonly SeriesConfiguration _seriesConfiguration;
         private readonly ConcurrentDictionary<Guid, ConcurrentDictionary<int, AttributeSeries>> _keyedAttributeSeries = new ConcurrentDictionary<Guid, ConcurrentDictionary<int, AttributeSeries>>();
         private readonly ConcurrentDictionary<Guid, ConcurrentDictionary<int, CalculationSeries>> _keyedCalculationSeries = new ConcurrentDictionary<Guid, ConcurrentDictionary<int, CalculationSeries>>();
         private readonly ConcurrentDictionary<Guid, AttributeSeries> _attributeSeries = new ConcurrentDictionary<Guid, AttributeSeries>();
         private readonly ConcurrentDictionary<Guid, CalculationSeries> _calculationSeries = new ConcurrentDictionary<Guid, CalculationSeries>();
 
-        public SeriesKnower(IOptions<SeriesConfiguration> seriesConfiguration)
+        public SeriesKnower(SeriesConfiguration seriesConfiguration)
         {
             _seriesConfiguration = seriesConfiguration;
         }
@@ -41,7 +40,7 @@ namespace Deepflow.Platform.Series
 
         public async Task<Dictionary<int, Guid>> GetAttributeSeriesGuids(Guid entity, Guid attribute)
         {
-            var aggregations = _seriesConfiguration.Value.Aggregations.Select(x => new { Aggregation = x, Guid = GetAttributeSeriesGuid(entity, attribute, x)});
+            var aggregations = _seriesConfiguration.Aggregations.Select(x => new { Aggregation = x, Guid = GetAttributeSeriesGuid(entity, attribute, x)});
             var tasks = aggregations.Select(x => x.Guid);
             await Task.WhenAll(tasks);
             return aggregations.ToDictionary(x => x.Aggregation, x => x.Guid.Result);
@@ -49,7 +48,7 @@ namespace Deepflow.Platform.Series
 
         public async Task<Dictionary<int, Guid>> GetCalculationSeriesGuids(Guid entity, Guid calculation)
         {
-            var aggregations = _seriesConfiguration.Value.Aggregations.Select(x => new { Aggregation = x, Guid = GetCalculationSeriesGuid(entity, calculation, x) });
+            var aggregations = _seriesConfiguration.Aggregations.Select(x => new { Aggregation = x, Guid = GetCalculationSeriesGuid(entity, calculation, x) });
             var tasks = aggregations.Select(x => x.Guid);
             await Task.WhenAll(tasks);
             return aggregations.ToDictionary(x => x.Aggregation, x => x.Guid.Result);

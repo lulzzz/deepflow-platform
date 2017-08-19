@@ -20,7 +20,7 @@ namespace Deepflow.Platform.Realtime
 
         public async Task Invoke(HttpContext context)
         {
-            if (!context.WebSockets.IsWebSocketRequest)
+            if (!context.WebSockets.IsWebSocketRequest || context.Request.Path != "/ws")
             {
                 await _next.Invoke(context);
                 return;
@@ -38,8 +38,9 @@ namespace Deepflow.Platform.Realtime
 
     public static class WebsocketsMiddlewareExtensions
     {
-        public static void UseWebsocketsHandler(this IApplicationBuilder app)
+        public static void UseWebSocketsHandler(this IApplicationBuilder app)
         {
+            app.UseWebSockets();
             app.UseMiddleware<WebsocketsMiddleware>();
         }
     }

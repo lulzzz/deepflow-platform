@@ -1,0 +1,262 @@
+[2017-08-18 11:51:17.275 GMT     1	INFO   	100404	Silo	127.0.0.1:22222]	Silo starting with GC settings: ServerGC=True GCLatencyMode=Interactive	
+[2017-08-18 11:51:17.305 GMT     1	WARNING	100405	Silo	127.0.0.1:22222]	Note: Silo not running with ServerGC turned on or with GCLatencyMode.Batch enabled - recommend checking app config : <configuration>-<runtime>-<gcServer enabled="true"> and <configuration>-<runtime>-<gcConcurrent enabled="false"/>	
+[2017-08-18 11:51:17.308 GMT     1	WARNING	100405	Silo	127.0.0.1:22222]	Note: ServerGC only kicks in on multi-core systems (settings enabling ServerGC have no effect on single-core machines).	
+[2017-08-18 11:51:17.312 GMT     1	INFO   	100403	Silo	127.0.0.1:22222]	-------------- Initializing Primary silo on host DESKTOP-7K57SOQ MachineName DESKTOP-7K57SOQ at 127.0.0.1:22222, gen 240753077 --------------	
+[2017-08-18 11:51:17.393 GMT     1	INFO   	100415	Silo	127.0.0.1:22222]	Starting silo Test with the following configuration= 
+Config File Name: 
+Host: DESKTOP-7K57SOQ
+Start time: 2017-08-18 11:51:17.316 GMT
+Primary node: 127.0.0.1:22222
+Platform version info:
+   Orleans version: 2.0.0-preview2-20170724 (Debug).
+   GC Type=Server GCLatencyMode=Interactive
+Global configuration:
+   System Ids:
+      ServiceId: 00000000-0000-0000-0000-000000000000
+      DeploymentId: 
+   Subnet: 
+   Seed nodes: 127.0.0.1:22222
+   Messaging:
+       Response timeout: 00:30:00
+       Maximum resend count: 0
+       Resend On Timeout: False
+       Maximum Socket Age: 10675199.02:48:05.4775807
+       Drop Expired Messages: True
+       Silo Sender queues: 4
+       Gateway Sender queues: 4
+       Client Drop Timeout: 00:01:00
+       Buffer Pool Buffer Size: 4096
+       Buffer Pool Max Size: 10000
+       Buffer Pool Preallocation Size: 250
+       Maximum forward count: 2
+       Fallback serializer: 
+   Liveness:
+      LivenessEnabled: True
+      LivenessType: MembershipTableGrain
+      ProbeTimeout: 00:00:10
+      TableRefreshTimeout: 00:01:00
+      DeathVoteExpirationTimeout: 00:02:00
+      NumMissedProbesLimit: 3
+      NumProbedSilos: 3
+      NumVotesForDeathDeclaration: 2
+      UseLivenessGossip: True
+      ValidateInitialConnectivity: True
+      IAmAliveTablePublishTimeout: 00:05:00
+      NumMissedTableIAmAliveLimit: 2
+      MaxJoinAttemptTime: 00:05:00
+      ExpectedClusterSize: 20
+   MultiClusterNetwork: N/A
+   SystemStore:
+      SystemStore ConnectionString: null
+      Reminders ConnectionString: null
+   Application:
+      Defaults:
+         Deactivate if idle for: 02:00:00
+
+   PlacementStrategy: 
+         Default Placement Strategy: RandomPlacement
+         Deployment Load Publisher Refresh Time: 00:00:01
+         Activation CountBased Placement Choose Out Of: 2
+   Grain directory cache:
+      Maximum size: 1000000 grains
+      Initial TTL: 00:00:30
+      Maximum TTL: 00:04:00
+      TTL extension factor: 2.00
+      Directory Caching Strategy: Adaptive
+   Grain directory:
+      Lazy deregistration delay: 00:01:00
+      Client registration refresh: 00:05:00
+   Reminder Service:
+       ReminderServiceType: ReminderTableGrain
+   Consistent Ring:
+       Use Virtual Buckets Consistent Ring: True
+       Num Virtual Buckets Consistent Ring: 30
+   Providers:
+       No providers configured.
+Silo configuration:
+   Silo Name: Test
+   Generation: 240753077
+   Host Name or IP Address: localhost
+   DNS Host Name: DESKTOP-7K57SOQ
+   Port: 22222
+   Subnet: 
+   Preferred Address Family: InterNetwork
+   Proxy Gateway: 127.0.0.1:40000
+   IsPrimaryNode: True
+   Scheduler: 
+         Max Active Threads: 4
+         Processor Count: 4
+         Delay Warning Threshold: 00:00:10
+         Activation Scheduling Quantum: 00:00:00.1000000
+         Turn Warning Length Threshold: 00:00:00.2000000
+         Inject More Worker Threads: False
+         MinDotNetThreadPoolSize: 200
+         .NET ServicePointManager - DefaultConnectionLimit=200 Expect100Continue=False UseNagleAlgorithm=False
+   Load Shedding Enabled: False
+   Load Shedding Limit: 95
+   SiloShutdownEventName: 
+   Debug: 
+   Tracing: 
+     Default Trace Level: Info
+     TraceLevelOverrides: None
+     Trace to Console: True
+     Trace File Name: C:\Dev\deepflow-platform\src\Deepflow.Platform\Test-2017-08-18-11.51.17.115Z.log
+     LargeMessageWarningThreshold: 85000
+     PropagateActivityId: False
+     BulkMessageLimit: 5
+   Statistics: 
+     MetricsTableWriteInterval: 00:00:30
+     PerfCounterWriteInterval: 00:00:30
+     LogWriteInterval: 00:05:00
+     WriteLogStatisticsToTable: True
+     StatisticsCollectionLevel: Info
+
+	
+[2017-08-18 11:51:23.948 GMT     1	INFO   	100000	Scheduler.OrleansTaskScheduler	127.0.0.1:22222]	Starting OrleansTaskScheduler with 4 Max Active application Threads and 1 system thread.	
+[2017-08-18 11:51:23.989 GMT     1	INFO   	101010	Runtime.Messaging.IncomingMessageAcceptor	127.0.0.1:22222]	Opened a listening socket at address 127.0.0.1:22222	
+[2017-08-18 11:51:24.001 GMT     1	INFO   	101010	Runtime.Messaging.GatewayAcceptor	127.0.0.1:22222]	Opened a listening socket at address 127.0.0.1:40000	
+[2017-08-18 11:51:24.051 GMT     1	INFO   	100000	VirtualBucketsRingProvider	127.0.0.1:22222]	Starting VirtualBucketsRingProvider on silo S127.0.0.1:22222:240753077/x6DE0A53E.	
+[2017-08-18 11:51:24.098 GMT     1	INFO   	103003	VirtualBucketsRingProvider	127.0.0.1:22222]	Added Server S127.0.0.1:22222:240753077/x6DE0A53E. Current view: [S127.0.0.1:22222:240753077 -> <MultiRange: Size=x100000000, %Ring=100.000%>]	
+[2017-08-18 11:51:24.104 GMT     1	INFO   	103005	VirtualBucketsRingProvider	127.0.0.1:22222]	-NotifyLocalRangeSubscribers about old <(0 0], Size=x100000000, %Ring=100.000%> new <MultiRange: Size=x100000000, %Ring=100.000%> increased? True	
+[2017-08-18 11:51:24.141 GMT     1	INFO   	100000	Silo	127.0.0.1:22222]	Skip multicluster oracle creation (no multicluster network configured)	
+[2017-08-18 11:51:24.147 GMT     1	INFO   	100422	Silo	127.0.0.1:22222]	-------------- Started silo S127.0.0.1:22222:240753077, ConsistentHashCode 6DE0A53E --------------	
+[2017-08-18 11:51:24.156 GMT     1	INFO   	100288	OrleansSiloHost	127.0.0.1:22222]	Successfully initialized Orleans silo 'Test' as a Primary node.	
+[2017-08-18 11:51:24.168 GMT     1	INFO   	100441	OrleansSiloHost	127.0.0.1:22222]	Silo shutdown event name: Test-Shutdown	
+[2017-08-18 11:51:24.173 GMT     1	INFO   	100442	OrleansSiloHost	127.0.0.1:22222]	Created and set shutdown event Test-Shutdown	
+[2017-08-18 11:51:24.192 GMT     1	INFO   	100401	Silo	127.0.0.1:22222]	Silo Start()	
+[2017-08-18 11:51:24.243 GMT     1	INFO   	101711	AssemblyLoader.Silo	127.0.0.1:22222]	Loaded grain type summary for 9 types: 
+Grain class Deepflow.Platform.Series.Attributes.Deepflow.Platform.Series.Attributes.AttributeSeriesGrain [1737071201 (0x67899A61)] from Deepflow.Platform.Series.Attributes.dll implementing interfaces: Deepflow.Platform.Abstractions.Series.Deepflow.Platform.Abstractions.Series.IAttributeSeriesGrain [-1467389913 (0xA8896827)], Orleans.Orleans.IGrainWithStringKey [-1277021679 (0xB3E23211)]
+Grain class Deepflow.Platform.Series.Calculations.Deepflow.Platform.Series.Calculations.CalculationSeriesGrain [1216762682 (0x4886533A)] from Deepflow.Platform.Series.Calculations.dll implementing interfaces: Deepflow.Platform.Abstractions.Series.Deepflow.Platform.Abstractions.Series.ICalculationSeriesGrain [-1487664544 (0xA7540A60)], Orleans.Orleans.IGrainWithStringKey [-1277021679 (0xB3E23211)]
+Grain class Orleans.LogConsistency.Orleans.LogConsistency.LogConsistentGrainBase<TView> [-2062750837 (0x850CEB8B)] from Orleans.dll implementing interfaces: 
+Grain class Orleans.Runtime.Management.Orleans.Runtime.Management.ManagementGrain [1954798034 (0x7483D9D2)] from OrleansRuntime.dll implementing interfaces: Orleans.Runtime.Orleans.Runtime.IManagementGrain [-1734666656 (0x989B1660)]
+Grain class Orleans.Runtime.MembershipService.Orleans.Runtime.MembershipService.GrainBasedMembershipTable [-2103923544 (0x8298ACA8)] from OrleansRuntime.dll implementing interfaces: Orleans.Orleans.IMembershipTableGrain [-1256503757 (0xB51B4633)]
+Grain class Orleans.Runtime.ReminderService.Orleans.Runtime.ReminderService.GrainBasedReminderTable [-55315191 (0xFCB3F509)] from OrleansRuntime.dll implementing interfaces: Orleans.Orleans.IReminderTableGrain [-1135060418 (0xBC585A3E)]
+Grain class Orleans.Runtime.Versions.Orleans.Runtime.Versions.VersionStoreGrain [331003096 (0x13BAB4D8)] from OrleansRuntime.dll implementing interfaces: Orleans.Runtime.Versions.Orleans.Runtime.Versions.IVersionStoreGrain [-297600501 (0xEE42FA0B)], Orleans.Orleans.IGrainWithStringKey [-1277021679 (0xB3E23211)]
+Grain class Orleans.Storage.Orleans.Storage.MemoryStorageGrain [819348208 (0x30D642F0)] from OrleansRuntime.dll implementing interfaces: Orleans.Storage.Orleans.Storage.IMemoryStorageGrain [577125491 (0x22663C73)]
+Grain class Orleans.Streams.Orleans.Streams.PubSubRendezvousGrain [1903070868 (0x716E8E94)] from OrleansRuntime.dll implementing interfaces: Orleans.Streams.Orleans.Streams.IPubSubRendezvousGrain [1746702088 (0x681C8F08)]
+	
+[2017-08-18 11:51:24.309 GMT    19	INFO   	100000	Runtime.Scheduler.WorkerPoolThread/System.5	127.0.0.1:22222]	Starting AsyncAgent Runtime.Scheduler.WorkerPoolThread/System.5 on managed thread 19	
+[2017-08-18 11:51:24.309 GMT    16	INFO   	100000	Runtime.Scheduler.WorkerPoolThread/1	127.0.0.1:22222]	Starting AsyncAgent Runtime.Scheduler.WorkerPoolThread/1 on managed thread 16	
+[2017-08-18 11:51:24.310 GMT    15	INFO   	100000	Runtime.Scheduler.WorkerPoolThread/0	127.0.0.1:22222]	Starting AsyncAgent Runtime.Scheduler.WorkerPoolThread/0 on managed thread 15	
+[2017-08-18 11:51:24.309 GMT    17	INFO   	100000	Runtime.Scheduler.WorkerPoolThread/2	127.0.0.1:22222]	Starting AsyncAgent Runtime.Scheduler.WorkerPoolThread/2 on managed thread 17	
+[2017-08-18 11:51:24.450 GMT    22	INFO   	100000	Runtime.Messaging.SiloMessageSender/SystemSender	127.0.0.1:22222]	Starting AsyncAgent Runtime.Messaging.SiloMessageSender/SystemSender on managed thread 22	
+[2017-08-18 11:51:24.317 GMT    20	INFO   	100000	Runtime.Messaging.IncomingMessageAcceptor	127.0.0.1:22222]	Starting AsyncAgent Runtime.Messaging.IncomingMessageAcceptor on managed thread 20	
+[2017-08-18 11:51:24.310 GMT    18	INFO   	100000	Runtime.Scheduler.WorkerPoolThread/3	127.0.0.1:22222]	Starting AsyncAgent Runtime.Scheduler.WorkerPoolThread/3 on managed thread 18	
+[2017-08-18 11:51:24.504 GMT    28	INFO   	100000	Runtime.Messaging.IncomingMessageAgent/Ping	127.0.0.1:22222]	Starting AsyncAgent Runtime.Messaging.IncomingMessageAgent/Ping on managed thread 28	
+[2017-08-18 11:51:24.370 GMT    21	INFO   	100000	Runtime.Messaging.SiloMessageSender/PingSender	127.0.0.1:22222]	Starting AsyncAgent Runtime.Messaging.SiloMessageSender/PingSender on managed thread 21	
+[2017-08-18 11:51:24.547 GMT    27	INFO   	100000	Runtime.Messaging.IncomingMessageAgent/System	127.0.0.1:22222]	Starting AsyncAgent Runtime.Messaging.IncomingMessageAgent/System on managed thread 27	
+[2017-08-18 11:51:24.650 GMT    29	INFO   	100000	Runtime.Messaging.IncomingMessageAgent/Application	127.0.0.1:22222]	Starting AsyncAgent Runtime.Messaging.IncomingMessageAgent/Application on managed thread 29	
+[2017-08-18 11:51:24.654 GMT    20	INFO   	100328	Runtime.Messaging.IncomingMessageAcceptor	127.0.0.1:22222]	Stopping AsyncAgent Runtime.Messaging.IncomingMessageAcceptor that runs on managed thread 20	
+[2017-08-18 11:51:24.676 GMT     1	INFO   	100000	Orleans.GrainDirectory.LocalGrainDirectory	127.0.0.1:22222]	Start (SeverityLevel=Info)	
+[2017-08-18 11:51:24.743 GMT    25	INFO   	100000	Runtime.GrainDirectory.AdaptiveDirectoryCacheMaintainer`1	127.0.0.1:22222]	Starting AsyncAgent Runtime.GrainDirectory.AdaptiveDirectoryCacheMaintainer`1 on managed thread 25	
+[2017-08-18 11:51:24.746 GMT    26	INFO   	100000	Runtime.GrainDirectory.GlobalSingleInstanceActivationMaintainer	127.0.0.1:22222]	Starting AsyncAgent Runtime.GrainDirectory.GlobalSingleInstanceActivationMaintainer on managed thread 26	
+[2017-08-18 11:51:24.840 GMT    26	INFO   	100328	Runtime.GrainDirectory.GlobalSingleInstanceActivationMaintainer	127.0.0.1:22222]	Stopping AsyncAgent Runtime.GrainDirectory.GlobalSingleInstanceActivationMaintainer that runs on managed thread 26	
+[2017-08-18 11:51:24.880 GMT     1	INFO   	100000	ReminderFactory	127.0.0.1:22222]	Creating reminder grain service for type=Orleans.OrleansCodeGenReminderTableGrainReference	
+[2017-08-18 11:51:24.933 GMT     4	INFO   	100000	TypeManager	127.0.0.1:22222]	OnRefreshClusterMapTimer: refresh start	
+[2017-08-18 11:51:24.940 GMT    18	INFO   	100603	MembershipOracle	127.0.0.1:22222]	MembershipOracle starting on host = DESKTOP-7K57SOQ address = S127.0.0.1:22222:240753077 at 2017-08-18 11:51:24.014 GMT, backOffMax = 00:00:20	
+[2017-08-18 11:51:24.950 GMT    19	INFO   	100507	Catalog	127.0.0.1:22222]	Before collection#1: memory=15MB, #activations=0, collector=<#Activations=0, #Buckets=0, buckets=[]>.	
+[2017-08-18 11:51:24.963 GMT    19	INFO   	100508	Catalog	127.0.0.1:22222]	After collection#1: memory=15MB, #activations=0, collected 0 activations, collector=<#Activations=0, #Buckets=0, buckets=[]>, collection time=00:00:00.0311458.	
+[2017-08-18 11:51:24.975 GMT    18	INFO   	100635	MembershipTableFactory	127.0.0.1:22222]	Creating membership table grain	
+[2017-08-18 11:51:25.064 GMT    15	INFO   	100637	GrainBasedMembershipTable	127.0.0.1:22222]	GrainBasedMembershipTable Activated.	
+[2017-08-18 11:51:25.167 GMT    18	INFO   	100631	MembershipTableFactory	127.0.0.1:22222]	-Connected to membership table provider.	
+[2017-08-18 11:51:25.222 GMT    17	INFO   	100000	GrainBasedMembershipTable	127.0.0.1:22222]	InitializeMembershipTable True.	
+[2017-08-18 11:51:32.175 GMT    17	INFO   	100652	MembershipOracle	127.0.0.1:22222]	-CleanupTable called on silo startup. Membership table 0 silos, 0 are Active, 0 are Dead, Version=<0, 0>. All silos: []	
+[2017-08-18 11:51:32.263 GMT    19	INFO   	100660	MembershipOracle	127.0.0.1:22222]	Starting IAmAliveUpdateTimer.	
+[2017-08-18 11:51:32.301 GMT    18	INFO   	100604	MembershipOracle	127.0.0.1:22222]	-BecomeActive	
+[2017-08-18 11:51:32.325 GMT    19	INFO   	100614	MembershipOracle	127.0.0.1:22222]	About to send pings to 0 nodes in order to validate communication in the Joining state. Pinged nodes = []	
+[2017-08-18 11:51:32.355 GMT    17	INFO   	100634	MembershipOracle	127.0.0.1:22222]	-ReadAll (called from BecomeActive) Membership table 1 silos, 1 are Active, 0 are Dead, Version=<2, 5>. All silos: [SiloAddress=S127.0.0.1:22222:240753077 SiloName=Test Status=Active]	
+[2017-08-18 11:51:32.365 GMT    17	INFO   	100605	MembershipOracle	127.0.0.1:22222]	-Finished BecomeActive.	
+[2017-08-18 11:51:32.378 GMT     1	INFO   	100702	WindowsPerfCountersStatistics	127.0.0.1:22222]	Starting Windows perf counter stats collection with frequency=00:00:30	
+[2017-08-18 11:51:32.412 GMT     1	WARNING	100708	RuntimeStatisticsGroup	127.0.0.1:22222]	CPU & Memory perf counters are not available in .NET Standard. Load shedding will not work yet	
+[2017-08-18 11:51:32.459 GMT     1	INFO   	100714	SiloPerformanceMetrics	127.0.0.1:22222]	Starting Silo Table metrics reporter with reportFrequency=00:00:30	
+[2017-08-18 11:51:32.499 GMT    19	INFO   	100000	DeploymentLoadPublisher	127.0.0.1:22222]	Starting DeploymentLoadPublisher.	
+[2017-08-18 11:51:32.562 GMT    17	INFO   	100000	DeploymentLoadPublisher	127.0.0.1:22222]	Started DeploymentLoadPublisher.	
+[2017-08-18 11:51:32.570 GMT     1	INFO   	100000	Watchdog	127.0.0.1:22222]	Starting Silo Watchdog.	
+[2017-08-18 11:51:32.588 GMT     7	INFO   	100000	Runtime.Watchdog	127.0.0.1:22222]	Starting AsyncAgent Runtime.Watchdog on managed thread 7	
+[2017-08-18 11:51:32.662 GMT    16	INFO   	100000	GrainBasedReminderTable_S127.0.0.1:22222:240753077*grn/FCB3F509/00003039@b132aaa2	127.0.0.1:22222]	GrainBasedReminderTable *grn/FCB3F509/00003039 Activated. Full identity: [ActivationAddress: S127.0.0.1:22222:240753077*grn/FCB3F509/00003039@b132aaa2, Full GrainId: [GrainId: *grn/FCB3F509/0000000000000000000000000000303903fffffffcb3f509-0xBB9ED002, IdCategory: Grain, BaseTypeCode: -55315191 (xFCB3F509), PrimaryKey: 12345 (x3039), UniformHashCode: 3147747330 (0xBB9ED002)], Full ActivationId: @4abc5fd274457b5806d4f04eb132aaa20000000000000000]	
+[2017-08-18 11:51:32.688 GMT    18	INFO   	102925	Orleans.Runtime.ReminderService.LocalReminderService	127.0.0.1:22222]	Starting Orleans.Runtime.ReminderService.LocalReminderService grain service on: S127.0.0.1:22222:240753077 x6DE0A53E, with range 	
+[2017-08-18 11:51:32.769 GMT    23	INFO   	100000	Runtime.Messaging.GatewayAcceptor	127.0.0.1:22222]	Starting AsyncAgent Runtime.Messaging.GatewayAcceptor on managed thread 23	
+[2017-08-18 11:51:32.799 GMT     1	INFO   	100424	OrleansSiloHost	127.0.0.1:22222]	Silo startup event name: Test	
+[2017-08-18 11:51:32.772 GMT    24	INFO   	100000	Runtime.Messaging.GatewayClientCleanupAgent	127.0.0.1:22222]	Starting AsyncAgent Runtime.Messaging.GatewayClientCleanupAgent on managed thread 24	
+[2017-08-18 11:51:32.836 GMT     1	INFO   	100425	OrleansSiloHost	127.0.0.1:22222]	Created and set startup event Test	
+[2017-08-18 11:51:32.842 GMT    23	INFO   	100328	Runtime.Messaging.GatewayAcceptor	127.0.0.1:22222]	Stopping AsyncAgent Runtime.Messaging.GatewayAcceptor that runs on managed thread 23	
+[2017-08-18 11:51:32.888 GMT     1	INFO   	100402	OrleansSiloHost	127.0.0.1:22222]	Silo Test started successfully	
+[2017-08-18 11:51:33.253 GMT     1	WARNING	100153	OutsideRuntimeClient	127.0.0.1:22222]	Unable to set unobserved exception handler because it was already set.	
+[2017-08-18 11:51:33.291 GMT     1	INFO   	100313	OutsideRuntimeClient	127.0.0.1:22222]	---------- Initializing OutsideRuntimeClient on DESKTOP-7K57SOQ at 10.0.75.1 Client Id = *cli/bc3f78b3 ----------	
+[2017-08-18 11:51:33.306 GMT     1	INFO   	100314	OutsideRuntimeClient	127.0.0.1:22222]	---------- Starting OutsideRuntimeClient with runtime Version='2.0.0-preview2-20170724 (Debug).' in AppDomain=N/A Config= 
+ Platform version info:
+   Orleans version: 2.0.0-preview2-20170724 (Debug).
+   GC Type=Server GCLatencyMode=Interactive
+   Host: DESKTOP-7K57SOQ
+   Processor Count: 4
+Client Configuration:
+   Config File Name: 
+   Start time: 2017-08-18 11:51:33.303 GMT
+   Gateway Provider: Config
+   Gateways[1]:
+      127.0.0.1:40000
+   Preferred Gateway Index: -1
+   GatewayListRefreshPeriod: 00:01:00
+   Preferred Address Family: InterNetwork
+   DNS Host Name: DESKTOP-7K57SOQ
+   Client Name: Client
+   Tracing: 
+     Default Trace Level: Info
+     TraceLevelOverrides: None
+     Trace to Console: True
+     Trace File Name: C:\Dev\deepflow-platform\src\Deepflow.Platform\Client-2017-08-18-11.51.32.896Z.log
+     LargeMessageWarningThreshold: 85000
+     PropagateActivityId: False
+     BulkMessageLimit: 5
+   Statistics: 
+     MetricsTableWriteInterval: 00:00:30
+     PerfCounterWriteInterval: -00:00:00.0010000
+     LogWriteInterval: 00:05:00
+     WriteLogStatisticsToTable: True
+     StatisticsCollectionLevel: Info
+   Messaging:
+       Response timeout: 00:30:00
+       Maximum resend count: 0
+       Resend On Timeout: False
+       Maximum Socket Age: 10675199.02:48:05.4775807
+       Drop Expired Messages: True
+       Client Sender Buckets: 8192
+       Buffer Pool Buffer Size: 4096
+       Buffer Pool Max Size: 10000
+       Buffer Pool Preallocation Size: 250
+       Fallback serializer: 
+   Providers:
+       No providers configured.
+	
+[2017-08-18 11:51:33.358 GMT     4	INFO   	101309	Messaging.GatewayManager	127.0.0.1:22222]	Found 1 knownGateways from Gateway listProvider [gwy.tcp://127.0.0.1:40000/0]	
+[2017-08-18 11:51:33.431 GMT     4	INFO   	100908	Messaging.GatewayConnection/GatewayClientSender_gwy.tcp://127.0.0.1:40000/0	10.0.75.1:0]	Connected to gateway at address gwy.tcp://127.0.0.1:40000/0 on trial 0.	
+[2017-08-18 11:51:33.457 GMT    32	INFO   	100000	Messaging.GatewayClientReceiver/gwy.tcp://127.0.0.1:40000/0	10.0.75.1:0]	Starting AsyncAgent Messaging.GatewayClientReceiver/gwy.tcp://127.0.0.1:40000/0 on managed thread 32	
+[2017-08-18 11:51:33.463 GMT    31	INFO   	100000	Messaging.GatewayConnection/GatewayClientSender_gwy.tcp://127.0.0.1:40000/0	10.0.75.1:0]	Starting AsyncAgent Messaging.GatewayConnection/GatewayClientSender_gwy.tcp://127.0.0.1:40000/0 on managed thread 31	
+[2017-08-18 11:51:33.488 GMT     6	INFO   	101301	Orleans.Messaging.Gateway	10.0.75.1:0]	Recorded opened socket from endpoint 127.0.0.1:60128, client ID *cli/bc3f78b3.	
+[2017-08-18 11:51:33.717 GMT    35	INFO   	100000	Runtime.Messaging.GatewaySender/GatewaySiloSender_0	10.0.75.1:0]	Starting AsyncAgent Runtime.Messaging.GatewaySender/GatewaySiloSender_0 on managed thread 35	
+[2017-08-18 11:51:33.758 GMT    13	WARNING	100708	RuntimeStatisticsGroup	10.0.75.1:0]	CPU & Memory perf counters are not available in .NET Standard. Load shedding will not work yet	
+[2017-08-18 11:51:33.785 GMT     4	INFO   	100929	OutsideRuntimeClient	10.0.75.1:0]	---------- Started OutsideRuntimeClient with Global Client ID: C10.0.75.1:0:-240753093*cli/bc3f78b3@5d7f6fbb, client GUID ID: *cli/bc3f78b3	
+[2017-08-18 11:51:50.280 GMT     7	WARNING	100150	Watchdog	10.0.75.1:0]	.NET Runtime Platform stalled for 00:00:12.6343202 - possibly GC? We are now using total of 56MB memory. gc=8, 4, 3	
+[2017-08-18 11:51:50.295 GMT    15	WARNING	101410	GrainTimer	10.0.75.1:0]	-GrainTimer.Membership.ProbeTimer. TimerCallbackHandler:Orleans.Runtime.GrainTimer+<>c__DisplayClass16_0->System.Threading.Tasks.Task <FromTimerCallback>b__0(System.Object) did not fire on time. Last fired at 2017-08-18 11:51:33.177 GMT, 00:00:17.1093892 since previous fire, should have fired after 00:00:10.	
+[2017-08-18 11:51:54.518 GMT     7	WARNING	100150	Watchdog	10.0.75.1:0]	.NET Runtime Platform stalled for 00:00:04.1035587 - possibly GC? We are now using total of 56MB memory. gc=8, 4, 3	
+[2017-08-18 11:51:55.568 GMT    15	WARNING	101215	Scheduler.MembershipOracle.WorkItemGroup	10.0.75.1:0]	Task [Id=983, Status=RanToCompletion] in WorkGroup [SystemTarget: S127.0.0.1:22222:240753077MembershipOracle@S0000000f] took elapsed time 0:00:04.2846413 for execution, which is longer than 00:00:00.2000000. Running on thread <Runtime.Scheduler.WorkerPoolThread/0, ManagedThreadId=15, Executing Task Id=983 Status=RanToCompletion for 00:00:05.2769183 on WorkItem=System*WorkItemGroup:Name=MembershipOracle,WorkGroupStatus=Running Executing for 00:00:05.2799148. .>	
+[2017-08-18 11:52:04.726 GMT     7	WARNING	100150	Watchdog	10.0.75.1:0]	.NET Runtime Platform stalled for 00:00:07.4800987 - possibly GC? We are now using total of 56MB memory. gc=8, 4, 3	
+[2017-08-18 11:52:05.754 GMT    17	WARNING	101215	Scheduler.WorkItemGroup	10.0.75.1:0]	Task [Id=972, Status=RanToCompletion] in WorkGroup [Activation: S127.0.0.1:22222:240753077*grn/67899A61/00000000+0a2f8f68-afba-499a-8a4d-0dee3e4a6e74:be14572d-2f07-405d-954c-d1a5e37babf9@e55ba6a6 #GrainType=Deepflow.Platform.Series.Attributes.AttributeSeriesGrain Placement=RandomPlacement State=Valid] took elapsed time 0:00:27.1512132 for execution, which is longer than 00:00:00.2000000. Running on thread <Runtime.Scheduler.WorkerPoolThread/2, ManagedThreadId=17, Executing Task Id=972 Status=RanToCompletion for 00:00:27.1576082 on WorkItem=WorkItemGroup:Name=[Activation: S127.0.0.1:22222:240753077*grn/67899A61/00000000+0a2f8f68-afba-499a-8a4d-0dee3e4a6e74:be14572d-2f07-405d-954c-d1a5e37babf9@e55ba6a6 #GrainType=Deepflow.Platform.Series.Attributes.AttributeSeriesGrain Placement=RandomPlacement],WorkGroupStatus=Running Executing for 00:00:27.1576082. .>	
+[2017-08-18 11:52:11.993 GMT     7	WARNING	100150	Watchdog	10.0.75.1:0]	.NET Runtime Platform stalled for 00:00:04.2236940 - possibly GC? We are now using total of 56MB memory. gc=8, 4, 3	
+[2017-08-18 11:52:11.996 GMT    18	WARNING	101215	Scheduler.DeploymentLoadPublisherSystemTarget.WorkItemGroup	10.0.75.1:0]	Task [Id=1098, Status=RanToCompletion] in WorkGroup [SystemTarget: S127.0.0.1:22222:240753077DeploymentLoadPublisherSystemTarget@S00000016] took elapsed time 0:00:04.1643139 for execution, which is longer than 00:00:00.2000000. Running on thread <Runtime.Scheduler.WorkerPoolThread/3, ManagedThreadId=18, Executing Task Id=1098 Status=RanToCompletion for 00:00:04.1641982 on WorkItem=System*WorkItemGroup:Name=DeploymentLoadPublisherSystemTarget,WorkGroupStatus=Running Executing for 00:00:04.1641982. .>	
+[2017-08-18 11:52:15.275 GMT    19	WARNING	101215	Scheduler.DeploymentLoadPublisherSystemTarget.WorkItemGroup	10.0.75.1:0]	Task [Id=1112, Status=RanToCompletion] in WorkGroup [SystemTarget: S127.0.0.1:22222:240753077DeploymentLoadPublisherSystemTarget@S00000016] took elapsed time 0:00:01.9501476 for execution, which is longer than 00:00:00.2000000. Running on thread <Runtime.Scheduler.WorkerPoolThread/System.5, ManagedThreadId=19, Executing Task Id=1112 Status=RanToCompletion for 00:00:01.9504320 on WorkItem=System*WorkItemGroup:Name=DeploymentLoadPublisherSystemTarget,WorkGroupStatus=Running Executing for 00:00:01.9504320. .>	
+[2017-08-18 11:52:19.357 GMT    16	WARNING	101410	GrainTimer	10.0.75.1:0]	-GrainTimer.Membership.ProbeTimer. TimerCallbackHandler:Orleans.Runtime.GrainTimer+<>c__DisplayClass16_0->System.Threading.Tasks.Task <FromTimerCallback>b__0(System.Object) did not fire on time. Last fired at 2017-08-18 11:52:05.748 GMT, 00:00:13.6083625 since previous fire, should have fired after 00:00:10.	
+[2017-08-18 11:52:19.358 GMT     7	WARNING	100150	Watchdog	10.0.75.1:0]	.NET Runtime Platform stalled for 00:00:04.0820698 - possibly GC? We are now using total of 56MB memory. gc=8, 4, 3	
+[2017-08-18 11:52:24.887 GMT    16	WARNING	101215	Scheduler.MembershipOracle.WorkItemGroup	10.0.75.1:0]	Task [Id=1123, Status=RanToCompletion] in WorkGroup [SystemTarget: S127.0.0.1:22222:240753077MembershipOracle@S0000000f] took elapsed time 0:00:05.5298673 for execution, which is longer than 00:00:00.2000000. Running on thread <Runtime.Scheduler.WorkerPoolThread/1, ManagedThreadId=16, Executing Task Id=1123 Status=RanToCompletion for 00:00:05.5302816 on WorkItem=System*WorkItemGroup:Name=MembershipOracle,WorkGroupStatus=Running Executing for 00:00:05.5302816. .>	
+[2017-08-18 11:52:25.514 GMT     4	INFO   	100000	TypeManager	10.0.75.1:0]	OnRefreshClusterMapTimer: refresh start	
+[2017-08-18 11:52:25.520 GMT    19	INFO   	100507	Catalog	10.0.75.1:0]	Before collection#2: memory=56MB, #activations=3, collector=<#Activations=1, #Buckets=1, buckets=[2h:0m:34s.485ms->1 items]>.	
+[2017-08-18 11:52:27.579 GMT    19	INFO   	100508	Catalog	10.0.75.1:0]	After collection#2: memory=56MB, #activations=3, collected 0 activations, collector=<#Activations=1, #Buckets=1, buckets=[2h:0m:32s.420ms->1 items]>, collection time=00:00:02.0649362.	
+[2017-08-18 11:52:27.603 GMT    19	WARNING	101215	Scheduler.Catalog.WorkItemGroup	10.0.75.1:0]	Task [Id=1135, Status=RanToCompletion] in WorkGroup [SystemTarget: S127.0.0.1:22222:240753077Catalog@S0000000e] took elapsed time 0:00:02.0887594 for execution, which is longer than 00:00:00.2000000. Running on thread <Runtime.Scheduler.WorkerPoolThread/System.5, ManagedThreadId=19, Executing Task Id=1135 Status=RanToCompletion for 00:00:02.0884710 on WorkItem=System*WorkItemGroup:Name=Catalog,WorkGroupStatus=Running Executing for 00:00:02.0884710. .>	
+[2017-08-18 11:52:33.362 GMT    17	WARNING	101215	Scheduler.WorkItemGroup	10.0.75.1:0]	Task [Id=1072, Status=RanToCompletion] in WorkGroup [Activation: S127.0.0.1:22222:240753077*grn/67899A61/00000000+0a2f8f68-afba-499a-8a4d-0dee3e4a6e74:be14572d-2f07-405d-954c-d1a5e37babf9@e55ba6a6 #GrainType=Deepflow.Platform.Series.Attributes.AttributeSeriesGrain Placement=RandomPlacement State=Valid] took elapsed time 0:00:27.5296498 for execution, which is longer than 00:00:00.2000000. Running on thread <Runtime.Scheduler.WorkerPoolThread/2, ManagedThreadId=17, Executing Task Id=1072 Status=RanToCompletion for 00:00:27.5298669 on WorkItem=WorkItemGroup:Name=[Activation: S127.0.0.1:22222:240753077*grn/67899A61/00000000+0a2f8f68-afba-499a-8a4d-0dee3e4a6e74:be14572d-2f07-405d-954c-d1a5e37babf9@e55ba6a6 #GrainType=Deepflow.Platform.Series.Attributes.AttributeSeriesGrain Placement=RandomPlacement],WorkGroupStatus=Running Executing for 00:00:27.5298669. .>	
+[2017-08-18 11:52:33.421 GMT     4	INFO   	101309	Messaging.GatewayManager	10.0.75.1:0]	Refreshed the live Gateway list. Found 1 gateways from Gateway listProvider: [gwy.tcp://127.0.0.1:40000/0]. Picked only known live out of them. Now has 1 live Gateways: [gwy.tcp://127.0.0.1:40000/0]. Previous refresh time was = 18/08/2017 11:51:33 AM	
+[2017-08-18 11:53:27.608 GMT    19	INFO   	100507	Catalog	10.0.75.1:0]	Before collection#3: memory=66MB, #activations=3, collector=<#Activations=1, #Buckets=2, buckets=[1h:59m:32s.394ms->0 items, 2h:0m:32s.394ms->1 items]>.	
+[2017-08-18 11:53:27.660 GMT    19	INFO   	100508	Catalog	10.0.75.1:0]	After collection#3: memory=66MB, #activations=3, collected 0 activations, collector=<#Activations=1, #Buckets=2, buckets=[1h:59m:32s.340ms->0 items, 2h:0m:32s.340ms->1 items]>, collection time=00:00:00.0541907.	
+[2017-08-18 11:53:33.475 GMT    42	INFO   	101309	Messaging.GatewayManager	10.0.75.1:0]	Refreshed the live Gateway list. Found 1 gateways from Gateway listProvider: [gwy.tcp://127.0.0.1:40000/0]. Picked only known live out of them. Now has 1 live Gateways: [gwy.tcp://127.0.0.1:40000/0]. Previous refresh time was = 18/08/2017 11:52:33 AM	
+[2017-08-18 11:54:27.751 GMT    18	INFO   	100507	Catalog	10.0.75.1:0]	Before collection#4: memory=18MB, #activations=3, collector=<#Activations=1, #Buckets=2, buckets=[1h:58m:32s.248ms->0 items, 1h:59m:32s.248ms->1 items]>.	
+[2017-08-18 11:54:27.791 GMT    18	INFO   	100508	Catalog	10.0.75.1:0]	After collection#4: memory=18MB, #activations=3, collected 0 activations, collector=<#Activations=1, #Buckets=2, buckets=[1h:58m:32s.208ms->0 items, 1h:59m:32s.208ms->1 items]>, collection time=00:00:00.0406301.	
+[2017-08-18 11:54:33.557 GMT    45	INFO   	101309	Messaging.GatewayManager	10.0.75.1:0]	Refreshed the live Gateway list. Found 1 gateways from Gateway listProvider: [gwy.tcp://127.0.0.1:40000/0]. Picked only known live out of them. Now has 1 live Gateways: [gwy.tcp://127.0.0.1:40000/0]. Previous refresh time was = 18/08/2017 11:53:33 AM	

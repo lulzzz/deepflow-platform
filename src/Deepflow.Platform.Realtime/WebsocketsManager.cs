@@ -11,34 +11,46 @@ namespace Deepflow.Platform.Realtime
 {
     public class WebsocketsManager : IWebsocketsManager, IWebsocketsSender
     {
+        private readonly IWebsocketsReceiver _receiver;
         private static readonly ConcurrentDictionary<string, WebSocket> Sockets = new ConcurrentDictionary<string, WebSocket>();
+
+        public WebsocketsManager(IWebsocketsReceiver receiver)
+        {
+            _receiver = receiver;
+            _receiver.SetSender(this);
+        }
 
         public async Task HandleWebsocket(WebSocket socket, CancellationToken cancellationToken)
         {
             var socketId = Guid.NewGuid().ToString();
             Sockets.TryAdd(socketId, socket);
 
-            while (true)
+            try
             {
-                if (cancellationToken.IsCancellationRequested)
+                while (true)
                 {
-                    break;
-                }
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        break;
+                    }
 
-                var response = await ReceiveStringAsync(socket, cancellationToken);
-                if (string.IsNullOrEmpty(response))
-                {
                     if (socket.State != WebSocketState.Open)
                     {
                         break;
                     }
 
-                    continue;
+                    var message = await ReceiveStringAsync(socket, cancellationToken);
+                    if (!string.IsNullOrEmpty(message))
+                    {
+                        await _receiver.OnReceive(socketId, message).ConfigureAwait(false);
+                    }
                 }
             }
-
-            WebSocket dummy;
-            Sockets.TryRemove(socketId, out dummy);
+            finally
+            {
+                WebSocket dummy;
+                Sockets.TryRemove(socketId, out dummy);
+            }
         }
 
         private static async Task<string> ReceiveStringAsync(WebSocket socket, CancellationToken ct = default(CancellationToken))

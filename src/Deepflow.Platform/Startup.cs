@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime;
 using Deepflow.Platform.Abstractions.Realtime;
 using Deepflow.Platform.Abstractions.Series;
 using Deepflow.Platform.Controllers;
@@ -40,12 +41,14 @@ namespace Deepflow.Platform
         {
             services.AddMvc();
             services.AddOptions();
-            services.Configure<SeriesConfiguration>(Configuration.GetSection("AttributeSeries"));
+
+            GCSettings.LatencyMode = GCLatencyMode.Batch;
+
+            Configuration.GetSection("Series").Bind(OrleansStartup.SeriesConfiguration);
 
             services.AddSingleton<IWebsocketsManager, WebsocketsManager>();
             services.AddSingleton<IWebsocketsSender, WebsocketsManager>();
             services.AddSingleton<IWebsocketsReceiver, DataMessageHandler>();
-
 
             /*var orleansServices = OrleansStartup.Services = new OrleansServiceProvider(services.BuildServiceProvider());
 
@@ -67,7 +70,7 @@ namespace Deepflow.Platform
 
             app.UseMvc();
 
-            app.UseWebsocketsHandler();
+            app.UseWebSocketsHandler();
 
             app.UseOrleans<OrleansStartup>(48880);
 
@@ -78,6 +81,7 @@ namespace Deepflow.Platform
     public class OrleansStartup
     {
         //public static OrleansServiceProvider Services;
+        public static SeriesConfiguration SeriesConfiguration = new SeriesConfiguration();
 
         public OrleansStartup()
         {
@@ -94,7 +98,7 @@ namespace Deepflow.Platform
             services.AddSingleton<ITimeFilterer, TimeFilterer>();
             services.AddSingleton<IDataProvider, SimpleRandomDataProvider>();
 
-            services.AddSingleton(new SeriesConfiguration { Aggregations = new HashSet<int> { 100, 200, 400, 600 } });
+            services.AddSingleton(SeriesConfiguration);
 
             return services.BuildServiceProvider();
         }

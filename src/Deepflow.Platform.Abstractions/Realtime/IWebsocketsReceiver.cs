@@ -7,5 +7,7 @@ namespace Deepflow.Platform.Abstractions.Realtime
         Task OnConnected(string socketId);
         Task OnDisconnected(string socketId);
         Task OnReceive(string socketId, string message);
+
+        void SetSender(IWebsocketsSender sender);
     }
 }

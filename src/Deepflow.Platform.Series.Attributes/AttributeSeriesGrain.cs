@@ -14,6 +14,7 @@ namespace Deepflow.Platform.Series.Attributes
         private Dictionary<int, Guid> _seriesGuids;
         private readonly ISeriesKnower _seriesKnower;
         private readonly IDataProvider _dataProvider;
+        private readonly ObserverSubscriptionManager<ISeriesObserver> _subscriptions = new ObserverSubscriptionManager<ISeriesObserver>();
 
         public AttributeSeriesGrain(ISeriesKnower seriesKnower, IDataProvider dataProvider)
         {
@@ -38,6 +39,23 @@ namespace Deepflow.Platform.Series.Attributes
                 throw new Exception($"Cannot find series GUID for attribute {_entity}:{_attribute}:{aggregationSeconds}");
             }
             return await _dataProvider.GetAttributeRange(seriesGuid, timeRange);
+        }
+
+        public Task AddRawData(IEnumerable<DataRange> dataRanges)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task Subscribe(ISeriesObserver observer)
+        {
+            _subscriptions.Subscribe(observer);
+            return Task.FromResult(0);
+        }
+
+        public Task Unsubscribe(ISeriesObserver observer)
+        {
+            _subscriptions.Unsubscribe(observer);
+            return Task.FromResult(0);
         }
     }
 }
