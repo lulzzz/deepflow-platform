@@ -17,7 +17,7 @@ namespace Deepflow.Platform.Series
             _filterer = filterer;
         }
 
-        public IDictionary<int, IEnumerable<DataRange>> AddToAggregations(IDictionary<int, IEnumerable<DataRange>> aggregations, IEnumerable<DataRange> rawDataRanges, HashSet<int> levels)
+        /*public IDictionary<int, IEnumerable<DataRange>> AddToAggregations(IDictionary<int, IEnumerable<DataRange>> aggregations, IEnumerable<DataRange> rawDataRanges, HashSet<int> levels)
         {
             foreach (var rawDataRange in rawDataRanges)
             {
@@ -25,9 +25,33 @@ namespace Deepflow.Platform.Series
             }
 
             return aggregations;
+        }*/
+
+        public AggregatedDataRange Aggregate(DataRange dataRange, int aggregationSeconds)
+        {
+            var quantisedRange = dataRange.TimeRange.Quantise(aggregationSeconds);
+
+            List<double> aggregated = new List<double>();
+            var dataEnumerator = dataRange.GetData();
+            for (var timeSeconds = quantisedRange.MinSeconds + aggregationSeconds; timeSeconds <= quantisedRange.MaxSeconds; timeSeconds += aggregationSeconds)
+            {
+                var minTimeExclusive = timeSeconds - aggregationSeconds;
+                var maxTimeInclusive = timeSeconds;
+                var chunkData = dataEnumerator.SkipWhile(x => x.Time <= minTimeExclusive).TakeWhile(x => x.Time <= maxTimeInclusive);
+                var average = chunkData.Average(x => x.Value);
+                aggregated.Add(timeSeconds);
+                aggregated.Add(average);
+            }
+
+            return new AggregatedDataRange(quantisedRange, aggregated, aggregationSeconds);
         }
 
-        public IDictionary<int, IEnumerable<DataRange>> AddRawRange(IDictionary<int, IEnumerable<DataRange>> aggregations, DataRange rawDataRange, HashSet<int> levels)
+        public IEnumerable<AggregatedDataRange> Aggregate(DataRange dataRange, IEnumerable<int> aggregationsSeconds)
+        {
+            return aggregationsSeconds.Select(aggregationSeconds => Aggregate(dataRange, aggregationSeconds));
+        }
+
+        /*public IDictionary<int, IEnumerable<DataRange>> AddRawRange(IDictionary<int, IEnumerable<DataRange>> aggregations, DataRange rawDataRange, HashSet<int> levels)
         {
             if (!aggregations.TryGetValue(0, out IEnumerable<DataRange> rawRanges))
             {
@@ -53,9 +77,9 @@ namespace Deepflow.Platform.Series
             }
 
             return aggregations;
-        }
+        }*/
 
-        private IEnumerable<DataRange> AddToAggregation(IEnumerable<DataRange> aggregatedRanges, int aggregationSeconds, IEnumerable<DataRange> lowerAggregatedRanges, TimeRange timeRange)
+        /*private IEnumerable<DataRange> AddToAggregation(IEnumerable<DataRange> aggregatedRanges, int aggregationSeconds, IEnumerable<DataRange> lowerAggregatedRanges, TimeRange timeRange)
         {
             var lowerRanges = _filterer.FilterDataRanges(lowerAggregatedRanges, timeRange);
             if (!lowerRanges.Any())
@@ -106,6 +130,6 @@ namespace Deepflow.Platform.Series
             }
 
             return _merger.MergeDataRangesWithRanges(aggregatedRanges, aggregated);
-        }
+        }*/
     }
 }

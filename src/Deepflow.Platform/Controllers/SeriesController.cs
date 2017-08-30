@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Deepflow.Platform.Abstractions.Series;
 using Deepflow.Platform.Core.Tools;
@@ -10,22 +9,21 @@ using Orleans;
 
 namespace Deepflow.Platform.Controllers
 {
-    /*[Route("api/[controller]")]*/
     public class SeriesController : Controller
     {
         [HttpGet("/api/Entities/{entity}/Attributes/{attribute}/Aggregations/{aggregationSeconds}/Data")]
-        public async Task<DataRange> GetAttributeData(Guid entity, Guid attribute, [FromQuery] DateTime minTimeUtc, [FromQuery] DateTime maxTimeUtc, int aggregationSeconds)
+        public async Task<IEnumerable<DataRange>> GetAttributeData(Guid entity, Guid attribute, int aggregationSeconds, [FromQuery] long minTimeSecondsUtc, [FromQuery] long maxTimeSecondsUtc)
         {
-            var timeRange = new TimeRange(minTimeUtc.SecondsSince1970Utc(), maxTimeUtc.SecondsSince1970Utc());
+            var timeRange = new TimeRange(minTimeSecondsUtc, maxTimeSecondsUtc);
             IAttributeSeriesGrain series = GrainClient.GrainFactory.GetGrain<IAttributeSeriesGrain>(SeriesIdHelper.ToAttributeSeriesId(entity, attribute));
             return await series.GetData(timeRange, aggregationSeconds);
         }
-        
-        /*[HttpPost("Raw")]
-        public Task AddRawData([FromQuery] Guid entity, [FromQuery] Guid attribute, [FromBody] IEnumerable<DataRange> dataRanges)
+
+        [HttpPost("/api/Entities/{entity}/Attributes/{attribute}/Aggregations/{aggregationSeconds}/Data")]
+        public Task AddData(Guid entity, Guid attribute, int aggregationSeconds, [FromBody] IEnumerable<DataRange> dataRanges)
         {
-            ISeriesGrain series = GrainClient.GrainFactory.GetGrain<ISeriesGrain>(SeriesIdHelper.ToSeriesId(entity, attribute));
-            return series.AddRawData(dataRanges);
-        }*/
+            IAttributeSeriesGrain series = GrainClient.GrainFactory.GetGrain<IAttributeSeriesGrain>(SeriesIdHelper.ToAttributeSeriesId(entity, attribute));
+            return series.AddData(dataRanges, aggregationSeconds);
+        }
     }
 }

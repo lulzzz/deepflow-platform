@@ -8,5 +8,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Deepflow.Platform.Abstractions\Deepflow.Platform.Abstractions.csproj" />
+    <ProjectReference Include="..\Deepflow.Platform.Series\Deepflow.Platform.Series.csproj" />
   </ItemGroup>
 </Project>

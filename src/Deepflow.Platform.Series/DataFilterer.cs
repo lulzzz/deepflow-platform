@@ -11,6 +11,11 @@ namespace Deepflow.Platform.Series
             return ranges?.Where(dataRange => RangeTouchesRange(dataRange.TimeRange, timeRange)).Select(range => FilterRange(range, timeRange)).Where(x => x.Data.Count > 0);
         }
 
+        public DataRange FilterDataRange(DataRange range, TimeRange timeRange)
+        {
+            return FilterDataRanges(new List<DataRange> { range }, timeRange).SingleOrDefault();
+        }
+
         public IEnumerable<DataRange> SubtractTimeRangeFromRanges(IEnumerable<DataRange> ranges, TimeRange subtractRange)
         {
             if (subtractRange == null)
@@ -36,7 +41,7 @@ namespace Deepflow.Platform.Series
             return new DataRange(range.TimeRange.Insersect(timeRange), FilterData(range.Data, timeRange));
         }
 
-        private List<double> FilterData(List<double> data, TimeRange timeRange)
+        public List<double> FilterData(List<double> data, TimeRange timeRange)
         {
             var startIndex = BinarySearcher.GetFirstIndexPastTimestampBinary(data, timeRange.MinSeconds);
             var endIndex = BinarySearcher.GetFirstIndexPastTimestampBinary(data, timeRange.MaxSeconds);

@@ -106,5 +106,12 @@ namespace Deepflow.Platform.Abstractions.Series
         {
             return $"{MinSeconds}-{MaxSeconds}";
         }
+
+        public TimeRange Quantise(int stepSeconds)
+        {
+            var minSeconds = (long) Math.Floor((double) MinSeconds / stepSeconds) * stepSeconds;
+            var maxSeconds = (long) Math.Ceiling((double) MaxSeconds / stepSeconds) * stepSeconds;
+            return new TimeRange(minSeconds, maxSeconds);
+        }
     }
 }

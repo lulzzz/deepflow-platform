@@ -44,7 +44,7 @@ namespace Deepflow.Platform
 
             GCSettings.LatencyMode = GCLatencyMode.Batch;
 
-            Configuration.GetSection("Series").Bind(OrleansStartup.SeriesConfiguration);
+            Configuration.GetSection("Series").Bind(OrleansStartup.SeriesSettings);
 
             services.AddSingleton<IWebsocketsManager, WebsocketsManager>();
             services.AddSingleton<IWebsocketsSender, WebsocketsManager>();
@@ -81,7 +81,7 @@ namespace Deepflow.Platform
     public class OrleansStartup
     {
         //public static OrleansServiceProvider Services;
-        public static SeriesConfiguration SeriesConfiguration = new SeriesConfiguration();
+        public static SeriesSettings SeriesSettings = new SeriesSettings();
 
         public OrleansStartup()
         {
@@ -96,9 +96,11 @@ namespace Deepflow.Platform
             services.AddSingleton<IDataMerger, DataMerger>();
             services.AddSingleton<ISeriesKnower, SeriesKnower>();
             services.AddSingleton<ITimeFilterer, TimeFilterer>();
-            services.AddSingleton<IDataProvider, SimpleRandomDataProvider>();
+            services.AddSingleton<IDataProvider, DeterministicRandomDataProvider>();
+            services.AddSingleton<IDataValidator, DataValidator>();
+            services.AddSingleton<ISeriesConfiguration, SeriesConfiguration>();
 
-            services.AddSingleton(SeriesConfiguration);
+            services.AddSingleton(SeriesSettings);
 
             return services.BuildServiceProvider();
         }

@@ -23,7 +23,7 @@ namespace Deepflow.Platform.Series.Cassandra
             Session = cluster.Connect();*/
         }
 
-        public async Task SaveRanges(Guid series, IEnumerable<DataRange> ranges)
+        public async Task SaveAttributeRanges(Guid series, IEnumerable<DataRange> ranges)
         {
             var preparedStatement = Session.Prepare($"INSERT INTO AverageByTimeDesc (guid, timestamp, value) VALUES (?, ?, ?)");
 
@@ -56,11 +56,12 @@ namespace Deepflow.Platform.Series.Cassandra
 
         public async Task<IEnumerable<DataRange>> GetAttributeRanges(Guid series, IEnumerable<TimeRange> timeRanges)
         {
-            IEnumerable<Task<DataRange>> tasks = timeRanges.Select(timeRange => GetAttributeRange(series, timeRange));
-            return await Task.WhenAll(tasks);
+            var tasks = timeRanges.Select(timeRange => GetAttributeRanges(series, timeRange));
+            var ranges = await Task.WhenAll(tasks);
+            return ranges.SelectMany(x => x);
         }
 
-        public async Task<DataRange> GetAttributeRange(Guid series, TimeRange timeRange)
+        public async Task<IEnumerable<DataRange>> GetAttributeRanges(Guid series, TimeRange timeRange)
         {
             var query = $"SELECT timestamp, value FROM AverageByTimeDesc WHERE guid = {series} AND timestamp >= '{FromUnixTimestampMinutes((int) timeRange.MinSeconds / 60):s}' AND timestamp < '{FromUnixTimestampMinutes((int)timeRange.MaxSeconds / 60):s}';";
 
@@ -74,7 +75,12 @@ namespace Deepflow.Platform.Series.Cassandra
                 data[i++] = row.GetValue<int>(0) * 60;
                 data[i++] = row.GetValue<float>(1);
             }
-            return new DataRange(timeRange, data);
+            return new List<DataRange> { new DataRange(timeRange, data) };
+        }
+
+        public Task SaveAttributeRange(Guid series, DataRange incomingDataRange)
+        {
+            return SaveAttributeRanges(series, new List<DataRange> { incomingDataRange });
         }
 
         private static DateTime FromUnixTimestampMinutes(int minutes)

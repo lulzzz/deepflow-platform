@@ -11,7 +11,7 @@ namespace Deepflow.Platform.Series
             return SubtractTimeRangesFromRanges(new[] { timeRange }, subtractRanges);
         }
 
-        private IEnumerable<TimeRange> SubtractTimeRangesFromRanges(IEnumerable<TimeRange> timeRanges, IEnumerable<TimeRange> subtractRanges) {
+        public IEnumerable<TimeRange> SubtractTimeRangesFromRanges(IEnumerable<TimeRange> timeRanges, IEnumerable<TimeRange> subtractRanges) {
             var remainingRanges = timeRanges;
             foreach (var subtractRange in subtractRanges)
             {

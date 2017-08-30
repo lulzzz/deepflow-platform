@@ -1,21 +1,31 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Deepflow.Platform.Abstractions.Realtime;
 using Deepflow.Platform.Abstractions.Series;
 using Deepflow.Platform.Series;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Orleans;
 
 namespace Deepflow.Platform.Controllers
 {
     public class DataMessageHandler : IWebsocketsReceiver, IDataSender
     {
+        private readonly ILogger<DataMessageHandler> _logger;
         private IWebsocketsSender _sender;
         private readonly ConcurrentDictionary<string, IEnumerable<DataSubscription>> _socketSubscriptions = new ConcurrentDictionary<string, IEnumerable<DataSubscription>>();
-        
+        private readonly JsonSerializerSettings _jsonSetttings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+
+        public DataMessageHandler(ILogger<DataMessageHandler> logger)
+        {
+            _logger = logger;
+        }
+
         public Task OnConnected(string socketId)
         {
             return Task.FromResult(0);
@@ -28,7 +38,9 @@ namespace Deepflow.Platform.Controllers
 
         public async Task OnReceive(string socketId, string message)
         {
-            var request = JsonConvert.DeserializeObject<DataRequestMessage>(message);
+            var request = JsonConvert.DeserializeObject<DataRequestMessage>(message, _jsonSetttings);
+            _logger.LogDebug($"Received message for attribute {request.Request.Entity}:{request.Request.Attribute}");
+            Stopwatch stopwatch = Stopwatch.StartNew();
 
             /*var subscriptions = _socketSubscriptions.GetOrAdd(socketId, new List<DataSubscription>());
 
@@ -46,7 +58,8 @@ namespace Deepflow.Platform.Controllers
             if (request.Request != null)
             {
                 var response = await HandleDataRequest(request.Request).ConfigureAwait(false);
-                var responseText = JsonConvert.SerializeObject(response);
+                var responseText = JsonConvert.SerializeObject(response, _jsonSetttings);
+                _logger.LogDebug($"Message handled in {stopwatch.ElapsedMilliseconds}ms with {response.DataRanges.Sum(x => x.Data.Count) / 2} points");
                 await _sender.Send(socketId, responseText).ConfigureAwait(false);
             }
         }
@@ -68,8 +81,8 @@ namespace Deepflow.Platform.Controllers
         public async Task<DataResponse> HandleAttributeDataRequest(DataRequest request)
         {
             var series = GrainClient.GrainFactory.GetGrain<IAttributeSeriesGrain>(SeriesIdHelper.ToAttributeSeriesId(request.Entity, request.Attribute));
-            var data = await series.GetData(new TimeRange(request.MinSeconds, request.MaxSeconds), request.AggregationSeconds).ConfigureAwait(false);
-            return new DataResponse { Id = request.Id, Data = data };
+            var dataRanges = await series.GetData(new TimeRange(request.MinSeconds, request.MaxSeconds), request.AggregationSeconds).ConfigureAwait(false);
+            return new DataResponse { Id = request.Id, DataRanges = dataRanges };
         }
 
         private async Task SubscribeToAttribute(string socketId, DataSubscription subscription)
@@ -89,7 +102,7 @@ namespace Deepflow.Platform.Controllers
 
         public void SendData(string socketId, Guid entity, Guid attribute, IEnumerable<AggregatedDataRange> dataRanges)
         {
-            var message = JsonConvert.SerializeObject(new DataSubscriptionMessage { Entity = entity, Attribute = attribute, DataRanges = dataRanges });
+            var message = JsonConvert.SerializeObject(new DataSubscriptionMessage { Entity = entity, Attribute = attribute, DataRanges = dataRanges }, _jsonSetttings);
             _sender.Send(socketId, message);
         }
     }

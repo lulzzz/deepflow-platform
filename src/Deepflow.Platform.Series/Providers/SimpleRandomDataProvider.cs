@@ -6,21 +6,21 @@ using Deepflow.Platform.Abstractions.Series;
 
 namespace Deepflow.Platform.Series.Providers
 {
-    public class SimpleRandomDataProvider : IDataProvider
+    public class SimpleRandomDataProvider : InMemoryDataProvider
     {
         private readonly ISeriesKnower _knower;
 
-        public SimpleRandomDataProvider(ISeriesKnower knower)
+        public SimpleRandomDataProvider(ISeriesKnower knower, IDataMerger merger, IDataFilterer dataFilterer, ITimeFilterer timeFilterer) : base(merger, dataFilterer, timeFilterer)
         {
             _knower = knower;
         }
 
-        public async Task<IEnumerable<DataRange>> GetAttributeRanges(Guid guid, IEnumerable<TimeRange> timeRanges)
+        protected override async Task<IEnumerable<DataRange>> ProduceAttributeRanges(Guid series, IEnumerable<TimeRange> timeRanges)
         {
-            return await Task.WhenAll(timeRanges.Select(timeRange => GetAttributeRange(guid, timeRange)));
+            return await Task.WhenAll(timeRanges.Select(timeRange => GetAttributeRange(series, timeRange)));
         }
 
-        public async Task<DataRange> GetAttributeRange(Guid guid, TimeRange timeRange)
+        private async Task<DataRange> GetAttributeRange(Guid guid, TimeRange timeRange)
         {
             var series = await _knower.GetAttributeSeries(guid);
             var random = new Random();

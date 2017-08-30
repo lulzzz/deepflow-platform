@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Deepflow.Platform.Abstractions.Series
 {
@@ -6,6 +7,13 @@ namespace Deepflow.Platform.Abstractions.Series
     {
         public TimeRange TimeRange { get; set; }
         public List<double> Data { get; set; }
+
+        public DataRange() { }
+
+        public DataRange(long minSeconds, long maxSeconds)
+        {
+            TimeRange = new TimeRange(minSeconds, maxSeconds);
+        }
 
         public DataRange(long minSeconds, long maxSeconds, List<double> data)
         {
@@ -22,6 +30,22 @@ namespace Deepflow.Platform.Abstractions.Series
         public DataRange(TimeRange timeRange)
         {
             TimeRange = timeRange;
+        }
+
+        public DataRange(long minSeconds, long maxSeconds, IEnumerable<Datum> data)
+        {
+            TimeRange = new TimeRange(minSeconds, maxSeconds);
+
+            var dataArray = new double[data.Count() * 2];
+            var i = 0;
+            foreach (var datum in data)
+            {
+                dataArray[i * 2] = datum.Time;
+                dataArray[i * 2 + 1] = datum.Value;
+                i++;
+            }
+
+            Data = dataArray.ToList();
         }
 
         public bool Touches(DataRange otherRange)

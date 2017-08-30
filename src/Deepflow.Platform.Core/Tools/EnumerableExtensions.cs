@@ -62,7 +62,7 @@ namespace Deepflow.Platform.Core.Tools
                     {
                         while (dataEnumerator.MoveNext())
                         {
-                            if (i % 2 == 0)
+                            if (i % 2 == 1)
                             {
                                 datum.Value = dataEnumerator.Current;
                                 yield return datum;
@@ -74,6 +74,29 @@ namespace Deepflow.Platform.Core.Tools
                             i++;
                         }
                     }
+                }
+            }
+        }
+
+        public static IEnumerable<Datum> GetData(this DataRange source)
+        {
+            var i = 0;
+            var datum = new Datum();
+            
+            using (var dataEnumerator = source.Data.GetEnumerator())
+            {
+                while (dataEnumerator.MoveNext())
+                {
+                    if (i % 2 == 1)
+                    {
+                        datum.Value = dataEnumerator.Current;
+                        yield return datum;
+                    }
+                    else
+                    {
+                        datum.Time = dataEnumerator.Current;
+                    }
+                    i++;
                 }
             }
         }

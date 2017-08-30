@@ -144,7 +144,7 @@ namespace Deepflow.Platform.Tests.Series
         [Fact]
         public void JoinNullInsertData()
         {
-            DataRange insert = new DataRange(200, 300, null);
+            DataRange insert = new DataRange(200, 300);
             var old = new DataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 });
             TestJoinTwoDataRanges(insert, old, old);
         }
@@ -153,7 +153,7 @@ namespace Deepflow.Platform.Tests.Series
         public void JoinNullInsertOld()
         {
             var insert = new DataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 });
-            DataRange old = new DataRange(200, 300, null);
+            DataRange old = new DataRange(200, 300);
             TestJoinTwoDataRanges(insert, old, insert);
         }
 

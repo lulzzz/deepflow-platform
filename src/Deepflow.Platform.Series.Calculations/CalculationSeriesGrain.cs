@@ -31,13 +31,13 @@ namespace Deepflow.Platform.Series.Calculations
             await base.OnActivateAsync();
         }
 
-        public async Task<DataRange> GetData(TimeRange timeRange, int aggregationSeconds)
+        public async Task<IEnumerable<DataRange>> GetData(TimeRange timeRange, int aggregationSeconds)
         {
             if (!_seriesGuids.TryGetValue(aggregationSeconds, out Guid seriesGuid))
             {
                 throw new Exception($"Cannot find series GUID for calculation {_entity}:{_calculation}:{aggregationSeconds}");
             }
-            return await _dataProvider.GetAttributeRange(seriesGuid, timeRange);
+            return await _dataProvider.GetAttributeRanges(seriesGuid, timeRange);
         }
     }
 }

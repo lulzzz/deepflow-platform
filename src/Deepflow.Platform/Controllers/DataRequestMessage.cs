@@ -16,7 +16,6 @@ namespace Deepflow.Platform.Controllers
         public DataRequestType Type { get; set; }
         public Guid Entity { get; set; }
         public Guid Attribute { get; set; }
-        public Guid Calculation { get; set; }
         public int AggregationSeconds { get; set; }
         public int MinSeconds { get; set; }
         public int MaxSeconds { get; set; }

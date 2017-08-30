@@ -11,7 +11,7 @@ namespace Deepflow.Platform.AttributeSeries
     {
         private Guid _entity;
         private Guid _attribute;
-        private readonly SeriesConfiguration _config;
+        private readonly SeriesSettings _config;
         private readonly IDataAggregator _aggregator;
         private readonly IDataFilterer _dataFilterer;
         private readonly IDataProvider _provider;
@@ -21,7 +21,7 @@ namespace Deepflow.Platform.AttributeSeries
         private IDictionary<int, IEnumerable<DataRange>> _aggregations = new Dictionary<int, IEnumerable<DataRange>>();
         private readonly ObserverSubscriptionManager<ISeriesObserver> _subscriptions = new ObserverSubscriptionManager<ISeriesObserver>();
 
-        public SeriesGrain(SeriesConfiguration config, IDataAggregator aggregator, IDataFilterer dataFilterer, IDataJoiner dataJoiner, IDataProvider provider, ITimeFilterer timeFilterer, ISeriesKnower seriesKnower)
+        public SeriesGrain(SeriesSettings config, IDataAggregator aggregator, IDataFilterer dataFilterer, IDataJoiner dataJoiner, IDataProvider provider, ITimeFilterer timeFilterer, ISeriesKnower seriesKnower)
         {
             _config = config;
             _aggregator = aggregator;
@@ -38,7 +38,7 @@ namespace Deepflow.Platform.AttributeSeries
             return base.OnActivateAsync();
         }
         
-        public Task AddRawData(IEnumerable<DataRange> dataRanges)
+        public Task AddData(IEnumerable<DataRange> dataRanges)
         {
             _aggregations = _aggregator.AddToAggregations(_aggregations, dataRanges, _config.Aggregations);
             return Task.FromResult(0);
