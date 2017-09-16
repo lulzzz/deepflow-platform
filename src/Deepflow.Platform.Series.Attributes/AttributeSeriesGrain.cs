@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Deepflow.Platform.Abstractions.Series;
+using Microsoft.Extensions.Logging;
 using Orleans;
 
 namespace Deepflow.Platform.Series.Attributes
@@ -20,9 +21,10 @@ namespace Deepflow.Platform.Series.Attributes
         private readonly IDataFilterer _filterer;
         private readonly IDataValidator _validator;
         private readonly ISeriesConfiguration _seriesConfiguration;
+        private readonly ILogger<AttributeSeriesGrain> _logger;
         private readonly ObserverSubscriptionManager<ISeriesObserver> _subscriptions = new ObserverSubscriptionManager<ISeriesObserver>();
 
-        public AttributeSeriesGrain(ISeriesKnower seriesKnower, IDataProvider dataProvider, IDataAggregator aggregator, IDataMerger merger, IDataFilterer filterer, IDataValidator validator, ISeriesConfiguration seriesConfiguration)
+        public AttributeSeriesGrain(ISeriesKnower seriesKnower, IDataProvider dataProvider, IDataAggregator aggregator, IDataMerger merger, IDataFilterer filterer, IDataValidator validator, ISeriesConfiguration seriesConfiguration, ILogger<AttributeSeriesGrain> logger)
         {
             _seriesKnower = seriesKnower;
             _dataProvider = dataProvider;
@@ -31,6 +33,7 @@ namespace Deepflow.Platform.Series.Attributes
             _filterer = filterer;
             _validator = validator;
             _seriesConfiguration = seriesConfiguration;
+            _logger = logger;
         }
 
         public override async Task OnActivateAsync()
@@ -49,13 +52,15 @@ namespace Deepflow.Platform.Series.Attributes
             {
                 throw new Exception($"Cannot find series GUID for attribute {_entity}:{_attribute}:{aggregationSeconds}");
             }
-            return await _dataProvider.GetAttributeRanges(seriesGuid, timeRange);
+            var data = await _dataProvider.GetAttributeRanges(seriesGuid, timeRange);
+            return data.ToList();
         }
 
-        public async Task AddData(IEnumerable<DataRange> dataRanges, int aggregationSeconds)
+        public async Task AddAggregatedData(IEnumerable<DataRange> dataRanges, int aggregationSeconds)
         {
             if (!_validator.AreValidDataRanges(dataRanges))
             {
+                _logger.LogWarning($"Invalid range could not be added");
                 return;
             }
 
@@ -64,11 +69,18 @@ namespace Deepflow.Platform.Series.Attributes
                 throw new Exception($"Data to be added must be aggregated to the lowest aggregation level which is '{_seriesConfiguration.LowestAggregationSeconds}'");
             }
 
-            var tasks = dataRanges.Select(AddRawData);
+            _logger.LogWarning($"Adding aggregated data");
+            var tasks = dataRanges.Select(AddAggregatedData);
             await Task.WhenAll(tasks.ToArray());
         }
 
-        private async Task AddRawData(DataRange dataRange)
+        public Task NotifyRawData(IEnumerable<DataRange> dataRanges)
+        {
+            _subscriptions.Notify(observer => observer.ReceiveRawData(_entity, _attribute, dataRanges));
+            return Task.FromResult(0);
+        }
+
+        private async Task AddAggregatedData(DataRange dataRange)
         {
             if (!_validator.IsValidDataRange(dataRange))
             {
@@ -83,7 +95,7 @@ namespace Deepflow.Platform.Series.Attributes
 
             // Fetch lowest aggregation from provider
             var series = await _seriesKnower.GetAttributeSeriesGuid(_entity, _attribute, _seriesConfiguration.LowestAggregationSeconds);
-            var lowestAggregationExistingData = await _dataProvider.GetAttributeRanges(series, quantisedRange);
+            var lowestAggregationExistingData = CleanDataRanges(await _dataProvider.GetAttributeRanges(series, quantisedRange));
 
             // Add incoming data to lowest aggregation
             var merged = _merger.MergeDataRangeWithRanges(lowestAggregationExistingData, dataRange);
@@ -92,14 +104,17 @@ namespace Deepflow.Platform.Series.Attributes
 
             // Recalculate higher aggregations
             IEnumerable<AggregatedDataRange> aggregations = _aggregator.Aggregate(merged.Single(), _seriesConfiguration.AggregationsSecondsDescending);
+
+            _logger.LogWarning($"Adding aggregated data");
             var tasks = aggregations.Select(SaveAggregatedRange);
             await Task.WhenAll(tasks.ToArray());
+            _logger.LogWarning($"Added aggregated data, notifying subscribers");
 
             // Obtain affected data
             var affectedAggregations = aggregations.Select(aggregatedDataRange => FilterAggregatedRange(aggregatedDataRange, quantisedRange));
 
             // Notify subscribers with affected data
-            _subscriptions.Notify(observer => observer.ReceiveData(_entity, _attribute, affectedAggregations));
+            _subscriptions.Notify(observer => observer.ReceiveAggregatedData(_entity, _attribute, affectedAggregations));
         }
 
         private async Task SaveAggregatedRange(AggregatedDataRange aggregatedDataRange)
@@ -110,7 +125,7 @@ namespace Deepflow.Platform.Series.Attributes
 
         private AggregatedDataRange FilterAggregatedRange(AggregatedDataRange aggregatedDataRange, TimeRange timeRange)
         {
-            var filtered = _filterer.FilterDataRange(aggregatedDataRange.DataRange, timeRange);
+            var filtered = _filterer.FilterDataRangeEndTimeInclusive(aggregatedDataRange.DataRange, timeRange);
             return new AggregatedDataRange(filtered, aggregatedDataRange.AggregationSeconds);
         }
 
@@ -124,6 +139,17 @@ namespace Deepflow.Platform.Series.Attributes
         {
             _subscriptions.Unsubscribe(observer);
             return Task.FromResult(0);
+        }
+
+        private IEnumerable<DataRange> CleanDataRanges(IEnumerable<DataRange> dataRanges)
+        {
+            foreach (var dataRange in dataRanges)
+            {
+                if (dataRange != null && !dataRange.TimeRange.IsZeroLength() && dataRange.Data.Any())
+                {
+                    yield return dataRange;
+                }
+            }
         }
     }
 }

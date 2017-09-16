@@ -157,6 +157,19 @@ namespace Deepflow.Platform.Tests.Series
             TestJoinTwoDataRanges(insert, old, insert);
         }
 
+        [Fact]
+        public void JoinBetweenTwoRanges()
+        {
+            var before = new DataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 });
+            var insert = new DataRange(300, 400, new List<double> { 300, 30, 350, 35, 400, 40 });
+            var after = new DataRange(400, 500, new List<double> { 400, 40, 450, 45, 500, 50 });
+
+            var expected = new DataRange(200, 500, new List<double> { 200, 20, 250, 25, 300, 30, 350, 35, 400, 40, 450, 45, 500, 50 });
+
+            var actual = _dataJoiner.JoinDataRangeToDataRanges(new List<DataRange> { before, after }, insert).ToList();
+            actual.ShouldBeEquivalentTo(new List<DataRange> { expected });
+        }
+
         private void TestJoinTwoDataRanges(DataRange insert, DataRange old, DataRange expected)
         {
             var ranges = new List<DataRange> { old };

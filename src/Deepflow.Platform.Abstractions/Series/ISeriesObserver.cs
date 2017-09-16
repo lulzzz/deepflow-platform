@@ -6,6 +6,7 @@ namespace Deepflow.Platform.Abstractions.Series
 {
     public interface ISeriesObserver : IGrainObserver
     {
-        void ReceiveData(Guid entity, Guid attribute, IEnumerable<AggregatedDataRange> dataRanges);
+        void ReceiveAggregatedData(Guid entity, Guid attribute, IEnumerable<AggregatedDataRange> dataRanges);
+        void ReceiveRawData(Guid entity, Guid attribute, IEnumerable<DataRange> dataRanges);
     }
 }

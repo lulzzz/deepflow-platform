@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Deepflow.Platform.Abstractions.Series
 {
@@ -7,6 +8,11 @@ namespace Deepflow.Platform.Abstractions.Series
         public long MinSeconds { get; set; }
         public long MaxSeconds { get; set; }
 
+        public TimeRange()
+        {
+            
+        }
+        
         public TimeRange(long minSeconds, long maxSeconds)
         {
             MinSeconds = minSeconds;
@@ -112,6 +118,27 @@ namespace Deepflow.Platform.Abstractions.Series
             var minSeconds = (long) Math.Floor((double) MinSeconds / stepSeconds) * stepSeconds;
             var maxSeconds = (long) Math.Ceiling((double) MaxSeconds / stepSeconds) * stepSeconds;
             return new TimeRange(minSeconds, maxSeconds);
+        }
+
+        public bool EqualsMin(double timeSeconds)
+        {
+            return Math.Abs(timeSeconds - MinSeconds) < 0.001;
+        }
+
+        public IEnumerable<TimeRange> Chop(int spanSeconds)
+        {
+            if (spanSeconds <= 0)
+            {
+                throw new Exception("Can't chop zero length");
+            }
+
+            var minSeconds = MinSeconds;
+            while (minSeconds < MaxSeconds)
+            {
+                var maxSeconds = minSeconds + spanSeconds;
+                yield return new TimeRange(minSeconds, maxSeconds);
+                minSeconds += spanSeconds;
+            }
         }
     }
 }

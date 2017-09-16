@@ -6,3 +6,21 @@ services:
     build:
       context: ./Deepflow.Platform
       dockerfile: Dockerfile
+
+  deepflow.platform.agent:
+    image: deepflow.platform.agent
+    build:
+      context: ./Deepflow.Platform.Agent
+      dockerfile: Dockerfile
+
+  deepflow.platform.sources.fakesource:
+    image: deepflow.platform.sources.fakesource
+    build:
+      context: ./Deepflow.Platform.Sources.FakeSource
+      dockerfile: Dockerfile
+
+  deepflow.platform.ingestion.fakeingestor:
+    image: deepflow.platform.ingestion.fakeingestor
+    build:
+      context: ./Deepflow.Platform.Ingestion.FakeIngestor
+      dockerfile: Dockerfile

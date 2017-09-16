@@ -24,6 +24,7 @@ namespace Deepflow.Platform.Realtime
         {
             var socketId = Guid.NewGuid().ToString();
             Sockets.TryAdd(socketId, socket);
+            await _receiver.OnConnected(socketId);
 
             try
             {
@@ -50,6 +51,7 @@ namespace Deepflow.Platform.Realtime
             {
                 WebSocket dummy;
                 Sockets.TryRemove(socketId, out dummy);
+                await _receiver.OnDisconnected(socketId);
             }
         }
 

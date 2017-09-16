@@ -3,11 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime;
+using Deepflow.Platform.Abstractions.Ingestion;
+using Deepflow.Platform.Abstractions.Model;
 using Deepflow.Platform.Abstractions.Realtime;
 using Deepflow.Platform.Abstractions.Series;
+using Deepflow.Platform.Abstractions.Sources;
 using Deepflow.Platform.Controllers;
+using Deepflow.Platform.Ingestion;
+using Deepflow.Platform.Model;
 using Deepflow.Platform.Realtime;
 using Deepflow.Platform.Series;
+using Deepflow.Platform.Series.DynamoDB;
 using Deepflow.Platform.Series.Providers;
 using Deepflow.Platform.Silo;
 using Microsoft.AspNetCore.Builder;
@@ -32,6 +38,7 @@ namespace Deepflow.Platform
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
+            OrleansStartup.Configuration = Configuration;
         }
 
         public IConfigurationRoot Configuration { get; }
@@ -44,11 +51,14 @@ namespace Deepflow.Platform
 
             GCSettings.LatencyMode = GCLatencyMode.Batch;
 
-            Configuration.GetSection("Series").Bind(OrleansStartup.SeriesSettings);
-
             services.AddSingleton<IWebsocketsManager, WebsocketsManager>();
             services.AddSingleton<IWebsocketsSender, WebsocketsManager>();
             services.AddSingleton<IWebsocketsReceiver, DataMessageHandler>();
+            services.AddSingleton<IIngestionProcessor, IngestionProcessor>();
+
+            var ingestionConfiguration = new IngestionConfiguration();
+            Configuration.GetSection("Ingestion").Bind(ingestionConfiguration);
+            services.AddSingleton(ingestionConfiguration);
 
             /*var orleansServices = OrleansStartup.Services = new OrleansServiceProvider(services.BuildServiceProvider());
 
@@ -70,7 +80,7 @@ namespace Deepflow.Platform
 
             app.UseMvc();
 
-            app.UseWebSocketsHandler();
+            app.UseWebSocketsHandler("ws/v1");
 
             app.UseOrleans<OrleansStartup>(48880);
 
@@ -80,8 +90,7 @@ namespace Deepflow.Platform
 
     public class OrleansStartup
     {
-        //public static OrleansServiceProvider Services;
-        public static SeriesSettings SeriesSettings = new SeriesSettings();
+        public static IConfigurationRoot Configuration;
 
         public OrleansStartup()
         {
@@ -90,19 +99,46 @@ namespace Deepflow.Platform
 
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
+            services.AddLogging();
+
             services.AddSingleton<IDataAggregator, DataAggregator>();
             services.AddSingleton<IDataFilterer, DataFilterer>();
             services.AddSingleton<IDataJoiner, DataJoiner>();
             services.AddSingleton<IDataMerger, DataMerger>();
             services.AddSingleton<ISeriesKnower, SeriesKnower>();
             services.AddSingleton<ITimeFilterer, TimeFilterer>();
-            services.AddSingleton<IDataProvider, DeterministicRandomDataProvider>();
+            services.AddSingleton<IDataProvider, DynamoDbDataProvider>();
             services.AddSingleton<IDataValidator, DataValidator>();
             services.AddSingleton<ISeriesConfiguration, SeriesConfiguration>();
+            services.AddSingleton<IModelMapProvider, InMemoryModelMapProvider>();
+            services.AddSingleton<IModelMap>(new ModelMap { SourceToModelMap = new Dictionary<DataSource, Dictionary<SourceName, EntityAttribute>>
+            {
+                {
+                    new DataSource(Guid.Parse("4055083b-c6be-4902-a209-7d2dba99abae")), new Dictionary<SourceName, EntityAttribute>
+                    {
+                        {
+                            new SourceName("tag1"), new EntityAttribute { Entity = Guid.NewGuid(), Attribute = Guid.NewGuid() }
+                        }
+                    }
+                }
+            }});
 
-            services.AddSingleton(SeriesSettings);
+            
+            var seriesSettings = new SeriesSettings();
+            Configuration.GetSection("Series").Bind(seriesSettings);
+            services.AddSingleton(seriesSettings);
+            
+            var dynamoDbConfiguration = new DynamoDbConfiguration();
+            Configuration.GetSection("DynamoDB").Bind(dynamoDbConfiguration);
+            services.AddSingleton(dynamoDbConfiguration);
 
-            return services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider();
+
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+            loggerFactory.AddDebug();
+
+            return serviceProvider;
         }
     }
 

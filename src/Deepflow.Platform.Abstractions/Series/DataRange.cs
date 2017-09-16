@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Deepflow.Platform.Abstractions.Series
@@ -7,6 +8,9 @@ namespace Deepflow.Platform.Abstractions.Series
     {
         public TimeRange TimeRange { get; set; }
         public List<double> Data { get; set; }
+
+        private static double _maxAcceptableTime = (new DateTime(2050, 1, 1) - new DateTime(1970, 1, 1)).TotalSeconds;
+        private static double _minAcceptableTime = 0;
 
         public DataRange() { }
 
@@ -71,6 +75,76 @@ namespace Deepflow.Platform.Abstractions.Series
             }
 
             return false;
+        }
+
+        public IEnumerable<DataRange> Chop(int spanSeconds)
+        {
+            if (spanSeconds <= 0)
+            {
+                throw new Exception("Can't chop zero length");
+            }
+
+            var minSeconds = TimeRange.MinSeconds;
+            var index = 0;
+            var numPoints = Data.Count / 2;
+            while (minSeconds < TimeRange.MaxSeconds)
+            {
+                var maxSeconds = minSeconds + spanSeconds;
+
+                while (index < numPoints && Data[index * 2] <= minSeconds)
+                {
+                    index++;
+                }
+
+                var data = new List<double>();
+                while (index < numPoints && Data[index * 2] <= maxSeconds)
+                {
+                    data.Add(Data[index * 2]);
+                    data.Add(Data[index * 2 + 1]);
+                    index++;
+                }
+
+                if (data.Any())
+                {
+                    yield return new DataRange(minSeconds, maxSeconds, data);
+                }
+                
+                minSeconds += spanSeconds;
+            }
+        }
+
+        public void Validate()
+        {
+            if (Data == null)
+            {
+                throw new Exception("Data range does not have data");
+            }
+
+            if (Data.Count % 2 != 0)
+            {
+                throw new Exception("Data range has odd number of values");
+            }
+
+            var numPoints = Data.Count / 2;
+            
+            for (var i = 0; i < numPoints; i++)
+            {
+                var time = Data[i * 2];
+                if (time < _minAcceptableTime)
+                {
+                    throw new Exception($"Data range has time below minimum value of {_minAcceptableTime}");
+                }
+                if (time > _maxAcceptableTime)
+                {
+                    throw new Exception($"Data range has time above maximum value of {_maxAcceptableTime}");
+                }
+
+                var value = Data[i * 2 + 1];
+                if (double.IsNaN(value))
+                {
+                    throw new Exception("Data range has NaN value");
+                }
+            }
         }
     }
 }

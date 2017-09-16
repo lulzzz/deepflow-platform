@@ -13,5 +13,10 @@ namespace Deepflow.Platform.Series
         {
             return $"{entity}:{calculation}";
         }
+
+        public static string ToSourceSeriesId(Guid dataSource, string sourceName)
+        {
+            return $"{dataSource}:{sourceName}";
+        }
     }
 }

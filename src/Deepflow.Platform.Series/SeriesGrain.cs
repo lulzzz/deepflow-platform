@@ -38,7 +38,7 @@ namespace Deepflow.Platform.AttributeSeries
             return base.OnActivateAsync();
         }
         
-        public Task AddData(IEnumerable<DataRange> dataRanges)
+        public Task AddAggregatedData(IEnumerable<DataRange> dataRanges)
         {
             _aggregations = _aggregator.AddToAggregations(_aggregations, dataRanges, _config.Aggregations);
             return Task.FromResult(0);

@@ -6,7 +6,6 @@ namespace Deepflow.Platform.Abstractions.Series
 {
     public interface IDataProvider
     {
-        Task<IEnumerable<DataRange>> GetAttributeRanges(Guid series, IEnumerable<TimeRange> timeRanges);
         Task<IEnumerable<DataRange>> GetAttributeRanges(Guid series, TimeRange timeRange);
         Task SaveAttributeRange(Guid series, DataRange incomingDataRange);
     }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Deepflow.Platform.Abstractions.Series;
 
 namespace Deepflow.Platform.Series
@@ -21,6 +22,11 @@ namespace Deepflow.Platform.Series
 
         public IEnumerable<DataRange> MergeDataRangesWithRanges(IEnumerable<DataRange> ranges, IEnumerable<DataRange> incomingRanges)
         {
+            if (incomingRanges == null || !incomingRanges.Any())
+            {
+                return ranges;
+            }
+
             IEnumerable<DataRange> mergedRanges = new List<DataRange>();
             foreach (var incomingRange in incomingRanges)
             {

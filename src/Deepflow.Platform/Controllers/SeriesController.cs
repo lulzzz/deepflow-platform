@@ -16,14 +16,8 @@ namespace Deepflow.Platform.Controllers
         {
             var timeRange = new TimeRange(minTimeSecondsUtc, maxTimeSecondsUtc);
             IAttributeSeriesGrain series = GrainClient.GrainFactory.GetGrain<IAttributeSeriesGrain>(SeriesIdHelper.ToAttributeSeriesId(entity, attribute));
-            return await series.GetData(timeRange, aggregationSeconds);
-        }
-
-        [HttpPost("/api/Entities/{entity}/Attributes/{attribute}/Aggregations/{aggregationSeconds}/Data")]
-        public Task AddData(Guid entity, Guid attribute, int aggregationSeconds, [FromBody] IEnumerable<DataRange> dataRanges)
-        {
-            IAttributeSeriesGrain series = GrainClient.GrainFactory.GetGrain<IAttributeSeriesGrain>(SeriesIdHelper.ToAttributeSeriesId(entity, attribute));
-            return series.AddData(dataRanges, aggregationSeconds);
+            var data = await series.GetData(timeRange, aggregationSeconds);
+            return data;
         }
     }
 }

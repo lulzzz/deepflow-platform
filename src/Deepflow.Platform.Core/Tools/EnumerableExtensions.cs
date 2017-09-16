@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Deepflow.Platform.Abstractions.Series;
 
 namespace Deepflow.Platform.Core.Tools
@@ -145,7 +147,27 @@ namespace Deepflow.Platform.Core.Tools
                     else if (placement == InsertPlacement.Equal)
                     {
                         inserted = true;
-                        yield return joiner(item, itemToInsert);
+
+                        T previous = joiner(item, itemToInsert);
+                        
+                        var hasNext = enumerator.MoveNext();
+                        if (!hasNext)
+                        {
+                            yield return previous;
+                            continue;
+                        }
+
+                        var next = enumerator.Current;
+                        var nextPlacement = placer(previous, next);
+                        if (nextPlacement == InsertPlacement.Equal)
+                        {
+                            yield return joiner(previous, next);
+                        }
+                        else
+                        {
+                            yield return previous;
+                            yield return next;
+                        }
                     }
                     else if (placement == InsertPlacement.After)
                     {
@@ -157,6 +179,46 @@ namespace Deepflow.Platform.Core.Tools
                 {
                     yield return itemToInsert;
                 }
+            }
+        }
+
+        private static readonly Random shuffleRandom = new Random();
+        public static void Shuffle<T>(this IList<T> list)
+        {
+            int n = list.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = shuffleRandom.Next(n + 1);
+                T value = list[k];
+                list[k] = list[n];
+                list[n] = value;
+            }
+        }
+
+        public static Task ForEachAsync<T>(this IEnumerable<T> source, int parallelism, Func<T, Task> body)
+        {
+            var partitions = Partitioner.Create(source).GetPartitions(parallelism);
+
+            var tasks = partitions.Select(partition => Task.Run(async () =>
+            {
+                using (partition)
+                {
+                    while (partition.MoveNext())
+                    {
+                        await body(partition.Current);
+                    }
+                }
+            }));
+
+            return Task.WhenAll(tasks);
+        }
+
+        public static void ForEach<T>(this IEnumerable<T> source, Action<T> action)
+        {
+            foreach (var item in source)
+            {
+                action(item);
             }
         }
     }

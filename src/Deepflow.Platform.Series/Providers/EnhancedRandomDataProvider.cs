@@ -2,8 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Deepflow.Platform.Abstractions.Series;
@@ -19,7 +17,7 @@ namespace Deepflow.Platform.Series.Providers
         private readonly IDataMerger _merger;
         private readonly ConcurrentDictionary<Guid, ConcurrentDictionary<int, IEnumerable<DataRange>>> _rangesBySeries = new ConcurrentDictionary<Guid, ConcurrentDictionary<int, IEnumerable<DataRange>>>();
         private readonly ConcurrentDictionary<Guid, ReaderWriterLockSlim> _seriesLocks = new ConcurrentDictionary<Guid, ReaderWriterLockSlim>();
-        private readonly RandomDataGenerator _generator = new RandomDataGenerator();
+        private readonly EnhancedRandomDataGenerator _generator = new EnhancedRandomDataGenerator();
         private readonly Aggregator _aggregator = new Aggregator();
 
         public EnhancedRandomDataProvider(ISeriesKnower knower, ITimeFilterer timeFilterer, IDataFilterer dataFilterer, IDataMerger merger) : base(merger, dataFilterer, timeFilterer)
@@ -67,61 +65,6 @@ namespace Deepflow.Platform.Series.Providers
             }
 
             return _dataFilterer.FilterDataRanges(ranges, timeRange).Single();
-        }
-    }
-
-    public class RandomDataGenerator
-    {
-        private static readonly SHA1 Sha1 = SHA1.Create();
-
-        public DataRange GenerateData(string name, long startTimeSeconds, long endTimeSeconds, double minValue, double maxValue, double maxVariance, TimeSpan maxTimespan)
-        {
-            var startTimeHash = Hash($"${name}_${startTimeSeconds}_${minValue}_${maxValue}");
-            var endTimeHash = Hash($"${name}_${endTimeSeconds}_${minValue}_${maxValue}");
-            var fullHash = Hash($"{name}_${startTimeSeconds}_${endTimeSeconds}_${maxVariance}_${maxTimespan}");
-
-            Random random = new Random(fullHash);
-            var valueRange = maxValue - minValue;
-            var startValue = new Random(startTimeHash).NextDouble() * valueRange + minValue;
-            var endValue = new Random(endTimeHash).NextDouble() * valueRange + minValue;
-            var startDatum = new Datum { Time = startTimeSeconds, Value = startValue };
-            var endDatum = new Datum { Time = endTimeSeconds, Value = endValue };
-
-            List<Datum> data = new List<Datum>();
-            data.Add(startDatum);
-            SplitValueRecursive(startDatum, endDatum, maxVariance, data, maxTimespan, random);
-            data.Add(endDatum);
-
-            return new DataRange(startTimeSeconds, endTimeSeconds, data);
-        }
-
-        private void SplitValueRecursive(Datum start, Datum end, double maxVariance, List<Datum> data, TimeSpan maxTimespan, Random random)
-        {
-            var range = end.Time - start.Time;
-            var totalTimespans = range / maxTimespan.TotalSeconds;
-            var midTime = start.Time + Math.Floor(totalTimespans / 2) * maxTimespan.TotalSeconds;
-
-            if (totalTimespans <= 1)
-            {
-                return;
-            }
-
-            var midValue = start.Value + (end.Value - start.Value) / 2;
-            var randomisedMidValue = midValue + random.NextDouble() * maxVariance * 2 - maxVariance;
-
-            var midDatum = new Datum { Time = midTime, Value = randomisedMidValue };
-
-            SplitValueRecursive(start, midDatum, maxVariance / 1.5, data, maxTimespan, random);
-            data.Add(midDatum);
-            SplitValueRecursive(midDatum, end, maxVariance / 1.5, data, maxTimespan, random);
-        }
-
-        public static int Hash(string src)
-        {
-            byte[] stringbytes = Encoding.UTF8.GetBytes(src);
-            byte[] hashedBytes = Sha1.ComputeHash(stringbytes);
-            Array.Resize(ref hashedBytes, 4);
-            return BitConverter.ToInt32(hashedBytes, 0);
         }
     }
 

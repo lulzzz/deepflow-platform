@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
+    <RuntimeFrameworkVersion>1.1.0</RuntimeFrameworkVersion>
+    <RuntimeIdentifiers>ubuntu.14.04-x64</RuntimeIdentifiers>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
   
@@ -26,10 +28,14 @@
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Deepflow.Platform.Model\Deepflow.Platform.Model.csproj" />
     <ProjectReference Include="..\Deepflow.Platform.Abstractions\Deepflow.Platform.Abstractions.csproj" />
+    <ProjectReference Include="..\Deepflow.Platform.Ingestion\Deepflow.Platform.Ingestion.csproj" />
     <ProjectReference Include="..\Deepflow.Platform.Realtime\Deepflow.Platform.Realtime.csproj" />
     <ProjectReference Include="..\Deepflow.Platform.Series.Attributes\Deepflow.Platform.Series.Attributes.csproj" />
     <ProjectReference Include="..\Deepflow.Platform.Series.Calculations\Deepflow.Platform.Series.Calculations.csproj" />
+    <ProjectReference Include="..\Deepflow.Platform.Series.DynamoDB\Deepflow.Platform.Series.DynamoDB.csproj" />
+    <ProjectReference Include="..\Deepflow.Platform.Series.Sources\Deepflow.Platform.Series.Sources.csproj" />
     <ProjectReference Include="..\Deepflow.Platform.Series\Deepflow.Platform.Series.csproj" />
   </ItemGroup>
 

@@ -100,9 +100,15 @@ namespace Deepflow.Platform.Controllers
             await series.Unsubscribe(observerRef);
         }
 
-        public void SendData(string socketId, Guid entity, Guid attribute, IEnumerable<AggregatedDataRange> dataRanges)
+        public void SendAggregatedData(string socketId, Guid entity, Guid attribute, IEnumerable<AggregatedDataRange> dataRanges)
         {
-            var message = JsonConvert.SerializeObject(new DataSubscriptionMessage { Entity = entity, Attribute = attribute, DataRanges = dataRanges }, _jsonSetttings);
+            var message = JsonConvert.SerializeObject(new AggregatedDataSubscriptionMessage { Entity = entity, Attribute = attribute, DataRanges = dataRanges }, _jsonSetttings);
+            _sender.Send(socketId, message);
+        }
+
+        public void SendRawData(string socketId, Guid entity, Guid attribute, IEnumerable<DataRange> dataRanges)
+        {
+            var message = JsonConvert.SerializeObject(new RawDataSubscriptionMessage { Entity = entity, Attribute = attribute, DataRanges = dataRanges }, _jsonSetttings);
             _sender.Send(socketId, message);
         }
     }
