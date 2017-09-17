@@ -21,7 +21,7 @@ namespace Deepflow.Platform.Series
             _sender.SendAggregatedData(_socketId, entity, attribute, dataRanges);
         }
 
-        public void ReceiveRawData(Guid entity, Guid attribute, IEnumerable<DataRange> dataRanges)
+        public void ReceiveRawData(Guid entity, Guid attribute, IEnumerable<RawDataRange> dataRanges)
         {
             _sender.SendRawData(_socketId, entity, attribute, dataRanges);
         }

@@ -30,20 +30,28 @@ namespace Deepflow.Platform.Series.Sources
             await base.OnActivateAsync();
         }
 
-        public Task AddAggregatedData(DataRange dataRange, int aggregationSeconds)
+        public Task AddAggregatedData(AggregatedDataRange dataRange, int aggregationSeconds)
         {
-            return AddAggregatedData(new List<DataRange> { dataRange }, aggregationSeconds);
+            return AddAggregatedData(new List<AggregatedDataRange> { dataRange }, aggregationSeconds);
         }
 
-        public async Task AddAggregatedData(IEnumerable<DataRange> dataRanges, int aggregationSeconds)
+        public async Task AddAggregatedData(IEnumerable<AggregatedDataRange> dataRanges, int aggregationSeconds)
         {
-            _logger.LogInformation($"Preparing to add data");
-            var seriesMapping = await _mapProvider.GetSeriesModelMapping(_dataSource, _sourceName);
-            IAttributeSeriesGrain series = GrainClient.GrainFactory.GetGrain<IAttributeSeriesGrain>(SeriesIdHelper.ToAttributeSeriesId(seriesMapping.Entity, seriesMapping.Attribute));
-            await series.AddAggregatedData(dataRanges, aggregationSeconds);
+            try
+            {
+                _logger.LogInformation($"Preparing to add data");
+                var seriesMapping = await _mapProvider.GetSeriesModelMapping(_dataSource, _sourceName);
+                IAttributeSeriesGrain series = GrainClient.GrainFactory.GetGrain<IAttributeSeriesGrain>(SeriesIdHelper.ToAttributeSeriesId(seriesMapping.Entity, seriesMapping.Attribute));
+                await series.AddAggregatedData(dataRanges, aggregationSeconds);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(null, exception, "Error when adding aggregated data");
+                throw;
+            }
         }
 
-        public async Task NotifyRawData(IEnumerable<DataRange> dataRanges)
+        public async Task NotifyRawData(IEnumerable<RawDataRange> dataRanges)
         {
             var seriesMapping = await _mapProvider.GetSeriesModelMapping(_dataSource, _sourceName);
             IAttributeSeriesGrain series = GrainClient.GrainFactory.GetGrain<IAttributeSeriesGrain>(SeriesIdHelper.ToAttributeSeriesId(seriesMapping.Entity, seriesMapping.Attribute));

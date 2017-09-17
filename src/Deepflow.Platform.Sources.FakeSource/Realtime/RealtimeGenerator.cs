@@ -13,13 +13,13 @@ namespace Deepflow.Platform.Sources.FakeSource.Realtime
     {
         private readonly string _sourceName;
         private readonly int _intervalSeconds;
-        private readonly Action<DataRange> _onPoint;
+        private readonly Action<RawDataRange> _onPoint;
         private static readonly SHA1 Sha1 = SHA1.Create();
         private readonly DataGenerator _generator;
         private readonly int _offsetSeconds;
         private CancellationTokenSource _cancellationTokenSource;
 
-        public RealtimeGenerator(string sourceName, int intervalSeconds, Action<DataRange> onPoint)
+        public RealtimeGenerator(string sourceName, int intervalSeconds, Action<RawDataRange> onPoint)
         {
             _sourceName = sourceName;
             _intervalSeconds = intervalSeconds;

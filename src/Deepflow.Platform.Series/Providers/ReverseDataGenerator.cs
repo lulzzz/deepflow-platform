@@ -7,18 +7,14 @@ namespace Deepflow.Platform.Series.Providers
 {
     public class ReverseDataGenerator
     {
-        private readonly IDataFilterer _dataFilterer;
         private readonly IValueGenerator _valueGenerator;
-        private readonly IDataMerger _dataMerger;
 
-        public ReverseDataGenerator(IDataFilterer dataFilterer, IValueGenerator valueGenerator, IDataMerger dataMerger)
+        public ReverseDataGenerator(IValueGenerator valueGenerator)
         {
-            _dataFilterer = dataFilterer;
             _valueGenerator = valueGenerator;
-            _dataMerger = dataMerger;
         }
 
-        public DataRange GenerateReverseAverage(string name, TimeRange timeRange, int[] aggregationLevels, int aggregationLevel, double minValue, double maxValue)
+        public AggregatedDataRange GenerateReverseAverage(string name, TimeRange timeRange, int[] aggregationLevels, int aggregationLevel, double minValue, double maxValue)
         {
             if (minValue <= 0)
             {
@@ -35,7 +31,7 @@ namespace Deepflow.Platform.Series.Providers
 
             var variance = (maxValue - minValue) / 10;
             
-            var rangeValues = new LowestAggregationValues(quantisedLowTime, quantisedHighTime, lowestAggregationLevel, _dataFilterer);
+            var rangeValues = new LowestAggregationValues(quantisedLowTime, quantisedHighTime, lowestAggregationLevel);
             
             GenerateReverseAverageForRange(name, quantisedLowTime, quantisedHighTime, timeRange, descendingAggregationLevels, aggregationLevelIndex, minValue, maxValue, variance, rangeValues);
 
@@ -53,7 +49,7 @@ namespace Deepflow.Platform.Series.Providers
                 data.Add(value);
             }
             
-            return new DataRange(timeRange, data);
+            return new AggregatedDataRange(timeRange, data, aggregationLevel);
         }
 
         private void GenerateReverseAverageForRange(string name, long lowTime, long highTime, TimeRange timeRange, int[] aggregationLevels, int maxAggregationLevelIndex, double minValue, double maxValue, double variance, LowestAggregationValues lowestAggregationValues)
@@ -130,14 +126,12 @@ namespace Deepflow.Platform.Series.Providers
         {
             private readonly long _minSeconds;
             private readonly int _lowestAggregationSeconds;
-            private readonly IDataFilterer _filterer;
-            public readonly double[] Values;
+            private readonly double[] Values;
 
-            public LowestAggregationValues(long minSeconds, long maxSeconds, int lowestAggregationSeconds, IDataFilterer filterer)
+            public LowestAggregationValues(long minSeconds, long maxSeconds, int lowestAggregationSeconds)
             {
                 _minSeconds = minSeconds;
                 _lowestAggregationSeconds = lowestAggregationSeconds;
-                _filterer = filterer;
                 var span = maxSeconds - minSeconds;
                 Values = new double[span / lowestAggregationSeconds + 1];
             }

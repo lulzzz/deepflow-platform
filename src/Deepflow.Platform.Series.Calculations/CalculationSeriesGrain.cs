@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,13 +32,14 @@ namespace Deepflow.Platform.Series.Calculations
             await base.OnActivateAsync();
         }
 
-        public async Task<IEnumerable<DataRange>> GetData(TimeRange timeRange, int aggregationSeconds)
+        public async Task<IEnumerable<RawDataRange>> GetAggregatedData(TimeRange timeRange, int aggregationSeconds)
         {
             if (!_seriesGuids.TryGetValue(aggregationSeconds, out Guid seriesGuid))
             {
                 throw new Exception($"Cannot find series GUID for calculation {_entity}:{_calculation}:{aggregationSeconds}");
             }
-            return await _dataProvider.GetAttributeRanges(seriesGuid, timeRange);
+            return await _dataProvider.GetAggregatedRanges(seriesGuid, timeRange);
         }
     }
 }
+*/

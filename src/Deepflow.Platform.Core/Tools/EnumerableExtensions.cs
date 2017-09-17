@@ -51,7 +51,7 @@ namespace Deepflow.Platform.Core.Tools
             }
         }
 
-        public static IEnumerable<Datum> GetData(this IEnumerable<DataRange> source)
+        public static IEnumerable<Datum> GetData(this IEnumerable<RawDataRange> source)
         {
             var i = 0;
             var datum = new Datum();
@@ -80,11 +80,63 @@ namespace Deepflow.Platform.Core.Tools
             }
         }
 
-        public static IEnumerable<Datum> GetData(this DataRange source)
+        public static IEnumerable<Datum> GetData(this RawDataRange source)
         {
             var i = 0;
             var datum = new Datum();
             
+            using (var dataEnumerator = source.Data.GetEnumerator())
+            {
+                while (dataEnumerator.MoveNext())
+                {
+                    if (i % 2 == 1)
+                    {
+                        datum.Value = dataEnumerator.Current;
+                        yield return datum;
+                    }
+                    else
+                    {
+                        datum.Time = dataEnumerator.Current;
+                    }
+                    i++;
+                }
+            }
+        }
+
+        public static IEnumerable<Datum> GetData(this IEnumerable<AggregatedDataRange> source)
+        {
+            var i = 0;
+            var datum = new Datum();
+
+            using (var rangeEnumerator = source.GetEnumerator())
+            {
+                while (rangeEnumerator.MoveNext())
+                {
+                    using (var dataEnumerator = (rangeEnumerator.Current.Data as IEnumerable<double>).GetEnumerator())
+                    {
+                        while (dataEnumerator.MoveNext())
+                        {
+                            if (i % 2 == 1)
+                            {
+                                datum.Value = dataEnumerator.Current;
+                                yield return datum;
+                            }
+                            else
+                            {
+                                datum.Time = dataEnumerator.Current;
+                            }
+                            i++;
+                        }
+                    }
+                }
+            }
+        }
+
+        public static IEnumerable<Datum> GetData(this AggregatedDataRange source)
+        {
+            var i = 0;
+            var datum = new Datum();
+
             using (var dataEnumerator = source.Data.GetEnumerator())
             {
                 while (dataEnumerator.MoveNext())

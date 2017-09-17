@@ -45,18 +45,34 @@ namespace Deepflow.Platform.Controllers
         }
 
         [HttpPost("{dataSource}/Series/{sourceName}/Aggregations/{aggregationSeconds}/Data")]
-        public Task AddAggregatedRanges(Guid dataSource, string sourceName, int aggregationSeconds, [FromBody] IEnumerable<DataRange> dataRanges)
+        public Task AddAggregatedRanges(Guid dataSource, string sourceName, int aggregationSeconds, [FromBody] IEnumerable<AggregatedDataRange> dataRanges)
         {
-            dataRanges.ForEach(dataRange => dataRange.Validate());
-            return _processor.AddAggregatedRanges(dataSource, sourceName, aggregationSeconds, dataRanges);
+            try
+            {
+                dataRanges.ForEach(dataRange => dataRange.Validate());
+                return _processor.AddAggregatedRanges(dataSource, sourceName, aggregationSeconds, dataRanges);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(null, exception, "Error when adding aggregated ranges");
+                throw;
+            }
         }
 
         [HttpPost("{dataSource}/Series/{sourceName}/Raw/Data")]
-        public Task NotifyRawRanges(Guid dataSource, string sourceName, [FromBody] IEnumerable<DataRange> dataRanges)
+        public Task NotifyRawRanges(Guid dataSource, string sourceName, [FromBody] IEnumerable<RawDataRange> dataRanges)
         {
-            dataRanges.ForEach(dataRange => dataRange.Validate());
-            ISourceSeriesGrain series = GrainClient.GrainFactory.GetGrain<ISourceSeriesGrain>(SeriesIdHelper.ToSourceSeriesId(dataSource, sourceName));
-            return series.NotifyRawData(dataRanges);
+            try
+            {
+                dataRanges.ForEach(dataRange => dataRange.Validate());
+                ISourceSeriesGrain series = GrainClient.GrainFactory.GetGrain<ISourceSeriesGrain>(SeriesIdHelper.ToSourceSeriesId(dataSource, sourceName));
+                return series.NotifyRawData(dataRanges);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(null, exception, "Error when notifying raw ranges");
+                throw;
+            }
         }
     }
 }

@@ -4,29 +4,36 @@ using Deepflow.Platform.Abstractions.Series;
 
 namespace Deepflow.Platform.Series
 {
-    public class DataFilterer : IDataFilterer
+    public class DataFilterer<TRange> : IDataFilterer<TRange> where TRange : IDataRange
     {
-        public IEnumerable<DataRange> FilterDataRanges(IEnumerable<DataRange> ranges, TimeRange timeRange)
+        private readonly IDataRangeCreator<TRange> _creator;
+
+        public DataFilterer(IDataRangeCreator<TRange> creator)
+        {
+            _creator = creator;
+        }
+
+        public IEnumerable<TRange> FilterDataRanges(IEnumerable<TRange> ranges, TimeRange timeRange)
         {
             return ranges?.Where(dataRange => RangeTouchesRange(dataRange.TimeRange, timeRange)).Select(range => FilterRange(range, timeRange, FilterMode.MinAndMaxInclusive)).Where(x => x.Data.Count > 0);
         }
 
-        public IEnumerable<DataRange> FilterDataRangesEndTimeInclusive(IEnumerable<DataRange> ranges, TimeRange timeRange)
+        public IEnumerable<TRange> FilterDataRangesEndTimeInclusive(IEnumerable<TRange> ranges, TimeRange timeRange)
         {
             return ranges?.Where(dataRange => RangeTouchesRange(dataRange.TimeRange, timeRange)).Select(range => FilterRange(range, timeRange, FilterMode.MaxInclusive)).Where(x => x.Data.Count > 0);
         }
 
-        public DataRange FilterDataRange(DataRange range, TimeRange timeRange)
+        public TRange FilterDataRange(TRange range, TimeRange timeRange)
         {
-            return FilterDataRanges(new List<DataRange> { range }, timeRange).SingleOrDefault();
+            return FilterDataRanges(new List<TRange> { range }, timeRange).SingleOrDefault();
         }
 
-        public DataRange FilterDataRangeEndTimeInclusive(DataRange range, TimeRange timeRange)
+        public TRange FilterDataRangeEndTimeInclusive(TRange range, TimeRange timeRange)
         {
-            return FilterDataRangesEndTimeInclusive(new List<DataRange> { range }, timeRange).SingleOrDefault();
+            return FilterDataRangesEndTimeInclusive(new List<TRange> { range }, timeRange).SingleOrDefault();
         }
 
-        public IEnumerable<DataRange> SubtractTimeRangeFromRanges(IEnumerable<DataRange> ranges, TimeRange subtractRange)
+        public IEnumerable<TRange> SubtractTimeRangeFromRanges(IEnumerable<TRange> ranges, TimeRange subtractRange)
         {
             if (subtractRange == null)
             {
@@ -38,24 +45,24 @@ namespace Deepflow.Platform.Series
                 return ranges;
             }
 
-            IEnumerable<DataRange> remainingRanges = new List<DataRange>();
-            foreach (var timeRange in ranges)
+            IEnumerable<TRange> remainingRanges = new List<TRange>();
+            foreach (var range in ranges)
             {
-                remainingRanges = remainingRanges.Concat(SubtractTimeRangeFromRange(subtractRange, timeRange));
+                remainingRanges = remainingRanges.Concat(SubtractTimeRangeFromRange(subtractRange, range));
             }
             return remainingRanges;
         }
 
-        private DataRange FilterRange(DataRange range, TimeRange timeRange, FilterMode filterMode)
+        private TRange FilterRange(TRange range, TimeRange timeRange, FilterMode filterMode)
         {
-            return new DataRange(range.TimeRange.Insersect(timeRange), FilterData(range.Data, timeRange, filterMode));
+            return _creator.Create(range.TimeRange.Insersect(timeRange), FilterData(range.Data, timeRange, filterMode), range);
         }
 
         private List<double> FilterData(List<double> data, TimeRange timeRange, FilterMode filterMode)
         {
             var startIndex = BinarySearcher.GetFirstIndexPastTimestampBinary(data, timeRange.MinSeconds);
             var endIndex = BinarySearcher.GetFirstIndexPastTimestampBinary(data, timeRange.MaxSeconds);
-            
+
             if (endIndex == null)
             {
                 endIndex = data.Count;
@@ -94,26 +101,30 @@ namespace Deepflow.Platform.Series
 
         private bool RangeIntersectsRange(TimeRange timeRangeA, TimeRange timeRangeB)
         {
-            if (timeRangeA == null || timeRangeB == null) {
+            if (timeRangeA == null || timeRangeB == null)
+            {
                 return false;
             }
 
-            if (timeRangeA.MaxSeconds <= timeRangeB.MinSeconds) {
+            if (timeRangeA.MaxSeconds <= timeRangeB.MinSeconds)
+            {
                 return false;
             }
 
-            if (timeRangeB.MaxSeconds <= timeRangeA.MinSeconds) {
+            if (timeRangeB.MaxSeconds <= timeRangeA.MinSeconds)
+            {
                 return false;
             }
 
-            if (timeRangeA.MinSeconds <= timeRangeB.MinSeconds && timeRangeA.MaxSeconds >= timeRangeB.MaxSeconds) {
+            if (timeRangeA.MinSeconds <= timeRangeB.MinSeconds && timeRangeA.MaxSeconds >= timeRangeB.MaxSeconds)
+            {
                 return true;
             }
-    
+
             return true;
         }
 
-        private IEnumerable<DataRange> SubtractTimeRangeFromRange(TimeRange subtractRange, DataRange range)
+        private IEnumerable<TRange> SubtractTimeRangeFromRange(TimeRange subtractRange, TRange range)
         {
             if (subtractRange.MaxSeconds <= range.TimeRange.MinSeconds || subtractRange.MinSeconds >= range.TimeRange.MaxSeconds)
             {
@@ -122,13 +133,13 @@ namespace Deepflow.Platform.Series
 
             if (subtractRange.MinSeconds <= range.TimeRange.MinSeconds && subtractRange.MaxSeconds >= range.TimeRange.MaxSeconds)
             {
-                return new DataRange[] { };
+                return new TRange[] { };
             }
 
             if (subtractRange.MaxSeconds > range.TimeRange.MinSeconds && subtractRange.MinSeconds <= range.TimeRange.MinSeconds && subtractRange.MaxSeconds < range.TimeRange.MaxSeconds)
             {
                 var timeRange = new TimeRange(subtractRange.MaxSeconds, range.TimeRange.MaxSeconds);
-                return new [] { new DataRange(timeRange, FilterData(range.Data, timeRange, FilterMode.MinAndMaxInclusive)) };
+                return new[] { _creator.Create(timeRange, FilterData(range.Data, timeRange, FilterMode.MinAndMaxInclusive), range) };
             }
 
             if (subtractRange.MaxSeconds > range.TimeRange.MinSeconds && subtractRange.MaxSeconds < range.TimeRange.MaxSeconds && subtractRange.MinSeconds > range.TimeRange.MinSeconds)
@@ -136,17 +147,17 @@ namespace Deepflow.Platform.Series
                 var timeRangeOne = new TimeRange(range.TimeRange.MinSeconds, subtractRange.MinSeconds);
                 var timeRangeTwo = new TimeRange(subtractRange.MaxSeconds, range.TimeRange.MaxSeconds);
 
-                return new []
+                return new[]
                 {
-                    new DataRange(timeRangeOne, FilterData(range.Data, timeRangeOne, FilterMode.MinAndMaxInclusive)),
-                    new DataRange(timeRangeTwo, FilterData(range.Data, timeRangeTwo, FilterMode.MinAndMaxInclusive))
+                    _creator.Create(timeRangeOne, FilterData(range.Data, timeRangeOne, FilterMode.MinAndMaxInclusive), range),
+                    _creator.Create(timeRangeTwo, FilterData(range.Data, timeRangeTwo, FilterMode.MinAndMaxInclusive), range)
                 };
             }
 
             if (subtractRange.MaxSeconds >= range.TimeRange.MaxSeconds && subtractRange.MinSeconds > range.TimeRange.MinSeconds)
             {
                 var timeRange = new TimeRange(range.TimeRange.MinSeconds, subtractRange.MinSeconds);
-                return new[] { new DataRange(timeRange, FilterData(range.Data, timeRange, FilterMode.MinAndMaxInclusive)) };
+                return new[] { _creator.Create(timeRange, FilterData(range.Data, timeRange, FilterMode.MinAndMaxInclusive), range) };
             }
 
             return null;

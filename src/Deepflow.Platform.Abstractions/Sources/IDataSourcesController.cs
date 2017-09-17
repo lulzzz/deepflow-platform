@@ -8,6 +8,6 @@ namespace Deepflow.Platform.Abstractions.Sources
     public interface IDataSourcesController
     {
         Task<SourceSeriesList> GetSourceSeriesList(Guid dataSource);
-        Task AddAggregatedRanges(Guid dataSource, string sourceName, int aggregationSeconds, IEnumerable<DataRange> dataRanges);
+        Task AddAggregatedRanges(Guid dataSource, string sourceName, int aggregationSeconds, IEnumerable<AggregatedDataRange> dataRanges);
     }
 }

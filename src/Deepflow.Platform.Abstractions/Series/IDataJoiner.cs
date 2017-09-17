@@ -2,10 +2,9 @@
 
 namespace Deepflow.Platform.Abstractions.Series
 {
-    public interface IDataJoiner
+    public interface IDataJoiner<TRange> where TRange : IDataRange
     {
-        IEnumerable<DataRange> JoinDataRangesToDataRanges(IEnumerable<DataRange> dataRanges, IEnumerable<DataRange> newDataRanges);
-
-        IEnumerable<DataRange> JoinDataRangeToDataRanges(IEnumerable<DataRange> ranges, DataRange newRange);
+        IEnumerable<TRange> JoinDataRangesToDataRanges(IEnumerable<TRange> dataRanges, IEnumerable<TRange> newDataRanges);
+        IEnumerable<TRange> JoinDataRangeToDataRanges(IEnumerable<TRange> ranges, TRange newRange);
     }
 }

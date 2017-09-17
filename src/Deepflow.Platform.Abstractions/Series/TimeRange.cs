@@ -28,7 +28,7 @@ namespace Deepflow.Platform.Abstractions.Series
             return MaxSeconds.CompareTo(other.MaxSeconds);
         }
 
-        public static bool operator < (TimeRange one, TimeRange two)
+        /*public static bool operator < (TimeRange one, TimeRange two)
         {
             return one.MinSeconds < two.MinSeconds;
         }
@@ -36,7 +36,7 @@ namespace Deepflow.Platform.Abstractions.Series
         public static bool operator > (TimeRange one, TimeRange two)
         {
             return one.MinSeconds > two.MinSeconds;
-        }
+        }*/
 
         public TimeRange Insersect(TimeRange other)
         {
@@ -103,6 +103,31 @@ namespace Deepflow.Platform.Abstractions.Series
             return true;
         }
 
+        public bool Touches(TimeRange otherRange)
+        {
+            if (otherRange == null)
+            {
+                return false;
+            }
+
+            if (otherRange.MaxSeconds >= MinSeconds && otherRange.MaxSeconds <= MaxSeconds)
+            {
+                return true;
+            }
+
+            if (otherRange.MinSeconds <= MaxSeconds && otherRange.MinSeconds >= MinSeconds)
+            {
+                return true;
+            }
+
+            if (otherRange.MinSeconds < MinSeconds && otherRange.MaxSeconds > MaxSeconds)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         public bool IsZeroLength()
         {
             return MinSeconds == MaxSeconds;
@@ -118,6 +143,12 @@ namespace Deepflow.Platform.Abstractions.Series
             var minSeconds = (long) Math.Floor((double) MinSeconds / stepSeconds) * stepSeconds;
             var maxSeconds = (long) Math.Ceiling((double) MaxSeconds / stepSeconds) * stepSeconds;
             return new TimeRange(minSeconds, maxSeconds);
+        }
+        
+        public bool IsQuantisedTo(int aggregationSeconds)
+        {
+            var quantised = Quantise(aggregationSeconds);
+            return quantised.MinSeconds == MinSeconds && quantised.MaxSeconds == MaxSeconds;
         }
 
         public bool EqualsMin(double timeSeconds)
@@ -139,6 +170,21 @@ namespace Deepflow.Platform.Abstractions.Series
                 yield return new TimeRange(minSeconds, maxSeconds);
                 minSeconds += spanSeconds;
             }
+        }
+
+        public override int GetHashCode()
+        {
+            return (int) (MinSeconds ^ MaxSeconds);
+        }
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as TimeRange;
+            if (other == null)
+            {
+                return false;
+            }
+            return other.MinSeconds == MinSeconds && other.MaxSeconds == MaxSeconds;
         }
     }
 }

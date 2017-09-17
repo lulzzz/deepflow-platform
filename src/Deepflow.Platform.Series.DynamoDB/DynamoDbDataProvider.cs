@@ -42,10 +42,12 @@ namespace Deepflow.Platform.Series.DynamoDB
             _logger.LogError("Encountered ProvisionedThroughputExceededException, retrying...");
         }
 
-        public async Task<IEnumerable<DataRange>> GetAttributeRanges(Guid series, TimeRange timeRange)
+        public async Task<IEnumerable<AggregatedDataRange>> GetAggregatedRanges(Guid series, TimeRange timeRange, int aggregationSeconds)
         {
             try
             {
+                throw new Exception("Fetch ranges properly");
+
                 var context = new DynamoDBContext(_client);
                 var search = context.QueryAsync<ReadRecord>(series, QueryOperator.Between, new object[] { timeRange.MinSeconds, timeRange.MaxSeconds }, new DynamoDBOperationConfig { OverrideTableName = _configuration.TableName });
                 var records = await search.GetRemainingAsync();
@@ -57,7 +59,7 @@ namespace Deepflow.Platform.Series.DynamoDB
                     data[index + 1] = record.Value;
                     index += 2;
                 }
-                return new List<DataRange> { new DataRange(timeRange, data.ToList()) };
+                return new List<AggregatedDataRange> { new AggregatedDataRange(timeRange, data.ToList(), aggregationSeconds) };
             }
             catch (Exception exception)
             {
@@ -66,7 +68,7 @@ namespace Deepflow.Platform.Series.DynamoDB
             }
         }
 
-        public async Task SaveAttributeRange(Guid series, DataRange dataRange)
+        public async Task SaveAggregatedRange(Guid series, AggregatedDataRange dataRange)
         {
             try
             {
@@ -94,6 +96,11 @@ namespace Deepflow.Platform.Series.DynamoDB
             }
         }
 
+        public Task SaveAggregatedRanges(Guid series, IEnumerable<AggregatedDataRange> dataRanges)
+        {
+            return Task.WhenAll(dataRanges.Select(dataRange => SaveAggregatedRange(series, dataRange)));
+        }
+
         private WriteRequest CreateWriteRequest(Guid series, Datum datum)
         {
             var items = new Dictionary<string, AttributeValue>
@@ -105,7 +112,12 @@ namespace Deepflow.Platform.Series.DynamoDB
 
             return new WriteRequest(new PutRequest(items));
         }
-        
+
+        public Task<IEnumerable<TimeRange>> GetSavedAggregatedTimeRanges(Guid series)
+        {
+            throw new NotImplementedException();
+        }
+
         private class ReadRecord
         {
             [DynamoDBHashKey]

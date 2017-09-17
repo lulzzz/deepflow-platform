@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace Deepflow.Platform.Series.Providers
         private readonly ITimeFilterer _timeFilterer;
         private readonly IDataFilterer _dataFilterer;
         private readonly IDataMerger _merger;
-        private readonly ConcurrentDictionary<Guid, ConcurrentDictionary<int, IEnumerable<DataRange>>> _rangesBySeries = new ConcurrentDictionary<Guid, ConcurrentDictionary<int, IEnumerable<DataRange>>>();
+        private readonly ConcurrentDictionary<Guid, ConcurrentDictionary<int, IEnumerable<RawDataRange>>> _rangesBySeries = new ConcurrentDictionary<Guid, ConcurrentDictionary<int, IEnumerable<RawDataRange>>>();
         private readonly ConcurrentDictionary<Guid, ReaderWriterLockSlim> _seriesLocks = new ConcurrentDictionary<Guid, ReaderWriterLockSlim>();
         private readonly EnhancedRandomDataGenerator _generator = new EnhancedRandomDataGenerator();
         private readonly Aggregator _aggregator = new Aggregator();
@@ -28,17 +29,17 @@ namespace Deepflow.Platform.Series.Providers
             _merger = merger;
         }
 
-        protected override async Task<IEnumerable<DataRange>> ProduceAttributeRanges(Guid series, IEnumerable<TimeRange> timeRanges)
+        protected override async Task<IEnumerable<RawDataRange>> ProduceAttributeRanges(Guid series, IEnumerable<TimeRange> timeRanges)
         {
             return await Task.WhenAll(timeRanges.Select(timeRange => GetAttributeRange(series, timeRange)));
         }
 
-        private async Task<DataRange> GetAttributeRange(Guid guid, TimeRange timeRange)
+        private async Task<RawDataRange> GetAttributeRange(Guid guid, TimeRange timeRange)
         {
             var series = await _knower.GetAttributeSeries(guid);
 
-            var rangesByAggregation = _rangesBySeries.GetOrAdd(guid, g => new ConcurrentDictionary<int, IEnumerable<DataRange>>());
-            var ranges = rangesByAggregation.GetOrAdd(series.AggregationSeconds, new List<DataRange>());
+            var rangesByAggregation = _rangesBySeries.GetOrAdd(guid, g => new ConcurrentDictionary<int, IEnumerable<RawDataRange>>());
+            var ranges = rangesByAggregation.GetOrAdd(series.AggregationSeconds, new List<RawDataRange>());
             var missingRanges = _timeFilterer.SubtractTimeRangesFromRange(timeRange, ranges.Select(range => range.TimeRange));
             
             if (missingRanges.Any())
@@ -48,12 +49,12 @@ namespace Deepflow.Platform.Series.Providers
                 seriesLock.EnterWriteLock();
                 try
                 {
-                    var rawRanges = rangesByAggregation.GetOrAdd(0, new List<DataRange>());
+                    var rawRanges = rangesByAggregation.GetOrAdd(0, new List<RawDataRange>());
                     rawRanges = _merger.MergeDataRangesWithRanges(rawRanges, newRawRanges);
                     rangesByAggregation.AddOrUpdate(0, rawRanges, (i, old) => rawRanges);
                     var aggregatedRange = _aggregator.Aggregate(rawRanges, timeRange.MinSeconds, timeRange.MaxSeconds, series.AggregationSeconds);
 
-                    var existingRanges = rangesByAggregation.GetOrAdd(series.AggregationSeconds, new List<DataRange>());
+                    var existingRanges = rangesByAggregation.GetOrAdd(series.AggregationSeconds, new List<RawDataRange>());
                     var aggregatedRanges = _merger.MergeDataRangeWithRanges(existingRanges, aggregatedRange);
                     rangesByAggregation.AddOrUpdate(series.AggregationSeconds, aggregatedRanges, (i, old) => aggregatedRanges);
                     ranges = aggregatedRanges;
@@ -70,7 +71,7 @@ namespace Deepflow.Platform.Series.Providers
 
     public class Aggregator
     {
-        public DataRange Aggregate(IEnumerable<DataRange> inData, long startTimeSeconds, long endTimeSeconds, float sampleIntervalSeconds)
+        public RawDataRange Aggregate(IEnumerable<RawDataRange> inData, long startTimeSeconds, long endTimeSeconds, float sampleIntervalSeconds)
         {
             var tickEnumerator = inData.GetData().GetEnumerator();
             tickEnumerator.MoveNext();
@@ -108,7 +109,8 @@ namespace Deepflow.Platform.Series.Providers
                 }
             }
 
-            return new DataRange(startTimeSeconds, endTimeSeconds, data);
+            return new RawDataRange(startTimeSeconds, endTimeSeconds, data);
         }
     }
 }
+*/

@@ -40,14 +40,14 @@ namespace Deepflow.Platform.Ingestion.FakeIngestor.Controllers
         }
 
         [HttpPost("{dataSource}/Series/{sourceName}/Aggregations/{aggregationSeconds}/Data")]
-        public Task AddAggregatedRanges(Guid dataSource, string sourceName, int aggregationSeconds, [FromBody] IEnumerable<DataRange> dataRanges)
+        public Task AddAggregatedRanges(Guid dataSource, string sourceName, int aggregationSeconds, [FromBody] IEnumerable<AggregatedDataRange> dataRanges)
         {
             _logger.LogInformation($"Received data for {dataSource}/Series/{sourceName}/Aggregations/{aggregationSeconds}/Data with {dataRanges.Count()} ranges with {dataRanges.Sum(x => x.Data.Count / 2)} points");
             return Task.FromResult(0);
         }
 
         [HttpPost("{dataSource}/Series/{sourceName}/Raw/Data")]
-        public Task NotifyRawRanges(Guid dataSource, string sourceName, [FromBody] IEnumerable<DataRange> dataRanges)
+        public Task NotifyRawRanges(Guid dataSource, string sourceName, [FromBody] IEnumerable<RawDataRange> dataRanges)
         {
             _logger.LogInformation($"Received data for {dataSource}/Series/{sourceName}/Raw/Data with {dataRanges.Count()} ranges with {dataRanges.Sum(x => x.Data.Count / 2)} points");
             return Task.FromResult(0);

@@ -9,185 +9,185 @@ namespace Deepflow.Platform.Tests.Series
 {
     public class DataJoinerTests
     {
-        private readonly DataJoiner _dataJoiner = new DataJoiner();
+        private readonly DataJoiner<AggregatedDataRange> _dataJoiner = new DataJoiner<AggregatedDataRange>(new AggregatedDataRangeCreator());
 
         [Fact]
         public void JoinBefore()
         {
-            var insert = new DataRange(100, 200, new List<double> { 100, 11, 150, 16, 200, 21 });
-            var old = new DataRange(300, 400, new List<double> { 300, 30, 350, 35, 400, 40 });
+            var insert = new AggregatedDataRange(100, 200, new List<double> { 100, 11, 150, 16, 200, 21 }, 50);
+            var old = new AggregatedDataRange(300, 400, new List<double> { 300, 30, 350, 35, 400, 40 }, 50);
             TestJoinTwoDataRanges(insert, old, insert, old);
         }
 
         [Fact]
         public void JoinTouchingStartOutside()
         {
-            var insert = new DataRange(100, 200, new List<double> { 100, 11, 150, 16, 200, 21 });
-            var old = new DataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 });
-            var expected = new DataRange(100, 300, new List<double> { 100, 11, 150, 16, 200, 21, 250, 25, 300, 30 });
+            var insert = new AggregatedDataRange(100, 200, new List<double> { 100, 11, 150, 16, 200, 21 }, 50);
+            var old = new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50);
+            var expected = new AggregatedDataRange(100, 300, new List<double> { 100, 11, 150, 16, 200, 21, 250, 25, 300, 30 }, 50);
             TestJoinTwoDataRanges(insert, old, expected);
         }
 
         [Fact]
         public void JoinOverlappingStart()
         {
-            var insert = new DataRange(100, 250, new List<double> { 100, 11, 150, 16, 200, 21, 250, 26 });
-            var old = new DataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 });
-            var expected = new DataRange(100, 300, new List<double> { 100, 11, 150, 16, 200, 21, 250, 26, 300, 30 });
+            var insert = new AggregatedDataRange(100, 250, new List<double> { 100, 11, 150, 16, 200, 21, 250, 26 }, 50);
+            var old = new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50);
+            var expected = new AggregatedDataRange(100, 300, new List<double> { 100, 11, 150, 16, 200, 21, 250, 26, 300, 30 }, 50);
             TestJoinTwoDataRanges(insert, old, expected);
         }
 
         [Fact]
         public void JoinTouchingStartInside()
         {
-            var insert = new DataRange(200, 250, new List<double> { 200, 21, 250, 26 });
-            var old = new DataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 });
-            var expected = new DataRange(200, 300, new List<double> { 200, 21, 250, 26, 300, 30 });
+            var insert = new AggregatedDataRange(200, 250, new List<double> { 200, 21, 250, 26 }, 50);
+            var old = new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50);
+            var expected = new AggregatedDataRange(200, 300, new List<double> { 200, 21, 250, 26, 300, 30 }, 50);
             TestJoinTwoDataRanges(insert, old, expected);
         }
 
         [Fact]
         public void JoinInside()
         {
-            var insert = new DataRange(240, 260, new List<double> { 240, 25, 260, 27 });
-            var old = new DataRange(200, 300, new List<double> { 200, 20, 220, 22, 240, 24, 260, 26, 280, 28, 300, 30 });
-            var expected = new DataRange(200, 300, new List<double> { 200, 20, 220, 22, 240, 25, 260, 27, 280, 28, 300, 30 });
+            var insert = new AggregatedDataRange(240, 260, new List<double> { 240, 25, 260, 27 }, 50);
+            var old = new AggregatedDataRange(200, 300, new List<double> { 200, 20, 220, 22, 240, 24, 260, 26, 280, 28, 300, 30 }, 50);
+            var expected = new AggregatedDataRange(200, 300, new List<double> { 200, 20, 220, 22, 240, 25, 260, 27, 280, 28, 300, 30 }, 50);
             TestJoinTwoDataRanges(insert, old, expected);
         }
 
         [Fact]
         public void JoinTouchingEndInside()
         {
-            var insert = new DataRange(250, 300, new List<double> { 250, 26, 300, 31 });
-            var old = new DataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 });
-            var expected = new DataRange(200, 300, new List<double> { 200, 20, 250, 26, 300, 31 });
+            var insert = new AggregatedDataRange(250, 300, new List<double> { 250, 26, 300, 31 }, 50);
+            var old = new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50);
+            var expected = new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 26, 300, 31 }, 50);
             TestJoinTwoDataRanges(insert, old, expected);
         }
 
         [Fact]
         public void JoinOverlappingEnd()
         {
-            var insert = new DataRange(250, 350, new List<double> { 250, 26, 300, 31, 350, 36 });
-            var old = new DataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 });
-            var expected = new DataRange(200, 350, new List<double> { 200, 20, 250, 26, 300, 31, 350, 36 });
+            var insert = new AggregatedDataRange(250, 350, new List<double> { 250, 26, 300, 31, 350, 36 }, 50);
+            var old = new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50);
+            var expected = new AggregatedDataRange(200, 350, new List<double> { 200, 20, 250, 26, 300, 31, 350, 36 }, 50);
             TestJoinTwoDataRanges(insert, old, expected);
         }
 
         [Fact]
         public void JoinTouchingEndOutside()
         {
-            var insert = new DataRange(300, 350, new List<double> { 300, 31, 350, 36 });
-            var old = new DataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 });
-            var expected = new DataRange(200, 350, new List<double> { 200, 20, 250, 25, 300, 31, 350, 36 });
+            var insert = new AggregatedDataRange(300, 350, new List<double> { 300, 31, 350, 36 }, 50);
+            var old = new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50);
+            var expected = new AggregatedDataRange(200, 350, new List<double> { 200, 20, 250, 25, 300, 31, 350, 36 }, 50);
             TestJoinTwoDataRanges(insert, old, expected);
         }
 
         [Fact]
         public void JoinAfter()
         {
-            var insert = new DataRange(400, 500, new List<double> { 400, 41, 450, 46, 500, 51 });
-            var old = new DataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 });
+            var insert = new AggregatedDataRange(400, 500, new List<double> { 400, 41, 450, 46, 500, 51 }, 50);
+            var old = new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50);
             TestJoinTwoDataRanges(insert, old, insert, old);
         }
 
         [Fact]
         public void JoinCoveringTouchingEnd()
         {
-            var insert = new DataRange(100, 300, new List<double> { 100, 11, 150, 16, 200, 21, 250, 26, 300, 31 });
-            var old = new DataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 });
-            var expected = new DataRange(100, 300, new List<double> { 100, 11, 150, 16, 200, 21, 250, 26, 300, 31 });
+            var insert = new AggregatedDataRange(100, 300, new List<double> { 100, 11, 150, 16, 200, 21, 250, 26, 300, 31 }, 50);
+            var old = new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50);
+            var expected = new AggregatedDataRange(100, 300, new List<double> { 100, 11, 150, 16, 200, 21, 250, 26, 300, 31 }, 50);
             TestJoinTwoDataRanges(insert, old, expected);
         }
 
         [Fact]
         public void JoinCoveringTouchingStart()
         {
-            var insert = new DataRange(200, 400, new List<double> { 200, 21, 250, 26, 300, 31, 350, 36, 400, 41 });
-            var old = new DataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 });
-            var expected = new DataRange(200, 400, new List<double> { 200, 21, 250, 26, 300, 31, 350, 36, 400, 41 });
+            var insert = new AggregatedDataRange(200, 400, new List<double> { 200, 21, 250, 26, 300, 31, 350, 36, 400, 41 }, 50);
+            var old = new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50);
+            var expected = new AggregatedDataRange(200, 400, new List<double> { 200, 21, 250, 26, 300, 31, 350, 36, 400, 41 }, 50);
             TestJoinTwoDataRanges(insert, old, expected);
         }
 
         [Fact]
         public void JoinCoveringOver()
         {
-            var insert = new DataRange(100, 400, new List<double> { 100, 11, 150, 16, 200, 21, 250, 26, 300, 31, 350, 36, 400, 41 });
-            var old = new DataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 });
-            var expected = new DataRange(100, 400, new List<double> { 100, 11, 150, 16, 200, 21, 250, 26, 300, 31, 350, 36, 400, 41 });
+            var insert = new AggregatedDataRange(100, 400, new List<double> { 100, 11, 150, 16, 200, 21, 250, 26, 300, 31, 350, 36, 400, 41 }, 50);
+            var old = new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50);
+            var expected = new AggregatedDataRange(100, 400, new List<double> { 100, 11, 150, 16, 200, 21, 250, 26, 300, 31, 350, 36, 400, 41 }, 50);
             TestJoinTwoDataRanges(insert, old, expected);
         }
 
         [Fact]
         public void JoinNullInsert()
         {
-            DataRange insert = null;
-            var old = new DataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 });
+            AggregatedDataRange insert = null;
+            var old = new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50);
             TestJoinTwoDataRanges(insert, old, old);
         }
 
         [Fact]
         public void JoinNullOld()
         {
-            var insert = new DataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 });
-            List<DataRange> old = null;
+            var insert = new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50);
+            List<AggregatedDataRange> old = null;
             TestJoinTwoDataRanges(insert, old, insert);
         }
 
         [Fact]
         public void JoinNullBoth()
         {
-            DataRange insert = null;
-            DataRange old = null;
+            AggregatedDataRange insert = null;
+            AggregatedDataRange old = null;
             TestJoinTwoDataRanges(insert, old, null);
         }
 
         [Fact]
         public void JoinNullInsertData()
         {
-            DataRange insert = new DataRange(200, 300);
-            var old = new DataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 });
+            AggregatedDataRange insert = new AggregatedDataRange(200, 300, 50);
+            var old = new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50);
             TestJoinTwoDataRanges(insert, old, old);
         }
 
         [Fact]
         public void JoinNullInsertOld()
         {
-            var insert = new DataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 });
-            DataRange old = new DataRange(200, 300);
+            var insert = new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50);
+            AggregatedDataRange old = new AggregatedDataRange(200, 300, 50);
             TestJoinTwoDataRanges(insert, old, insert);
         }
 
         [Fact]
         public void JoinBetweenTwoRanges()
         {
-            var before = new DataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 });
-            var insert = new DataRange(300, 400, new List<double> { 300, 30, 350, 35, 400, 40 });
-            var after = new DataRange(400, 500, new List<double> { 400, 40, 450, 45, 500, 50 });
+            var before = new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50);
+            var insert = new AggregatedDataRange(300, 400, new List<double> { 300, 30, 350, 35, 400, 40 }, 50);
+            var after = new AggregatedDataRange(400, 500, new List<double> { 400, 40, 450, 45, 500, 50 }, 50);
 
-            var expected = new DataRange(200, 500, new List<double> { 200, 20, 250, 25, 300, 30, 350, 35, 400, 40, 450, 45, 500, 50 });
+            var expected = new AggregatedDataRange(200, 500, new List<double> { 200, 20, 250, 25, 300, 30, 350, 35, 400, 40, 450, 45, 500, 50 }, 50);
 
-            var actual = _dataJoiner.JoinDataRangeToDataRanges(new List<DataRange> { before, after }, insert).ToList();
-            actual.ShouldBeEquivalentTo(new List<DataRange> { expected });
+            var actual = _dataJoiner.JoinDataRangeToDataRanges(new List<AggregatedDataRange> { before, after }, insert).ToList();
+            actual.ShouldBeEquivalentTo(new List<AggregatedDataRange> { expected });
         }
 
-        private void TestJoinTwoDataRanges(DataRange insert, DataRange old, DataRange expected)
+        private void TestJoinTwoDataRanges(AggregatedDataRange insert, AggregatedDataRange old, AggregatedDataRange expected)
         {
-            var ranges = new List<DataRange> { old };
+            var ranges = new List<AggregatedDataRange> { old };
             var actual = _dataJoiner.JoinDataRangeToDataRanges(ranges, insert).ToList();
-            actual.ShouldBeEquivalentTo(new List<DataRange> { expected });
+            actual.ShouldBeEquivalentTo(new List<AggregatedDataRange> { expected });
         }
 
-        private void TestJoinTwoDataRanges(DataRange insert, DataRange old, DataRange expectedOne, DataRange expectedTwo)
+        private void TestJoinTwoDataRanges(AggregatedDataRange insert, AggregatedDataRange old, AggregatedDataRange expectedOne, AggregatedDataRange expectedTwo)
         {
-            var ranges = new List<DataRange> { old };
+            var ranges = new List<AggregatedDataRange> { old };
             var actual = _dataJoiner.JoinDataRangeToDataRanges(ranges, insert).ToList();
-            actual.ShouldBeEquivalentTo(new List<DataRange> { expectedOne, expectedTwo });
+            actual.ShouldBeEquivalentTo(new List<AggregatedDataRange> { expectedOne, expectedTwo });
         }
 
-        private void TestJoinTwoDataRanges(DataRange insert, List<DataRange> old, DataRange expected)
+        private void TestJoinTwoDataRanges(AggregatedDataRange insert, List<AggregatedDataRange> old, AggregatedDataRange expected)
         {
             var actual = _dataJoiner.JoinDataRangeToDataRanges(old, insert).ToList();
-            actual.ShouldBeEquivalentTo(new List<DataRange> { expected });
+            actual.ShouldBeEquivalentTo(new List<AggregatedDataRange> { expected });
         }
     }
 }

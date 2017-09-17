@@ -17,14 +17,14 @@ namespace Deepflow.Platform.Series.Attributes
         private readonly ISeriesKnower _seriesKnower;
         private readonly IDataProvider _dataProvider;
         private readonly IDataAggregator _aggregator;
-        private readonly IDataMerger _merger;
-        private readonly IDataFilterer _filterer;
+        private readonly IDataMerger<AggregatedDataRange> _merger;
+        private readonly IDataFilterer<AggregatedDataRange> _filterer;
         private readonly IDataValidator _validator;
         private readonly ISeriesConfiguration _seriesConfiguration;
         private readonly ILogger<AttributeSeriesGrain> _logger;
         private readonly ObserverSubscriptionManager<ISeriesObserver> _subscriptions = new ObserverSubscriptionManager<ISeriesObserver>();
 
-        public AttributeSeriesGrain(ISeriesKnower seriesKnower, IDataProvider dataProvider, IDataAggregator aggregator, IDataMerger merger, IDataFilterer filterer, IDataValidator validator, ISeriesConfiguration seriesConfiguration, ILogger<AttributeSeriesGrain> logger)
+        public AttributeSeriesGrain(ISeriesKnower seriesKnower, IDataProvider dataProvider, IDataAggregator aggregator, IDataMerger<AggregatedDataRange> merger, IDataFilterer<AggregatedDataRange> filterer, IDataValidator validator, ISeriesConfiguration seriesConfiguration, ILogger<AttributeSeriesGrain> logger)
         {
             _seriesKnower = seriesKnower;
             _dataProvider = dataProvider;
@@ -46,17 +46,17 @@ namespace Deepflow.Platform.Series.Attributes
             await base.OnActivateAsync();
         }
 
-        public async Task<IEnumerable<DataRange>> GetData(TimeRange timeRange, int aggregationSeconds)
+        public async Task<IEnumerable<AggregatedDataRange>> GetAggregatedData(TimeRange timeRange, int aggregationSeconds)
         {
             if (!_seriesGuids.TryGetValue(aggregationSeconds, out Guid seriesGuid))
             {
                 throw new Exception($"Cannot find series GUID for attribute {_entity}:{_attribute}:{aggregationSeconds}");
             }
-            var data = await _dataProvider.GetAttributeRanges(seriesGuid, timeRange);
-            return data.ToList();
+
+            return await _dataProvider.GetAggregatedRanges(seriesGuid, timeRange, aggregationSeconds);
         }
 
-        public async Task AddAggregatedData(IEnumerable<DataRange> dataRanges, int aggregationSeconds)
+        public async Task AddAggregatedData(IEnumerable<AggregatedDataRange> dataRanges, int aggregationSeconds)
         {
             if (!_validator.AreValidDataRanges(dataRanges))
             {
@@ -69,18 +69,26 @@ namespace Deepflow.Platform.Series.Attributes
                 throw new Exception($"Data to be added must be aggregated to the lowest aggregation level which is '{_seriesConfiguration.LowestAggregationSeconds}'");
             }
 
-            _logger.LogWarning($"Adding aggregated data");
-            var tasks = dataRanges.Select(AddAggregatedData);
-            await Task.WhenAll(tasks.ToArray());
+            try
+            {
+                _logger.LogWarning($"Adding aggregated data");
+                var tasks = dataRanges.Select(AddAggregatedData);
+                await Task.WhenAll(tasks.ToArray());
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(null, exception, "Error when adding aggregated data");
+                throw;
+            }
         }
 
-        public Task NotifyRawData(IEnumerable<DataRange> dataRanges)
+        public Task NotifyRawData(IEnumerable<RawDataRange> dataRanges)
         {
             _subscriptions.Notify(observer => observer.ReceiveRawData(_entity, _attribute, dataRanges));
             return Task.FromResult(0);
         }
 
-        private async Task AddAggregatedData(DataRange dataRange)
+        private async Task AddAggregatedData(AggregatedDataRange dataRange)
         {
             if (!_validator.IsValidDataRange(dataRange))
             {
@@ -95,15 +103,15 @@ namespace Deepflow.Platform.Series.Attributes
 
             // Fetch lowest aggregation from provider
             var series = await _seriesKnower.GetAttributeSeriesGuid(_entity, _attribute, _seriesConfiguration.LowestAggregationSeconds);
-            var lowestAggregationExistingData = CleanDataRanges(await _dataProvider.GetAttributeRanges(series, quantisedRange));
+            var storedRanges = await _dataProvider.GetAggregatedRanges(series, quantisedRange, _seriesConfiguration.LowestAggregationSeconds);
+            var lowestAggregationExistingData = CleanDataRanges(storedRanges);
 
             // Add incoming data to lowest aggregation
             var merged = _merger.MergeDataRangeWithRanges(lowestAggregationExistingData, dataRange);
             _validator.ValidateAtLeastOneDataRange(merged, "Incoming data merged with existing data didn't produce a single ranges");
-            _validator.ValidateSingleOrLessDataRange(merged, "Incomning data merged with existing data produced multiple ranges");
 
             // Recalculate higher aggregations
-            IEnumerable<AggregatedDataRange> aggregations = _aggregator.Aggregate(merged.Single(), _seriesConfiguration.AggregationsSecondsDescending);
+            IEnumerable<AggregatedDataRange> aggregations = _aggregator.Aggregate(merged, quantisedRange, _seriesConfiguration.AggregationsSecondsDescending);
 
             _logger.LogWarning($"Adding aggregated data");
             var tasks = aggregations.Select(SaveAggregatedRange);
@@ -119,14 +127,21 @@ namespace Deepflow.Platform.Series.Attributes
 
         private async Task SaveAggregatedRange(AggregatedDataRange aggregatedDataRange)
         {
-            var series = await _seriesKnower.GetAttributeSeriesGuid(_entity, _attribute, aggregatedDataRange.AggregationSeconds);
-            await _dataProvider.SaveAttributeRange(series, aggregatedDataRange.DataRange);
+            try
+            {
+                var series = await _seriesKnower.GetAttributeSeriesGuid(_entity, _attribute, aggregatedDataRange.AggregationSeconds);
+                await _dataProvider.SaveAggregatedRange(series, aggregatedDataRange);
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(null, exception, "Error when saving aggregated range");
+                throw;
+            }
         }
 
         private AggregatedDataRange FilterAggregatedRange(AggregatedDataRange aggregatedDataRange, TimeRange timeRange)
         {
-            var filtered = _filterer.FilterDataRangeEndTimeInclusive(aggregatedDataRange.DataRange, timeRange);
-            return new AggregatedDataRange(filtered, aggregatedDataRange.AggregationSeconds);
+            return _filterer.FilterDataRangeEndTimeInclusive(aggregatedDataRange, timeRange);
         }
 
         public Task Subscribe(ISeriesObserver observer)
@@ -141,7 +156,7 @@ namespace Deepflow.Platform.Series.Attributes
             return Task.FromResult(0);
         }
 
-        private IEnumerable<DataRange> CleanDataRanges(IEnumerable<DataRange> dataRanges)
+        private IEnumerable<AggregatedDataRange> CleanDataRanges(IEnumerable<AggregatedDataRange> dataRanges)
         {
             foreach (var dataRange in dataRanges)
             {

@@ -81,7 +81,7 @@ namespace Deepflow.Platform.Controllers
         public async Task<DataResponse> HandleAttributeDataRequest(DataRequest request)
         {
             var series = GrainClient.GrainFactory.GetGrain<IAttributeSeriesGrain>(SeriesIdHelper.ToAttributeSeriesId(request.Entity, request.Attribute));
-            var dataRanges = await series.GetData(new TimeRange(request.MinSeconds, request.MaxSeconds), request.AggregationSeconds).ConfigureAwait(false);
+            var dataRanges = await series.GetAggregatedData(new TimeRange(request.MinSeconds, request.MaxSeconds), request.AggregationSeconds).ConfigureAwait(false);
             return new DataResponse { Id = request.Id, DataRanges = dataRanges };
         }
 
@@ -106,7 +106,7 @@ namespace Deepflow.Platform.Controllers
             _sender.Send(socketId, message);
         }
 
-        public void SendRawData(string socketId, Guid entity, Guid attribute, IEnumerable<DataRange> dataRanges)
+        public void SendRawData(string socketId, Guid entity, Guid attribute, IEnumerable<RawDataRange> dataRanges)
         {
             var message = JsonConvert.SerializeObject(new RawDataSubscriptionMessage { Entity = entity, Attribute = attribute, DataRanges = dataRanges }, _jsonSetttings);
             _sender.Send(socketId, message);

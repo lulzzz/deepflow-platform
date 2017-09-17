@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,12 +16,12 @@ namespace Deepflow.Platform.Series.Providers
             _knower = knower;
         }
 
-        protected override async Task<IEnumerable<DataRange>> ProduceAttributeRanges(Guid series, IEnumerable<TimeRange> timeRanges)
+        protected override async Task<IEnumerable<RawDataRange>> ProduceAttributeRanges(Guid series, IEnumerable<TimeRange> timeRanges)
         {
             return await Task.WhenAll(timeRanges.Select(timeRange => GetAttributeRange(series, timeRange)));
         }
 
-        private async Task<DataRange> GetAttributeRange(Guid guid, TimeRange timeRange)
+        private async Task<RawDataRange> GetAttributeRange(Guid guid, TimeRange timeRange)
         {
             var series = await _knower.GetAttributeSeries(guid);
             var random = new Random();
@@ -28,7 +29,8 @@ namespace Deepflow.Platform.Series.Providers
             var minTime = (int)Math.Ceiling((double)timeRange.MinSeconds / series.AggregationSeconds);
             var maxTime = (int)Math.Floor((double)timeRange.MaxSeconds / series.AggregationSeconds);
             var data = Enumerable.Range(minTime, maxTime - minTime).Select(i => random.NextDouble()).ToList();
-            return new DataRange(timeRange, data);
+            return new RawDataRange(timeRange, data);
         }
     }
 }
+*/

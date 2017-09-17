@@ -74,7 +74,7 @@ namespace Deepflow.Platform.Agent.Processor
             public string SourceName;
         }
 
-        private async Task OnReceiveRaw(string sourceName, DataRange rawDataRange)
+        private async Task OnReceiveRaw(string sourceName, RawDataRange rawDataRange)
         {
             var aggregatedTime = rawDataRange.TimeRange.MaxSeconds - (rawDataRange.TimeRange.MaxSeconds % _configuration.AggregationSeconds) + _configuration.AggregationSeconds;
             var aggregatedTimeRange = new TimeRange(aggregatedTime - _configuration.AggregationSeconds, aggregatedTime);

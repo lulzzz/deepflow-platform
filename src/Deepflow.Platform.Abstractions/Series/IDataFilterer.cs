@@ -2,12 +2,12 @@
 
 namespace Deepflow.Platform.Abstractions.Series
 {
-    public interface IDataFilterer
+    public interface IDataFilterer<TRange> where TRange : IDataRange
     {
-        IEnumerable<DataRange> FilterDataRanges(IEnumerable<DataRange> ranges, TimeRange timeRange);
-        IEnumerable<DataRange> FilterDataRangesEndTimeInclusive(IEnumerable<DataRange> ranges, TimeRange timeRange);
-        DataRange FilterDataRange(DataRange range, TimeRange timeRange);
-        DataRange FilterDataRangeEndTimeInclusive(DataRange range, TimeRange timeRange);
-        IEnumerable<DataRange> SubtractTimeRangeFromRanges(IEnumerable<DataRange> ranges, TimeRange subtractRange);
+        IEnumerable<TRange> FilterDataRanges(IEnumerable<TRange> ranges, TimeRange timeRange);
+        IEnumerable<TRange> FilterDataRangesEndTimeInclusive(IEnumerable<TRange> ranges, TimeRange timeRange);
+        TRange FilterDataRange(TRange range, TimeRange timeRange);
+        TRange FilterDataRangeEndTimeInclusive(TRange range, TimeRange timeRange);
+        IEnumerable<TRange> SubtractTimeRangeFromRanges(IEnumerable<TRange> ranges, TimeRange subtractRange);
     }
 }

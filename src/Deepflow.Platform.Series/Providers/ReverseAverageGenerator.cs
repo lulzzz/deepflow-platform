@@ -19,7 +19,7 @@ namespace Deepflow.Platform.Series.Providers
             _dataMerger = dataMerger;
         }
 
-        public DataRange GenerateReverseAverage(string name, TimeRange timeRange, int[] aggregationLevels, int aggregationLevel, double minValue, double maxValue)
+        public RawDataRange GenerateReverseAverage(string name, TimeRange timeRange, int[] aggregationLevels, int aggregationLevel, double minValue, double maxValue)
         {
             // Get quantised time ranges
             var ascendingAggregationLevels = aggregationLevels.OrderByDescending(x => x).ToArray();
@@ -27,7 +27,7 @@ namespace Deepflow.Platform.Series.Providers
             var aggregationLevelIndex = Array.IndexOf(ascendingAggregationLevels, aggregationLevel);
             var quantisedLow = GetQuantisedTimeBeforeOrOn(highestAggregationLevel, timeRange.MinSeconds);
             var quantisedHigh = GetQuantisedTimeAfterOrOn(highestAggregationLevel, timeRange.MaxSeconds);
-            IEnumerable<DataRange> dataRanges = new List<DataRange>();
+            IEnumerable<RawDataRange> dataRanges = new List<RawDataRange>();
 
             // For each quantised time range
             for (var time = quantisedLow; time < quantisedHigh; time += highestAggregationLevel)
@@ -47,7 +47,7 @@ namespace Deepflow.Platform.Series.Providers
                     levelData.Add(lowTime + i * aggregationLevel);
                     levelData.Add(levelValues[i].Value);
                 }
-                var dataRange = new DataRange(lowTime, highTime, new List<double>(levelData));
+                var dataRange = new RawDataRange(lowTime, highTime, new List<double>(levelData));
                 dataRanges = _dataMerger.MergeDataRangeWithRanges(dataRanges, dataRange);
             }
             

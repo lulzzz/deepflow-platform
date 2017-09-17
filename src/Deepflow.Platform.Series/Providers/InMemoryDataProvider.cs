@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,9 +13,9 @@ namespace Deepflow.Platform.Series.Providers
         private readonly IDataMerger _merger;
         private readonly IDataFilterer _dataFilterer;
         private readonly ITimeFilterer _timeFilterer;
-        private readonly ConcurrentDictionary<Guid, IEnumerable<DataRange>> _seriesRanges = new ConcurrentDictionary<Guid, IEnumerable<DataRange>>();
+        private readonly ConcurrentDictionary<Guid, IEnumerable<RawDataRange>> _seriesRanges = new ConcurrentDictionary<Guid, IEnumerable<RawDataRange>>();
 
-        protected abstract Task<IEnumerable<DataRange>> ProduceAttributeRanges(Guid series, IEnumerable<TimeRange> timeRanges);
+        protected abstract Task<IEnumerable<RawDataRange>> ProduceAttributeRanges(Guid series, IEnumerable<TimeRange> timeRanges);
 
         public InMemoryDataProvider(IDataMerger merger, IDataFilterer dataFilterer, ITimeFilterer timeFilterer)
         {
@@ -23,17 +24,11 @@ namespace Deepflow.Platform.Series.Providers
             _timeFilterer = timeFilterer;
         }
 
-        public async Task<IEnumerable<DataRange>> GetAttributeRanges(Guid series, IEnumerable<TimeRange> timeRanges)
+        public async Task<IEnumerable<AggregatedDataRange>> GetAggregatedRanges(Guid series, TimeRange timeRange, int aggregationSeconds)
         {
-            var ranges = await Task.WhenAll(timeRanges.Select(timeRange => GetAttributeRanges(series, timeRange)));
-            return ranges.SelectMany(x => x);
-        }
-
-        public async Task<IEnumerable<DataRange>> GetAttributeRanges(Guid series, TimeRange timeRange)
-        {
-            if (!_seriesRanges.TryGetValue(series, out IEnumerable<DataRange> dataRanges))
+            if (!_seriesRanges.TryGetValue(series, out IEnumerable<RawDataRange> dataRanges))
             {
-                return new List<DataRange>();
+                return new List<AggregatedDataRange>();
             }
 
             var existingRanges = _dataFilterer.FilterDataRanges(dataRanges, timeRange);
@@ -47,11 +42,21 @@ namespace Deepflow.Platform.Series.Providers
             return mergedInRange;
         }
 
-        public Task SaveAttributeRange(Guid series, DataRange incomingDataRange)
+        public Task SaveAggregatedRanges(Guid series, IEnumerable<AggregatedDataRange> dataRanges)
         {
-            if (!_seriesRanges.TryGetValue(series, out IEnumerable<DataRange> existingRanges))
+            throw new NotImplementedException();
+        }
+
+        public Task SaveAggregatedRange(Guid series, AggregatedDataRange dataRange)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SaveAggregatedRange(Guid series, RawDataRange incomingDataRange)
+        {
+            if (!_seriesRanges.TryGetValue(series, out IEnumerable<RawDataRange> existingRanges))
             {
-                existingRanges = new List<DataRange>();
+                existingRanges = new List<RawDataRange>();
             }
 
             var merged = _merger.MergeDataRangeWithRanges(existingRanges, incomingDataRange);
@@ -59,5 +64,11 @@ namespace Deepflow.Platform.Series.Providers
 
             return Task.FromResult(0);
         }
+
+        public Task<IEnumerable<TimeRange>> GetSavedAggregatedTimeRanges(Guid series)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
+*/

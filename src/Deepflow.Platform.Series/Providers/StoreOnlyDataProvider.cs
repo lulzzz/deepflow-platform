@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Deepflow.Platform.Abstractions.Series;
@@ -11,9 +12,10 @@ namespace Deepflow.Platform.Series.Providers
         {
         }
 
-        protected override Task<IEnumerable<DataRange>> ProduceAttributeRanges(Guid series, IEnumerable<TimeRange> timeRanges)
+        protected override Task<IEnumerable<RawDataRange>> ProduceAttributeRanges(Guid series, IEnumerable<TimeRange> timeRanges)
         {
-            return Task.FromResult((IEnumerable<DataRange>) new List<DataRange>());
+            return Task.FromResult((IEnumerable<RawDataRange>) new List<RawDataRange>());
         }
     }
 }
+*/

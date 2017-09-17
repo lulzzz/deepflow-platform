@@ -50,7 +50,7 @@ namespace Deepflow.Platform.Sources.FakeSource.Realtime
             _sender = sender;
         }
 
-        private async Task SendPoint(string socketId, DataRange dataRange)
+        private async Task SendPoint(string socketId, RawDataRange dataRange)
         {
             try
             {

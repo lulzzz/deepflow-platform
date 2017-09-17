@@ -23,7 +23,7 @@ namespace Deepflow.Platform.Series.Cassandra
             Session = cluster.Connect();*/
         }
 
-        public async Task SaveAttributeRanges(Guid series, IEnumerable<DataRange> ranges)
+        public async Task SaveAggregatedRanges(Guid series, IEnumerable<AggregatedDataRange> ranges)
         {
             var preparedStatement = Session.Prepare($"INSERT INTO AverageByTimeDesc (guid, timestamp, value) VALUES (?, ?, ?)");
 
@@ -53,16 +53,11 @@ namespace Deepflow.Platform.Series.Cassandra
                 await Session.ExecuteAsync(batchStatement);
             }
         }
-
-        public async Task<IEnumerable<DataRange>> GetAttributeRanges(Guid series, IEnumerable<TimeRange> timeRanges)
+        
+        public async Task<IEnumerable<AggregatedDataRange>> GetAggregatedRanges(Guid series, TimeRange timeRange, int aggregationSeconds)
         {
-            var tasks = timeRanges.Select(timeRange => GetAttributeRanges(series, timeRange));
-            var ranges = await Task.WhenAll(tasks);
-            return ranges.SelectMany(x => x);
-        }
+            throw new Exception("Return proper ranges");
 
-        public async Task<IEnumerable<DataRange>> GetAttributeRanges(Guid series, TimeRange timeRange)
-        {
             var query = $"SELECT timestamp, value FROM AverageByTimeDesc WHERE guid = {series} AND timestamp >= '{FromUnixTimestampMinutes((int) timeRange.MinSeconds / 60):s}' AND timestamp < '{FromUnixTimestampMinutes((int)timeRange.MaxSeconds / 60):s}';";
 
             var rowSet = await Session.ExecuteAsync(new SimpleStatement(query)).ConfigureAwait(false);
@@ -75,17 +70,22 @@ namespace Deepflow.Platform.Series.Cassandra
                 data[i++] = row.GetValue<int>(0) * 60;
                 data[i++] = row.GetValue<float>(1);
             }
-            return new List<DataRange> { new DataRange(timeRange, data) };
+            return new List<AggregatedDataRange> {new AggregatedDataRange(timeRange, data, aggregationSeconds) };
         }
 
-        public Task SaveAttributeRange(Guid series, DataRange incomingDataRange)
+        public Task SaveAggregatedRange(Guid series, AggregatedDataRange incomingDataRange)
         {
-            return SaveAttributeRanges(series, new List<DataRange> { incomingDataRange });
+            return SaveAggregatedRanges(series, new List<AggregatedDataRange> { incomingDataRange });
         }
-
+        
         private static DateTime FromUnixTimestampMinutes(int minutes)
         {
             return new DateTime(1970, 1, 1) + TimeSpan.FromMinutes(minutes);
+        }
+
+        public Task<IEnumerable<TimeRange>> GetSavedAggregatedTimeRanges(Guid series)
+        {
+            throw new NotImplementedException();
         }
     }
 }

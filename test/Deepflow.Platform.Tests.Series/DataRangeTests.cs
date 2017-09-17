@@ -11,9 +11,9 @@ namespace Deepflow.Platform.Tests.Series
         [InlineData(300, 400, 100, 200)]
         public void TestDoesntTouch(int minOne, int maxOne, int minTwo, int maxTwo)
         {
-            var one = new DataRange(minOne, maxOne);
-            var two = new DataRange(minTwo, maxTwo);
-            one.Touches(two).Should().BeFalse();
+            var one = new AggregatedDataRange(minOne, maxOne, 50);
+            var two = new AggregatedDataRange(minTwo, maxTwo, 50);
+            one.TimeRange.Touches(two.TimeRange).Should().BeFalse();
         }
 
         [Theory]
@@ -26,9 +26,9 @@ namespace Deepflow.Platform.Tests.Series
         [InlineData(300, 350, 200, 300)]
         public void TestTouches(int minOne, int maxOne, int minTwo, int maxTwo)
         {
-            var one = new DataRange(minOne, maxOne);
-            var two = new DataRange(minTwo, maxTwo);
-            one.Touches(two).Should().BeTrue();
+            var one = new AggregatedDataRange(minOne, maxOne, 50);
+            var two = new AggregatedDataRange(minTwo, maxTwo, 50);
+            one.TimeRange.Touches(two.TimeRange).Should().BeTrue();
         }
     }
 }

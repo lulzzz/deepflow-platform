@@ -8,6 +8,6 @@ namespace Deepflow.Platform.Controllers
     {
         public Guid Entity { get; set; }
         public Guid Attribute { get; set; }
-        public IEnumerable<DataRange> DataRanges { get; set; }
+        public IEnumerable<RawDataRange> DataRanges { get; set; }
     }
 }

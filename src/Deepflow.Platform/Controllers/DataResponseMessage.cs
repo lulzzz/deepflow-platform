@@ -7,6 +7,6 @@ namespace Deepflow.Platform.Controllers
     public class DataResponse
     {
         public int Id { get; set; }
-        public IEnumerable<DataRange> DataRanges { get; set; }
+        public IEnumerable<AggregatedDataRange> DataRanges { get; set; }
     }
 }

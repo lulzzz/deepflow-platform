@@ -6,8 +6,8 @@ namespace Deepflow.Platform.Abstractions.Series
 {
     public interface ISourceSeriesGrain : IGrainWithStringKey
     {
-        Task AddAggregatedData(DataRange dataRange, int aggregationSeconds);
-        Task AddAggregatedData(IEnumerable<DataRange> dataRanges, int aggregationSeconds);
-        Task NotifyRawData(IEnumerable<DataRange> dataRanges);
+        Task AddAggregatedData(AggregatedDataRange dataRange, int aggregationSeconds);
+        Task AddAggregatedData(IEnumerable<AggregatedDataRange> dataRanges, int aggregationSeconds);
+        Task NotifyRawData(IEnumerable<RawDataRange> dataRanges);
     }
 }

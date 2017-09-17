@@ -1,5 +1,8 @@
 ﻿using Deepflow.Platform.Abstractions.Realtime;
+using Deepflow.Platform.Abstractions.Series;
 using Deepflow.Platform.Realtime;
+using Deepflow.Platform.Series;
+using Deepflow.Platform.Sources.FakeSource.Data;
 using Deepflow.Platform.Sources.FakeSource.Realtime;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -30,6 +33,8 @@ namespace Deepflow.Platform.Sources.FakeSource
             services.AddMvc();
             services.AddSingleton<IWebsocketsManager, WebsocketsManager>();
             services.AddSingleton<IWebsocketsReceiver, SubscriptionManager>();
+            services.AddSingleton<IDataGenerator, DataGenerator>();
+            services.AddSingleton<IDataAggregator, DataAggregator>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

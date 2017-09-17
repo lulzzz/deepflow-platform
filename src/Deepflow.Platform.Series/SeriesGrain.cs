@@ -18,7 +18,7 @@ namespace Deepflow.Platform.AttributeSeries
         private readonly ITimeFilterer _timeFilterer;
         private readonly ISeriesKnower _seriesKnower;
         private readonly IDataJoiner _dataJoiner;
-        private IDictionary<int, IEnumerable<DataRange>> _aggregations = new Dictionary<int, IEnumerable<DataRange>>();
+        private IDictionary<int, IEnumerable<RawDataRange>> _aggregations = new Dictionary<int, IEnumerable<RawDataRange>>();
         private readonly ObserverSubscriptionManager<ISeriesObserver> _subscriptions = new ObserverSubscriptionManager<ISeriesObserver>();
 
         public SeriesGrain(SeriesSettings config, IDataAggregator aggregator, IDataFilterer dataFilterer, IDataJoiner dataJoiner, IDataProvider provider, ITimeFilterer timeFilterer, ISeriesKnower seriesKnower)
@@ -38,25 +38,25 @@ namespace Deepflow.Platform.AttributeSeries
             return base.OnActivateAsync();
         }
         
-        public Task AddAggregatedData(IEnumerable<DataRange> dataRanges)
+        public Task AddAggregatedData(IEnumerable<RawDataRange> dataRanges)
         {
             _aggregations = _aggregator.AddToAggregations(_aggregations, dataRanges, _config.Aggregations);
             return Task.FromResult(0);
         }
 
-        public async Task<IEnumerable<DataRange>> GetAggregatedData(TimeRange timeRange, int aggregationSeconds)
+        public async Task<IEnumerable<RawDataRange>> GetAggregatedData(TimeRange timeRange, int aggregationSeconds)
         {
-            IEnumerable<DataRange> dataRanges;
+            IEnumerable<RawDataRange> dataRanges;
             if (!_aggregations.TryGetValue(aggregationSeconds, out dataRanges))
             {
-                dataRanges = new List<DataRange>();
+                dataRanges = new List<RawDataRange>();
                 _aggregations.Add(aggregationSeconds, dataRanges);
                 //return dataRanges;
             }
 
             var timeRanges = _timeFilterer.SubtractTimeRangesFromRange(timeRange, dataRanges.Select(x => x.TimeRange));
             var seriesGuid = await _seriesKnower.GetSeriesGuid(_entity, _attribute, aggregationSeconds);
-            var loadedRanges = await _provider.GetAttributeRanges(seriesGuid, timeRanges);
+            var loadedRanges = await _provider.GetAggregatedRanges(seriesGuid, timeRanges);
             dataRanges = _dataJoiner.JoinDataRangesToDataRanges(dataRanges, loadedRanges);
 
             return _dataFilterer.FilterDataRanges(dataRanges, timeRange);

@@ -59,17 +59,6 @@ namespace Deepflow.Platform
             var ingestionConfiguration = new IngestionConfiguration();
             Configuration.GetSection("Ingestion").Bind(ingestionConfiguration);
             services.AddSingleton(ingestionConfiguration);
-
-            /*var orleansServices = OrleansStartup.Services = new OrleansServiceProvider(services.BuildServiceProvider());
-
-            orleansServices.AddSingleton<IDataAggregator, DataAggregator>();
-            orleansServices.AddSingleton<IDataFilterer, DataFilterer>();
-            orleansServices.AddSingleton<IDataJoiner, DataJoiner>();
-            orleansServices.AddSingleton<IDataMerger, DataMerger>();
-            orleansServices.AddSingleton<ISeriesKnower, SeriesKnower>();
-            orleansServices.AddSingleton<ITimeFilterer, TimeFilterer>();
-            
-            return orleansServices;*/
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -102,9 +91,9 @@ namespace Deepflow.Platform
             services.AddLogging();
 
             services.AddSingleton<IDataAggregator, DataAggregator>();
-            services.AddSingleton<IDataFilterer, DataFilterer>();
-            services.AddSingleton<IDataJoiner, DataJoiner>();
-            services.AddSingleton<IDataMerger, DataMerger>();
+            services.AddSingleton<IDataFilterer<AggregatedDataRange>, DataFilterer<AggregatedDataRange>>();
+            services.AddSingleton<IDataJoiner<AggregatedDataRange>, DataJoiner<AggregatedDataRange>>();
+            services.AddSingleton<IDataMerger<AggregatedDataRange>, DataMerger<AggregatedDataRange>>();
             services.AddSingleton<ISeriesKnower, SeriesKnower>();
             services.AddSingleton<ITimeFilterer, TimeFilterer>();
             services.AddSingleton<IDataProvider, DynamoDbDataProvider>();

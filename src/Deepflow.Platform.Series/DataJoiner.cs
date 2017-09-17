@@ -6,9 +6,16 @@ using Deepflow.Platform.Core.Tools;
 
 namespace Deepflow.Platform.Series
 {
-    public class DataJoiner : IDataJoiner
+    public class DataJoiner<TRange> : IDataJoiner<TRange> where TRange : IDataRange
     {
-        public IEnumerable<DataRange> JoinDataRangesToDataRanges(IEnumerable<DataRange> dataRanges, IEnumerable<DataRange> newDataRanges)
+        private readonly IDataRangeCreator<TRange> _creator;
+
+        public DataJoiner(IDataRangeCreator<TRange> creator)
+        {
+            _creator = creator;
+        }
+
+        public IEnumerable<TRange> JoinDataRangesToDataRanges(IEnumerable<TRange> dataRanges, IEnumerable<TRange> newDataRanges)
         {
             if (newDataRanges == null || !newDataRanges.Any())
             {
@@ -20,7 +27,7 @@ namespace Deepflow.Platform.Series
                 return newDataRanges;
             }
 
-            IEnumerable<DataRange> joined = dataRanges;
+            IEnumerable<TRange> joined = dataRanges;
 
             foreach (var newDataRange in newDataRanges)
             {
@@ -30,7 +37,7 @@ namespace Deepflow.Platform.Series
             return joined;
         }
 
-        public IEnumerable<DataRange> JoinDataRangeToDataRanges(IEnumerable<DataRange> ranges, DataRange newRange)
+        public IEnumerable<TRange> JoinDataRangeToDataRanges(IEnumerable<TRange> ranges, TRange newRange)
         {
             if (ranges == null || !ranges.Any())
             {
@@ -45,19 +52,19 @@ namespace Deepflow.Platform.Series
             return ranges.JoinInsert(newRange, PlaceDataRange, JoinTwoDataRanges);
         }
 
-        private InsertPlacement PlaceDataRange(DataRange itemToInsert, DataRange existingItem)
+        private InsertPlacement PlaceDataRange(TRange itemToInsert, TRange existingItem)
         {
-            if (itemToInsert.Touches(existingItem))
+            if (itemToInsert.TimeRange.Touches(existingItem.TimeRange))
             {
                 return InsertPlacement.Equal;
             }
 
-            if (itemToInsert.TimeRange < existingItem.TimeRange)
+            if (itemToInsert.TimeRange.MinSeconds < existingItem.TimeRange.MinSeconds)
             {
                 return InsertPlacement.Before;
             }
 
-            if (itemToInsert.TimeRange > existingItem.TimeRange)
+            if (itemToInsert.TimeRange.MinSeconds > existingItem.TimeRange.MinSeconds)
             {
                 return InsertPlacement.After;
             }
@@ -65,13 +72,13 @@ namespace Deepflow.Platform.Series
             throw new Exception("PlaceDataRange can't place data range");
         }
 
-        private DataRange JoinTwoDataRanges(DataRange old, DataRange insert)
+        private TRange JoinTwoDataRanges(TRange old, TRange insert)
         {
             var min = Math.Min(insert.TimeRange.MinSeconds, old.TimeRange.MinSeconds);
             var max = Math.Max(insert.TimeRange.MaxSeconds, old.TimeRange.MaxSeconds);
 
             var data = JoinData(insert.Data, old.Data);
-            return new DataRange(min, max, data);
+            return _creator.Create(new TimeRange(min, max), data, insert);
         }
 
         private List<double> JoinData(List<double> insert, List<double> old)

@@ -8,7 +8,7 @@ namespace Deepflow.Platform.Series
 {
     public class DataValidator : IDataValidator
     {
-        public void ValidateAggregation(DataRange dataRange, int aggregationLevel)
+        public void ValidateAggregation(AggregatedDataRange dataRange, int aggregationLevel)
         {
             foreach (var datum in dataRange.GetData())
             {
@@ -19,7 +19,7 @@ namespace Deepflow.Platform.Series
             }
         }
 
-        public bool IsValidDataRange(DataRange dataRange)
+        public bool IsValidDataRange(AggregatedDataRange dataRange)
         {
             if (dataRange == null || dataRange.TimeRange.IsZeroLength() || dataRange.Data == null || dataRange.Data.Count == 0)
             {
@@ -29,12 +29,12 @@ namespace Deepflow.Platform.Series
             return true;
         }
 
-        public bool AreValidDataRanges(IEnumerable<DataRange> dataRanges)
+        public bool AreValidDataRanges(IEnumerable<AggregatedDataRange> dataRanges)
         {
             return dataRanges != null && dataRanges.Any();
         }
 
-        public void ValidateSingleOrLessDataRange(IEnumerable<DataRange> dataRanges, string reason)
+        public void ValidateSingleOrLessDataRange(IEnumerable<AggregatedDataRange> dataRanges, string reason)
         {
             if (dataRanges.Count() >= 2)
             {
@@ -42,7 +42,7 @@ namespace Deepflow.Platform.Series
             }
         }
 
-        public void ValidateAtLeastOneDataRange(IEnumerable<DataRange> dataRanges, string reason)
+        public void ValidateAtLeastOneDataRange(IEnumerable<AggregatedDataRange> dataRanges, string reason)
         {
             if (!dataRanges.Any())
             {

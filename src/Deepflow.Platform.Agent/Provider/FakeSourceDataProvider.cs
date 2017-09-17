@@ -22,20 +22,20 @@ namespace Deepflow.Platform.Agent.Provider
             _logger = logger;
         }
 
-        public async Task<DataRange> FetchAggregatedData(string sourceName, TimeRange timeRange, int aggregationSeconds)
+        public async Task<RawDataRange> FetchAggregatedData(string sourceName, TimeRange timeRange, int aggregationSeconds)
         {
             var uri = new Uri(_configuration.ApiBaseUrl, $"api/v1/Data/{sourceName}/aggregations/{aggregationSeconds}?minTimeUtc={timeRange.MinSeconds.FromSecondsSince1970Utc():s}&maxTimeUtc={timeRange.MaxSeconds.FromSecondsSince1970Utc():s}");
             var responseMessage = await _client.GetStringAsync(uri);
-            var dataRange = JsonConvert.DeserializeObject<DataRange>(responseMessage);
+            var dataRange = JsonConvert.DeserializeObject<RawDataRange>(responseMessage);
             return dataRange;
         }
 
-        public Task<DataRange> FetchRawData(string sourceName, TimeRange timeRange)
+        public Task<RawDataRange> FetchRawData(string sourceName, TimeRange timeRange)
         {
             throw new NotImplementedException();
         }
 
-        public async Task SubscribeForRawData(string sourceName, CancellationToken cancellationToken, Func<DataRange, Task> onReceive)
+        public async Task SubscribeForRawData(string sourceName, CancellationToken cancellationToken, Func<RawDataRange, Task> onReceive)
         {
             var uri = new Uri(_configuration.RealtimeBaseUrl, "ws/v1");
             WebsocketClientManager client = null;
@@ -49,9 +49,9 @@ namespace Deepflow.Platform.Agent.Provider
             await client.SendMessage(message);
         }
 
-        private async Task OnReceive(string messageString, Func<DataRange, Task> onReceive)
+        private async Task OnReceive(string messageString, Func<RawDataRange, Task> onReceive)
         {
-            var dataRange = JsonConvert.DeserializeObject<DataRange>(messageString);
+            var dataRange = JsonConvert.DeserializeObject<RawDataRange>(messageString);
             await onReceive(dataRange);
         }
     }

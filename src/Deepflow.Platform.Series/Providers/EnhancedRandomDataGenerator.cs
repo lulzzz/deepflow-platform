@@ -10,7 +10,7 @@ namespace Deepflow.Platform.Series.Providers
     {
         private static readonly SHA1 Sha1 = SHA1.Create();
 
-        public DataRange GenerateData(string name, long startTimeSeconds, long endTimeSeconds, double minValue, double maxValue, double maxVariance, TimeSpan maxTimespan)
+        public RawDataRange GenerateData(string name, long startTimeSeconds, long endTimeSeconds, double minValue, double maxValue, double maxVariance, TimeSpan maxTimespan)
         {
             var startTimeHash = Hash($"${name}_${startTimeSeconds}_${minValue}_${maxValue}");
             var endTimeHash = Hash($"${name}_${endTimeSeconds}_${minValue}_${maxValue}");
@@ -28,13 +28,26 @@ namespace Deepflow.Platform.Series.Providers
 
             if (startTimeSeconds == endTimeSeconds)
             {
-                return new DataRange((long) (startTimeSeconds - maxTimespan.TotalSeconds), endTimeSeconds, data);
+                return ToDataRange((long) (startTimeSeconds - maxTimespan.TotalSeconds), endTimeSeconds, data);
             }
 
             SplitValueRecursive(startDatum, endDatum, maxVariance, data, maxTimespan, random);
             data.Add(endDatum);
 
-            return new DataRange(startTimeSeconds, endTimeSeconds, data);
+            return ToDataRange(startTimeSeconds, endTimeSeconds, data);
+        }
+
+        private RawDataRange ToDataRange(long minSeconds, long maxSeconds, List<Datum> data)
+        {
+            var dataArray = new List<double>();
+            var i = 0;
+            foreach (var datum in data)
+            {
+                dataArray[i * 2] = datum.Time;
+                dataArray[i * 2 + 1] = datum.Value;
+                i++;
+            }
+            return new RawDataRange(minSeconds, maxSeconds, dataArray);
         }
 
         private void SplitValueRecursive(Datum start, Datum end, double maxVariance, List<Datum> data, TimeSpan maxTimespan, Random random)

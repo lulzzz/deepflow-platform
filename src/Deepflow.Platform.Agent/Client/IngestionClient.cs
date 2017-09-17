@@ -86,24 +86,24 @@ namespace Deepflow.Platform.Agent.Client
             }
         }
 
-        public Task SendAggregatedRange(string name, DataRange dataRange, int aggregationSeconds)
+        public Task SendAggregatedRange(string name, RawDataRange dataRange, int aggregationSeconds)
         {
-            return SendAggregatedRanges(name, new List<DataRange> { dataRange }, aggregationSeconds);
+            return SendAggregatedRanges(name, new List<RawDataRange> { dataRange }, aggregationSeconds);
         }
 
-        public Task SendRawRange(string name, DataRange dataRange)
+        public Task SendRawRange(string name, RawDataRange dataRange)
         {
-            return SendRawRanges(name, new List<DataRange> { dataRange });
+            return SendRawRanges(name, new List<RawDataRange> { dataRange });
         }
 
-        public async Task SendRawRanges(string name, IEnumerable<DataRange> dataRanges)
+        public async Task SendRawRanges(string name, IEnumerable<RawDataRange> dataRanges)
         {
             var uri = new Uri(_configuration.ApiBaseUrl, $"/api/v1/DataSources/{_configuration.DataSource}/Series/{name}/Raw/Data");
             var body = JsonConvert.SerializeObject(dataRanges);
             await _pushClient.PostAsync(uri, new StringContent(body, Encoding.UTF8, "application/json"));
         }
 
-        public async Task SendAggregatedRanges(string name, IEnumerable<DataRange> dataRanges, int aggregationSeconds)
+        public async Task SendAggregatedRanges(string name, IEnumerable<RawDataRange> dataRanges, int aggregationSeconds)
         {
             var uri = new Uri(_configuration.ApiBaseUrl, $"/api/v1/DataSources/{_configuration.DataSource}/Series/{name}/Aggregations/{aggregationSeconds}/Data");
             var body = JsonConvert.SerializeObject(dataRanges);
