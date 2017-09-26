@@ -1,88 +1,101 @@
 ﻿using System;
 using System.Collections.Generic;
+using Deepflow.Platform.Abstractions.Series.Validators;
+using FluentValidation;
 
 namespace Deepflow.Platform.Abstractions.Series
 {
     public class TimeRange : IComparable<TimeRange>
     {
-        public long MinSeconds { get; set; }
-        public long MaxSeconds { get; set; }
+        private static TimeRangeValidator _validator = new TimeRangeValidator();
+
+        /// <summary>
+        /// UTC seconds since Jan 1, 1970
+        /// </summary>
+        public long Min { get; set; }
+
+        /// <summary>
+        /// UTC seconds since Jan 1, 1970
+        /// </summary>
+        public long Max { get; set; }
 
         public TimeRange()
         {
             
         }
         
-        public TimeRange(long minSeconds, long maxSeconds)
+        public TimeRange(long min, long max)
         {
-            MinSeconds = minSeconds;
-            MaxSeconds = maxSeconds;
+            Min = min;
+            Max = max;
+
+            _validator.ValidateAndThrow(this);
         }
 
         public int CompareTo(TimeRange other)
         {
             if (ReferenceEquals(this, other)) return 0;
             if (ReferenceEquals(null, other)) return 1;
-            var minSecondsComparison = MinSeconds.CompareTo(other.MinSeconds);
+            var minSecondsComparison = Min.CompareTo(other.Min);
             if (minSecondsComparison != 0) return minSecondsComparison;
-            return MaxSeconds.CompareTo(other.MaxSeconds);
+            return Max.CompareTo(other.Max);
         }
 
         /*public static bool operator < (TimeRange one, TimeRange two)
         {
-            return one.MinSeconds < two.MinSeconds;
+            return one.Min < two.Min;
         }
         
         public static bool operator > (TimeRange one, TimeRange two)
         {
-            return one.MinSeconds > two.MinSeconds;
+            return one.Min > two.Min;
         }*/
 
         public TimeRange Insersect(TimeRange other)
         {
-            if (MinSeconds > other.MaxSeconds)
+            if (Min > other.Max)
             {
                 return null;
             }
 
-            if (MaxSeconds < other.MinSeconds)
+            if (Max < other.Min)
             {
                 return null;
             }
 
-            if (other.MaxSeconds >= MaxSeconds && other.MinSeconds <= MinSeconds)
+            if (other.Max >= Max && other.Min <= Min)
             {
-                return new TimeRange(MinSeconds, MaxSeconds);
+                return new TimeRange(Min, Max);
             }
 
-            if (MinSeconds == other.MaxSeconds)
+            if (Min == other.Max)
             {
-                return new TimeRange(MinSeconds, MinSeconds);
+                return new TimeRange(Min, Min);
             }
 
-            if (MaxSeconds == other.MinSeconds)
+            if (Max == other.Min)
             {
-                return new TimeRange(MaxSeconds, MaxSeconds);
+                return new TimeRange(Max, Max);
             }
 
-            if (MinSeconds <= other.MinSeconds && MaxSeconds >= other.MaxSeconds)
+            if (Min <= other.Min && Max >= other.Max)
             {
-                return new TimeRange(other.MinSeconds, other.MaxSeconds);
+                return new TimeRange(other.Min, other.Max);
             }
 
-            if (MaxSeconds >= other.MinSeconds && MinSeconds < other.MinSeconds)
+            if (Max >= other.Min && Min < other.Min)
             {
-                return new TimeRange(other.MinSeconds, MaxSeconds);
+                return new TimeRange(other.Min, Max);
             }
 
-            if (MaxSeconds >= other.MaxSeconds && MinSeconds < other.MaxSeconds)
+            if (Max >= other.Max && Min < other.Max)
             {
-                return new TimeRange(MinSeconds, other.MaxSeconds);
+                return new TimeRange(Min, other.Max);
             }
 
-            if (MinSeconds > other.MinSeconds && MaxSeconds < other.MaxSeconds)
+            if (Min > other.Min && Max < other.Max)
             {
-                return new TimeRange(MinSeconds, MaxSeconds);
+                return new TimeRange(Min, Max);
             }
 
             throw new Exception($"Can't intersect {this} with {other}");
@@ -90,12 +103,12 @@ namespace Deepflow.Platform.Abstractions.Series
 
         public bool Insersects(long seconds)
         {
-            if (seconds < MinSeconds)
+            if (seconds < Min)
             {
                 return false;
             }
 
-            if (seconds > MaxSeconds)
+            if (seconds > Max)
             {
                 return false;
             }
@@ -110,17 +123,17 @@ namespace Deepflow.Platform.Abstractions.Series
                 return false;
             }
 
-            if (otherRange.MaxSeconds >= MinSeconds && otherRange.MaxSeconds <= MaxSeconds)
+            if (otherRange.Max >= Min && otherRange.Max <= Max)
             {
                 return true;
             }
 
-            if (otherRange.MinSeconds <= MaxSeconds && otherRange.MinSeconds >= MinSeconds)
+            if (otherRange.Min <= Max && otherRange.Min >= Min)
             {
                 return true;
             }
 
-            if (otherRange.MinSeconds < MinSeconds && otherRange.MaxSeconds > MaxSeconds)
+            if (otherRange.Min < Min && otherRange.Max > Max)
             {
                 return true;
             }
@@ -130,30 +143,30 @@ namespace Deepflow.Platform.Abstractions.Series
 
         public bool IsZeroLength()
         {
-            return MinSeconds == MaxSeconds;
+            return Min == Max;
         }
 
         public override string ToString()
         {
-            return $"{MinSeconds}-{MaxSeconds}";
+            return $"{Min}-{Max}";
         }
 
         public TimeRange Quantise(int stepSeconds)
         {
-            var minSeconds = (long) Math.Floor((double) MinSeconds / stepSeconds) * stepSeconds;
-            var maxSeconds = (long) Math.Ceiling((double) MaxSeconds / stepSeconds) * stepSeconds;
+            var minSeconds = (long) Math.Floor((double) Min / stepSeconds) * stepSeconds;
+            var maxSeconds = (long) Math.Ceiling((double) Max / stepSeconds) * stepSeconds;
             return new TimeRange(minSeconds, maxSeconds);
         }
         
         public bool IsQuantisedTo(int aggregationSeconds)
         {
             var quantised = Quantise(aggregationSeconds);
-            return quantised.MinSeconds == MinSeconds && quantised.MaxSeconds == MaxSeconds;
+            return quantised.Min == Min && quantised.Max == Max;
         }
 
         public bool EqualsMin(double timeSeconds)
         {
-            return Math.Abs(timeSeconds - MinSeconds) < 0.001;
+            return Math.Abs(timeSeconds - Min) < 0.001;
         }
 
         public IEnumerable<TimeRange> Chop(int spanSeconds)
@@ -163,8 +176,14 @@ namespace Deepflow.Platform.Abstractions.Series
                 throw new Exception("Can't chop zero length");
             }
 
-            var minSeconds = MinSeconds;
-            while (minSeconds < MaxSeconds)
+            if (Min == Max)
+            {
+                yield return this;
+                yield break;
+            }
+
+            var minSeconds = Min;
+            while (minSeconds < Max)
             {
                 var maxSeconds = minSeconds + spanSeconds;
                 yield return new TimeRange(minSeconds, maxSeconds);
@@ -174,7 +193,7 @@ namespace Deepflow.Platform.Abstractions.Series
 
         public override int GetHashCode()
         {
-            return (int) (MinSeconds ^ MaxSeconds);
+            return (int) (Min ^ Max);
         }
 
         public override bool Equals(object obj)
@@ -184,7 +203,33 @@ namespace Deepflow.Platform.Abstractions.Series
             {
                 return false;
             }
-            return other.MinSeconds == MinSeconds && other.MaxSeconds == MaxSeconds;
+            return other.Min == Min && other.Max == Max;
+        }
+    }
+
+    public class TimeRangeCreator : IRangeCreator<TimeRange>
+    {
+        public TimeRange Create(TimeRange timeRange, List<double> data, TimeRange previousRange)
+        {
+            return timeRange;
+        }
+    }
+
+    public class TimeRangeFilteringPolicy : IRangeFilteringPolicy<TimeRange>
+    {
+        public FilterMode FilterMode { get; } = FilterMode.MinAndMaxInclusive;
+    }
+
+    public class TimeRangeAccessor : IRangeAccessor<TimeRange>
+    {
+        public TimeRange GetTimeRange(TimeRange range)
+        {
+            return range;
+        }
+
+        public List<double> GetData(TimeRange range)
+        {
+            return null;
         }
     }
 }

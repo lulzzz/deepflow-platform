@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Runtime;
 using Deepflow.Platform.Abstractions.Ingestion;
 using Deepflow.Platform.Abstractions.Model;
 using Deepflow.Platform.Abstractions.Realtime;
 using Deepflow.Platform.Abstractions.Series;
+using Deepflow.Platform.Abstractions.Series.Attribute;
 using Deepflow.Platform.Abstractions.Sources;
 using Deepflow.Platform.Controllers;
 using Deepflow.Platform.Ingestion;
 using Deepflow.Platform.Model;
 using Deepflow.Platform.Realtime;
 using Deepflow.Platform.Series;
+using Deepflow.Platform.Series.Attributes;
 using Deepflow.Platform.Series.DynamoDB;
-using Deepflow.Platform.Series.Providers;
 using Deepflow.Platform.Silo;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -29,6 +29,7 @@ namespace Deepflow.Platform
     public class Startup
     {
         private ClusterConfiguration _orleansConfig = ClusterConfiguration.LocalhostPrimarySilo();
+        public static IModelMap ModelMap;
 
         public Startup(IHostingEnvironment env)
         {
@@ -38,7 +39,24 @@ namespace Deepflow.Platform
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
+            
+            var modelConfiguration = new ModelConfiguration();
+            Configuration.GetSection("Model").Bind(modelConfiguration);
+
             OrleansStartup.Configuration = Configuration;
+
+            //modelConfiguration.Entities = new [] { modelConfiguration.Entities.First() };
+            //modelConfiguration.Attributes = new[] { modelConfiguration.Attributes.First() };
+
+            ModelMap = new ModelMap
+            {
+                SourceToModelMap = new Dictionary<DataSource, Dictionary<SourceName, EntityAttribute>>
+                {
+                    {
+                        new DataSource(Guid.Parse("4055083b-c6be-4902-a209-7d2dba99abae")), modelConfiguration.Entities.SelectMany(entityGuid => modelConfiguration.Attributes.Select(attributeGuid => new { entityGuid, attributeGuid })).ToDictionary(x => new SourceName($"{x.entityGuid}:{x.attributeGuid}"), x => new EntityAttribute { Entity = Guid.Parse(x.entityGuid), Attribute = Guid.Parse(x.attributeGuid) })
+                    }
+                }
+            };
         }
 
         public IConfigurationRoot Configuration { get; }
@@ -51,10 +69,16 @@ namespace Deepflow.Platform
 
             GCSettings.LatencyMode = GCLatencyMode.Batch;
 
+            services.AddSingleton<ISeriesConfiguration, SeriesConfiguration>();
+
             services.AddSingleton<IWebsocketsManager, WebsocketsManager>();
             services.AddSingleton<IWebsocketsSender, WebsocketsManager>();
-            services.AddSingleton<IWebsocketsReceiver, DataMessageHandler>();
+            services.AddSingleton<IWebsocketsReceiver, RealtimeMessageHandler>();
             services.AddSingleton<IIngestionProcessor, IngestionProcessor>();
+
+            services.AddSingleton<IModelMapProvider, InMemoryModelMapProvider>();
+
+            services.AddSingleton(ModelMap);
 
             var ingestionConfiguration = new IngestionConfiguration();
             Configuration.GetSection("Ingestion").Bind(ingestionConfiguration);
@@ -69,8 +93,8 @@ namespace Deepflow.Platform
 
             app.UseMvc();
 
-            app.UseWebSocketsHandler("ws/v1");
-
+            app.UseWebSocketsHandler("/ws/v1");
+            
             app.UseOrleans<OrleansStartup>(48880);
 
             GrainClient.Initialize(ClientConfiguration.LocalhostSilo());
@@ -90,27 +114,38 @@ namespace Deepflow.Platform
         {
             services.AddLogging();
 
-            services.AddSingleton<IDataAggregator, DataAggregator>();
-            services.AddSingleton<IDataFilterer<AggregatedDataRange>, DataFilterer<AggregatedDataRange>>();
-            services.AddSingleton<IDataJoiner<AggregatedDataRange>, DataJoiner<AggregatedDataRange>>();
-            services.AddSingleton<IDataMerger<AggregatedDataRange>, DataMerger<AggregatedDataRange>>();
-            services.AddSingleton<ISeriesKnower, SeriesKnower>();
-            services.AddSingleton<ITimeFilterer, TimeFilterer>();
-            services.AddSingleton<IDataProvider, DynamoDbDataProvider>();
-            services.AddSingleton<IDataValidator, DataValidator>();
             services.AddSingleton<ISeriesConfiguration, SeriesConfiguration>();
+
+            services.AddSingleton<IDataAggregator, DataAggregator>();
+
+            services.AddSingleton<IRangeCreator<AggregatedDataRange>, AggregatedRangeCreator>();
+            services.AddSingleton<IRangeAccessor<AggregatedDataRange>, AggregatedRangeAccessor>();
+            services.AddSingleton<IRangeFilteringPolicy<AggregatedDataRange>, AggregateRangeFilteringPolicy>();
+            services.AddSingleton<IRangeFilterer<AggregatedDataRange>, RangeFilterer<AggregatedDataRange>>();
+            services.AddSingleton<IRangeJoiner<AggregatedDataRange>, RangeJoiner<AggregatedDataRange>>();
+            services.AddSingleton<IRangeMerger<AggregatedDataRange>, RangeMerger<AggregatedDataRange>>();
+
+            services.AddSingleton<IRangeCreator<TimeRange>, TimeRangeCreator>();
+            services.AddSingleton<IRangeAccessor<TimeRange>, TimeRangeAccessor>();
+            services.AddSingleton<IRangeFilteringPolicy<TimeRange>, TimeRangeFilteringPolicy>();
+            services.AddSingleton<IRangeFilterer<TimeRange>, RangeFilterer<TimeRange>>();
+            services.AddSingleton<IRangeJoiner<TimeRange>, RangeJoiner<TimeRange>>();
+            services.AddSingleton<IRangeMerger<TimeRange>, RangeMerger<TimeRange>>();
+
+            services.AddSingleton<IRangeCreator<RawDataRange>, RawDataRangeCreator>();
+            services.AddSingleton<IRangeAccessor<RawDataRange>, RawDataRangeAccessor>();
+            services.AddSingleton<IRangeFilteringPolicy<RawDataRange>, RawDataRangeFilteringPolicy>();
+            services.AddSingleton<IRangeFilterer<RawDataRange>, RangeFilterer<RawDataRange>>();
+            services.AddSingleton<IRangeJoiner<RawDataRange>, RangeJoiner<RawDataRange>>();
+            services.AddSingleton<IRangeMerger<RawDataRange>, RangeMerger<RawDataRange>>();
+
+            services.AddSingleton<IAttributeDataProviderFactory, AttributeDataProviderFactory>();
+            services.AddSingleton<ISeriesKnower, SeriesKnower>();
+            services.AddSingleton<IDataStore, DynamoDbDataStore>();
+            services.AddSingleton<IDataValidator, DataValidator>();
             services.AddSingleton<IModelMapProvider, InMemoryModelMapProvider>();
-            services.AddSingleton<IModelMap>(new ModelMap { SourceToModelMap = new Dictionary<DataSource, Dictionary<SourceName, EntityAttribute>>
-            {
-                {
-                    new DataSource(Guid.Parse("4055083b-c6be-4902-a209-7d2dba99abae")), new Dictionary<SourceName, EntityAttribute>
-                    {
-                        {
-                            new SourceName("tag1"), new EntityAttribute { Entity = Guid.NewGuid(), Attribute = Guid.NewGuid() }
-                        }
-                    }
-                }
-            }});
+            
+            services.AddSingleton(Startup.ModelMap);
 
             
             var seriesSettings = new SeriesSettings();
@@ -120,7 +155,7 @@ namespace Deepflow.Platform
             var dynamoDbConfiguration = new DynamoDbConfiguration();
             Configuration.GetSection("DynamoDB").Bind(dynamoDbConfiguration);
             services.AddSingleton(dynamoDbConfiguration);
-
+            
             var serviceProvider = services.BuildServiceProvider();
 
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();

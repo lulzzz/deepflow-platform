@@ -6,7 +6,6 @@ namespace Deepflow.Platform.Abstractions.Realtime
 {
     public interface IDataSender
     {
-        void SendAggregatedData(string socketId, Guid entity, Guid attribute, IEnumerable<AggregatedDataRange> dataRanges);
-        void SendRawData(string socketId, Guid entity, Guid attribute, IEnumerable<RawDataRange> dataRanges);
+        void SendData(string socketId, Guid entity, Guid attribute, Dictionary<int, AggregatedDataRange> aggregatedRanges);
     }
 }

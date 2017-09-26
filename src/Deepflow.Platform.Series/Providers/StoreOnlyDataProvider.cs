@@ -8,7 +8,7 @@ namespace Deepflow.Platform.Series.Providers
 {
     public class StoreOnlyDataProvider : InMemoryDataProvider
     {
-        public StoreOnlyDataProvider(IDataMerger merger, IDataFilterer dataFilterer, ITimeFilterer timeFilterer) : base(merger, dataFilterer, timeFilterer)
+        public StoreOnlyDataProvider(IRangeMerger merger, IRangeFilterer dataFilterer, ITimeFilterer timeFilterer) : base(merger, dataFilterer, timeFilterer)
         {
         }
 

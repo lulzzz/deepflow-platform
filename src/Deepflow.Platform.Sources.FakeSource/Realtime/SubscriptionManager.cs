@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Deepflow.Platform.Abstractions.Realtime;
 using Deepflow.Platform.Abstractions.Series;
+using Deepflow.Platform.Series;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -11,12 +12,16 @@ namespace Deepflow.Platform.Sources.FakeSource.Realtime
     public class SubscriptionManager : IWebsocketsReceiver
     {
         private readonly ILogger<SubscriptionManager> _logger;
+        private readonly ILogger<RangeJoiner<RawDataRange>> _rangeLogger;
+        private readonly GeneratorConfiguration _configuration;
         private IWebsocketsSender _sender;
         private readonly ConcurrentDictionary<string, RealtimeGenerator> _generatorBySocketId = new ConcurrentDictionary<string, RealtimeGenerator>();
 
-        public SubscriptionManager(ILogger<SubscriptionManager> logger)
+        public SubscriptionManager(ILogger<SubscriptionManager> logger, ILogger<RangeJoiner<RawDataRange>> rangeLogger, GeneratorConfiguration configuration)
         {
             _logger = logger;
+            _rangeLogger = rangeLogger;
+            _configuration = configuration;
         }
 
         public Task OnConnected(string socketId)
@@ -39,7 +44,7 @@ namespace Deepflow.Platform.Sources.FakeSource.Realtime
         public Task OnReceive(string socketId, string message)
         {
             var subscriptionRequest = JsonConvert.DeserializeObject<SubscriptionRequest>(message);
-            var generator = _generatorBySocketId.GetOrAdd(socketId, new RealtimeGenerator(subscriptionRequest.SourceName, 30, async dataRange => await SendPoint(socketId, dataRange)));
+            var generator = _generatorBySocketId.GetOrAdd(socketId, new RealtimeGenerator(subscriptionRequest.SourceName, _configuration.SecondsInterval, async dataRange => await SendPoint(socketId, dataRange), _rangeLogger));
             generator.Start();
             _logger.LogInformation($"Subscription added, now {_generatorBySocketId.Count}");
             return Task.FromResult(0);

@@ -14,14 +14,14 @@ namespace Deepflow.Platform.Series.Providers
     {
         private readonly ISeriesKnower _knower;
         private readonly ITimeFilterer _timeFilterer;
-        private readonly IDataFilterer _dataFilterer;
-        private readonly IDataMerger _merger;
+        private readonly IRangeFilterer _dataFilterer;
+        private readonly IRangeMerger _merger;
         private readonly ConcurrentDictionary<Guid, ConcurrentDictionary<int, IEnumerable<RawDataRange>>> _rangesBySeries = new ConcurrentDictionary<Guid, ConcurrentDictionary<int, IEnumerable<RawDataRange>>>();
         private readonly ConcurrentDictionary<Guid, ReaderWriterLockSlim> _seriesLocks = new ConcurrentDictionary<Guid, ReaderWriterLockSlim>();
         private readonly EnhancedRandomDataGenerator _generator = new EnhancedRandomDataGenerator();
         private readonly Aggregator _aggregator = new Aggregator();
 
-        public EnhancedRandomDataProvider(ISeriesKnower knower, ITimeFilterer timeFilterer, IDataFilterer dataFilterer, IDataMerger merger) : base(merger, dataFilterer, timeFilterer)
+        public EnhancedRandomDataProvider(ISeriesKnower knower, ITimeFilterer timeFilterer, IRangeFilterer dataFilterer, IRangeMerger merger) : base(merger, dataFilterer, timeFilterer)
         {
             _knower = knower;
             _timeFilterer = timeFilterer;
@@ -45,17 +45,17 @@ namespace Deepflow.Platform.Series.Providers
             if (missingRanges.Any())
             {
                 var seriesLock = _seriesLocks.GetOrAdd(guid, g => new ReaderWriterLockSlim());
-                var newRawRanges = missingRanges.Select(x => _generator.GenerateData($"{series.Entity}:{series.Attribute}", timeRange.MinSeconds, timeRange.MaxSeconds, 500, 1500, 300, TimeSpan.FromMinutes(5)));
+                var newRawRanges = missingRanges.Select(x => _generator.GenerateData($"{series.Entity}:{series.Attribute}", timeRange.Min, timeRange.Max, 500, 1500, 300, TimeSpan.FromMinutes(5)));
                 seriesLock.EnterWriteLock();
                 try
                 {
                     var rawRanges = rangesByAggregation.GetOrAdd(0, new List<RawDataRange>());
-                    rawRanges = _merger.MergeDataRangesWithRanges(rawRanges, newRawRanges);
+                    rawRanges = _merger.MergeRangesWithRanges(rawRanges, newRawRanges);
                     rangesByAggregation.AddOrUpdate(0, rawRanges, (i, old) => rawRanges);
-                    var aggregatedRange = _aggregator.Aggregate(rawRanges, timeRange.MinSeconds, timeRange.MaxSeconds, series.AggregationSeconds);
+                    var aggregatedRange = _aggregator.Aggregate(rawRanges, timeRange.Min, timeRange.Max, series.AggregationSeconds);
 
                     var existingRanges = rangesByAggregation.GetOrAdd(series.AggregationSeconds, new List<RawDataRange>());
-                    var aggregatedRanges = _merger.MergeDataRangeWithRanges(existingRanges, aggregatedRange);
+                    var aggregatedRanges = _merger.MergeRangeWithRanges(existingRanges, aggregatedRange);
                     rangesByAggregation.AddOrUpdate(series.AggregationSeconds, aggregatedRanges, (i, old) => aggregatedRanges);
                     ranges = aggregatedRanges;
                 }

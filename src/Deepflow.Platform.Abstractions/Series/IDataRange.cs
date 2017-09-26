@@ -8,7 +8,7 @@ namespace Deepflow.Platform.Abstractions.Series
         List<double> Data { get; }
     }
 
-    public interface IDataRange<TRange, TCreator> : IDataRange where TCreator : IDataRangeCreator<TRange> where TRange: IDataRange
+    public interface IDataRange<TRange, TCreator> : IDataRange where TCreator : IRangeCreator<TRange> where TRange: IDataRange
     {
     }
 }

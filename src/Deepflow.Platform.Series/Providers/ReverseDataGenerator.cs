@@ -26,8 +26,8 @@ namespace Deepflow.Platform.Series.Providers
             var lowestAggregationLevel = descendingAggregationLevels[descendingAggregationLevels.Length - 1];
             var aggregationLevelIndex = Array.IndexOf(descendingAggregationLevels, aggregationLevel);
 
-            var quantisedLowTime = GetQuantisedTimeBeforeOrOn(highestAggregationLevel, timeRange.MinSeconds);
-            var quantisedHighTime = GetQuantisedTimeAfterOrOn(highestAggregationLevel, timeRange.MaxSeconds);
+            var quantisedLowTime = GetQuantisedTimeBeforeOrOn(highestAggregationLevel, timeRange.Min);
+            var quantisedHighTime = GetQuantisedTimeAfterOrOn(highestAggregationLevel, timeRange.Max);
 
             var variance = (maxValue - minValue) / 10;
             
@@ -38,7 +38,7 @@ namespace Deepflow.Platform.Series.Providers
             List<double> data = new List<double>();
             for (var time = quantisedLowTime; time <= quantisedHighTime; time += aggregationLevel)
             {
-                if (time < timeRange.MinSeconds)
+                if (time < timeRange.Min)
                 {
                     continue;
                 }
@@ -73,7 +73,7 @@ namespace Deepflow.Platform.Series.Providers
                 return;
             }
 
-            if (lowTime > timeRange.MaxSeconds || highTime < timeRange.MinSeconds)
+            if (lowTime > timeRange.Max || highTime < timeRange.Min)
             {
                 return;
             }

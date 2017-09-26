@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Deepflow.Platform.Abstractions.Model;
 using Deepflow.Platform.Abstractions.Sources;
@@ -28,6 +29,11 @@ namespace Deepflow.Platform.Model
             }
 
             return Task.FromResult(new SeriesModelMapping(entityAttribute.Entity, entityAttribute.Attribute, dataSource, sourceName));
+        }
+
+        public Task<IEnumerable<string>> GetSourceNamesForDataSource(Guid dataSource)
+        {
+            return Task.FromResult(_modelMap.SourceToModelMap[new DataSource(dataSource)].Select(x => x.Key.Name));
         }
     }
 }

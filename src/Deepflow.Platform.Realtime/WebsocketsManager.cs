@@ -6,17 +6,20 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Deepflow.Platform.Abstractions.Realtime;
+using Microsoft.Extensions.Logging;
 
 namespace Deepflow.Platform.Realtime
 {
     public class WebsocketsManager : IWebsocketsManager, IWebsocketsSender
     {
         private readonly IWebsocketsReceiver _receiver;
+        private readonly ILogger<WebsocketsManager> _logger;
         private static readonly ConcurrentDictionary<string, WebSocket> Sockets = new ConcurrentDictionary<string, WebSocket>();
 
-        public WebsocketsManager(IWebsocketsReceiver receiver)
+        public WebsocketsManager(IWebsocketsReceiver receiver, ILogger<WebsocketsManager> logger)
         {
             _receiver = receiver;
+            _logger = logger;
             _receiver.SetSender(this);
         }
 
@@ -40,10 +43,13 @@ namespace Deepflow.Platform.Realtime
                         break;
                     }
 
+                    _logger.LogInformation($"Waiting to receive realtime message...");
                     var message = await ReceiveStringAsync(socket, cancellationToken);
                     if (!string.IsNullOrEmpty(message))
                     {
+                        _logger.LogInformation($"Received realtime message...");
                         await _receiver.OnReceive(socketId, message).ConfigureAwait(false);
+                        _logger.LogInformation($"Realtime message complete");
                     }
                 }
             }
@@ -55,18 +61,33 @@ namespace Deepflow.Platform.Realtime
             }
         }
 
-        private static async Task<string> ReceiveStringAsync(WebSocket socket, CancellationToken ct = default(CancellationToken))
+        private async Task<string> ReceiveStringAsync(WebSocket socket, CancellationToken ct = default(CancellationToken))
         {
             var buffer = new ArraySegment<byte>(new byte[8192]);
             using (var ms = new MemoryStream())
             {
-                WebSocketReceiveResult result;
+                WebSocketReceiveResult result = null;
                 do
                 {
-                    ct.ThrowIfCancellationRequested();
+                    if (ct.IsCancellationRequested)
+                    {
+                        return null;
+                    }
 
-                    result = await socket.ReceiveAsync(buffer, ct);
-                    ms.Write(buffer.Array, buffer.Offset, result.Count);
+                    try
+                    {
+                        result = await socket.ReceiveAsync(buffer, ct);
+                        ms.Write(buffer.Array, buffer.Offset, result.Count);
+                    }
+                    catch (WebSocketException exception)
+                    {
+                        _logger.LogInformation($"Web socket exception, likely it was closed by the client: {exception.Message}");
+                    }
+
+                    if (ct.IsCancellationRequested)
+                    {
+                        return null;
+                    }
                 }
                 while (!result.EndOfMessage);
 

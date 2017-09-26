@@ -8,11 +8,11 @@ namespace Deepflow.Platform.Series.Providers
 {
     public class ReverseAverageGenerator
     {
-        private readonly IDataFilterer _dataFilterer;
+        private readonly IRangeFilterer _dataFilterer;
         private readonly IValueGenerator _valueGenerator;
-        private readonly IDataMerger _dataMerger;
+        private readonly IRangeMerger _dataMerger;
 
-        public ReverseAverageGenerator(IDataFilterer dataFilterer, IValueGenerator valueGenerator, IDataMerger dataMerger)
+        public ReverseAverageGenerator(IRangeFilterer dataFilterer, IValueGenerator valueGenerator, IRangeMerger dataMerger)
         {
             _dataFilterer = dataFilterer;
             _valueGenerator = valueGenerator;
@@ -25,8 +25,8 @@ namespace Deepflow.Platform.Series.Providers
             var ascendingAggregationLevels = aggregationLevels.OrderByDescending(x => x).ToArray();
             var highestAggregationLevel = aggregationLevels.Max();
             var aggregationLevelIndex = Array.IndexOf(ascendingAggregationLevels, aggregationLevel);
-            var quantisedLow = GetQuantisedTimeBeforeOrOn(highestAggregationLevel, timeRange.MinSeconds);
-            var quantisedHigh = GetQuantisedTimeAfterOrOn(highestAggregationLevel, timeRange.MaxSeconds);
+            var quantisedLow = GetQuantisedTimeBeforeOrOn(highestAggregationLevel, timeRange.Min);
+            var quantisedHigh = GetQuantisedTimeAfterOrOn(highestAggregationLevel, timeRange.Max);
             IEnumerable<RawDataRange> dataRanges = new List<RawDataRange>();
 
             // For each quantised time range
@@ -48,7 +48,7 @@ namespace Deepflow.Platform.Series.Providers
                     levelData.Add(levelValues[i].Value);
                 }
                 var dataRange = new RawDataRange(lowTime, highTime, new List<double>(levelData));
-                dataRanges = _dataMerger.MergeDataRangeWithRanges(dataRanges, dataRange);
+                dataRanges = _dataMerger.MergeRangeWithRanges(dataRanges, dataRange);
             }
             
             return _dataFilterer.FilterDataRange(dataRanges.SingleOrDefault(), timeRange);
@@ -79,7 +79,7 @@ namespace Deepflow.Platform.Series.Providers
                 return;
             }
 
-            if (lowTime > timeRange.MaxSeconds || highTime < timeRange.MinSeconds)
+            if (lowTime > timeRange.Max || highTime < timeRange.Min)
             {
                 return;
             }
@@ -141,7 +141,7 @@ namespace Deepflow.Platform.Series.Providers
             public RangeValues(TimeRange timeRange)
             {
                 _timeRange = timeRange;
-                _spanSeconds = timeRange.MaxSeconds - timeRange.MinSeconds;
+                _spanSeconds = timeRange.Max - timeRange.Min;
             }
 
             public double GetOrAddLevelValue(int aggregationLevelSeconds, int index, Func<double> valueGenerator)
@@ -162,7 +162,7 @@ namespace Deepflow.Platform.Series.Providers
 
             public int GetTimeIndex(int aggregationLevelSeconds, long timeSeconds)
             {
-                return (int)(timeSeconds - _timeRange.MinSeconds) / aggregationLevelSeconds;
+                return (int)(timeSeconds - _timeRange.Min) / aggregationLevelSeconds;
             }
         }
     }

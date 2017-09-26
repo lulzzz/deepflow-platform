@@ -10,12 +10,12 @@ namespace Deepflow.Platform.Series.Providers
     public class DeterministicRandomDataProvider : InMemoryDataProvider
     {
         private readonly ISeriesKnower _knower;
-        private readonly IDataFilterer _dataFilterer;
-        private readonly IDataMerger _merger;
+        private readonly IRangeFilterer _dataFilterer;
+        private readonly IRangeMerger _merger;
         private readonly SeriesSettings _seriesSettings;
         private readonly ReverseDataGenerator _generator;
 
-        public DeterministicRandomDataProvider(ISeriesKnower knower, IDataFilterer dataFilterer, ITimeFilterer timeFilterer, IDataMerger merger, SeriesSettings seriesSettings) : base(merger, dataFilterer, timeFilterer)
+        public DeterministicRandomDataProvider(ISeriesKnower knower, IRangeFilterer dataFilterer, ITimeFilterer timeFilterer, IRangeMerger merger, SeriesSettings seriesSettings) : base(merger, dataFilterer, timeFilterer)
         {
             _knower = knower;
             _dataFilterer = dataFilterer;

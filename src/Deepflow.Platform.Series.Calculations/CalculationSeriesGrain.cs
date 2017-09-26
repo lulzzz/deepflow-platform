@@ -14,9 +14,9 @@ namespace Deepflow.Platform.Series.Calculations
         private Guid _calculation;
         private Dictionary<int, Guid> _seriesGuids;
         private readonly ISeriesKnower _seriesKnower;
-        private readonly IDataProvider _dataProvider;
+        private readonly IDataStore _dataProvider;
 
-        public CalculationSeriesGrain(ISeriesKnower seriesKnower, IDataProvider dataProvider)
+        public CalculationSeriesGrain(ISeriesKnower seriesKnower, IDataStore dataProvider)
         {
             _seriesKnower = seriesKnower;
             _dataProvider = dataProvider;
@@ -38,7 +38,7 @@ namespace Deepflow.Platform.Series.Calculations
             {
                 throw new Exception($"Cannot find series GUID for calculation {_entity}:{_calculation}:{aggregationSeconds}");
             }
-            return await _dataProvider.GetAggregatedRanges(seriesGuid, timeRange);
+            return await _dataProvider.GetAggregatedData(seriesGuid, timeRange);
         }
     }
 }

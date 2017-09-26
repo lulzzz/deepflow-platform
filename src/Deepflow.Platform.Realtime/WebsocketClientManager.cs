@@ -17,7 +17,7 @@ namespace Deepflow.Platform.Realtime
         private readonly Func<string, Task> _onReceive;
         private readonly ILogger _logger;
         private ClientWebSocket _socket;
-
+        
         public WebsocketClientManager(Uri url, string serverFriendlyName, int retrySeconds, Func<Task> onConnected, Func<string, Task> onReceive, ILogger logger)
         {
             _url = url;
@@ -90,7 +90,9 @@ namespace Deepflow.Platform.Realtime
             var socket = _socket;
             if (socket != null)
             {
+                _logger.LogInformation($"Sending realtime message...");
                 await socket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(messageString)), WebSocketMessageType.Text, true, CancellationToken.None);
+                _logger.LogInformation($"Sent realtime message");
             }
         }
 

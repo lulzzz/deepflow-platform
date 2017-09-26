@@ -4,6 +4,8 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Deepflow.Platform.Abstractions.Realtime.Messages;
+using Deepflow.Platform.Abstractions.Realtime.Messages.Data;
 using Deepflow.Platform.Abstractions.Series;
 using Deepflow.Platform.Abstractions.Sources;
 using Deepflow.Platform.Agent.Core;
@@ -26,6 +28,8 @@ namespace Deepflow.Platform.Agent.Client
         private SourceSeriesList _sourceSeriesList;
         private CancellationTokenSource _listenCancellationTokenSource = new CancellationTokenSource();
         private CancellationToken _listenCancellationToken;
+        private SemaphoreSlim _sendSemaphore;
+        private int _nextActionId = 1;
 
         public IngestionClient(ILogger<IngestionClient> logger, Core.AgentIngestionConfiguration configuration, IAgentProcessor processor)
         {
@@ -33,7 +37,10 @@ namespace Deepflow.Platform.Agent.Client
             _configuration = configuration;
             _processor = processor;
             _processor.SetClient(this);
+            _sendSemaphore = new SemaphoreSlim(configuration.SendParallelism);
             _pushClient = new RetryingHttpClient(configuration.PushFailedRetryCount, _configuration.PushFailedPauseSeconds, "Unable to push data to ingestion API", logger);
+
+            _logger.LogInformation($"Starting ingestion client with {configuration.SendParallelism} send parallelism");
         }
 
         public async Task Start()
@@ -86,28 +93,40 @@ namespace Deepflow.Platform.Agent.Client
             }
         }
 
-        public Task SendAggregatedRange(string name, RawDataRange dataRange, int aggregationSeconds)
+        public async Task SendData(string name, AggregatedDataRange aggregatedDataRange)
         {
-            return SendAggregatedRanges(name, new List<RawDataRange> { dataRange }, aggregationSeconds);
-        }
+            _logger.LogInformation("About to send data to ingestion API");
+            var message = new AddAggregatedAttributeDataRequest
+            {
+                ActionId = _nextActionId++,
+                MessageClass = IncomingMessageClass.Request,
+                RequestType = RequestType.AddAggregatedAttributeData,
+                DataSource = _configuration.DataSource,
+                SourceName = name,
+                AggregatedDataRange = aggregatedDataRange
+            };
 
-        public Task SendRawRange(string name, RawDataRange dataRange)
-        {
-            return SendRawRanges(name, new List<RawDataRange> { dataRange });
-        }
+            var messageString = JsonConvert.SerializeObject(message, JsonSettings.Setttings);
+            _logger.LogInformation("About to send message to ingestion API");
 
-        public async Task SendRawRanges(string name, IEnumerable<RawDataRange> dataRanges)
-        {
-            var uri = new Uri(_configuration.ApiBaseUrl, $"/api/v1/DataSources/{_configuration.DataSource}/Series/{name}/Raw/Data");
-            var body = JsonConvert.SerializeObject(dataRanges);
-            await _pushClient.PostAsync(uri, new StringContent(body, Encoding.UTF8, "application/json"));
-        }
+            try
+            {
+                _logger.LogInformation("Waiting to send data to ingestion API");
+                await _sendSemaphore.WaitAsync();
+                _logger.LogInformation("Sending data to ingestion API");
+                await _listenClient.SendMessage(messageString);
+                _logger.LogInformation("Sent data to ingestion API");
+            }
+            finally
+            {
+                _sendSemaphore.Release();
+            }
+            
 
-        public async Task SendAggregatedRanges(string name, IEnumerable<RawDataRange> dataRanges, int aggregationSeconds)
-        {
-            var uri = new Uri(_configuration.ApiBaseUrl, $"/api/v1/DataSources/{_configuration.DataSource}/Series/{name}/Aggregations/{aggregationSeconds}/Data");
-            var body = JsonConvert.SerializeObject(dataRanges);
-            await _pushClient.PostAsync(uri, new StringContent(body, Encoding.UTF8, "application/json"));
+            /*var uri = new Uri(_configuration.ApiBaseUrl, $"/api/v1/DataSources/{_configuration.DataSource}/Series/{name}/Data");
+            var message = new DataSourceDataPackage { AggregatedRange = aggregatedDataRange };
+            var body = JsonConvert.SerializeObject(message);
+            await _pushClient.PostAsync(uri, new StringContent(body, Encoding.UTF8, "application/json"));*/
         }
     }
 }

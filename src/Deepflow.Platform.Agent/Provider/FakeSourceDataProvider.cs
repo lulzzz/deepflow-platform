@@ -22,12 +22,11 @@ namespace Deepflow.Platform.Agent.Provider
             _logger = logger;
         }
 
-        public async Task<RawDataRange> FetchAggregatedData(string sourceName, TimeRange timeRange, int aggregationSeconds)
+        public async Task<AggregatedDataRange> FetchAggregatedData(string sourceName, TimeRange timeRange, int aggregationSeconds)
         {
-            var uri = new Uri(_configuration.ApiBaseUrl, $"api/v1/Data/{sourceName}/aggregations/{aggregationSeconds}?minTimeUtc={timeRange.MinSeconds.FromSecondsSince1970Utc():s}&maxTimeUtc={timeRange.MaxSeconds.FromSecondsSince1970Utc():s}");
+            var uri = new Uri(_configuration.ApiBaseUrl, $"api/v1/Data/{sourceName}/aggregations/{aggregationSeconds}?minTimeUtc={timeRange.Min.FromSecondsSince1970Utc():s}&maxTimeUtc={timeRange.Max.FromSecondsSince1970Utc():s}");
             var responseMessage = await _client.GetStringAsync(uri);
-            var dataRange = JsonConvert.DeserializeObject<RawDataRange>(responseMessage);
-            return dataRange;
+            return JsonConvert.DeserializeObject<AggregatedDataRange>(responseMessage);
         }
 
         public Task<RawDataRange> FetchRawData(string sourceName, TimeRange timeRange)

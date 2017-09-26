@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Deepflow.Platform.Abstractions.Series;
-using Deepflow.Platform.Core.Tools;
+using Deepflow.Platform.Abstractions.Series.Attribute;
 using Deepflow.Platform.Series;
 using Microsoft.AspNetCore.Mvc;
 using Orleans;

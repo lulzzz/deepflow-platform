@@ -11,7 +11,7 @@ namespace Deepflow.Platform.Series.Providers
     {
         private readonly ISeriesKnower _knower;
 
-        public SimpleRandomDataProvider(ISeriesKnower knower, IDataMerger merger, IDataFilterer dataFilterer, ITimeFilterer timeFilterer) : base(merger, dataFilterer, timeFilterer)
+        public SimpleRandomDataProvider(ISeriesKnower knower, IRangeMerger merger, IRangeFilterer dataFilterer, ITimeFilterer timeFilterer) : base(merger, dataFilterer, timeFilterer)
         {
             _knower = knower;
         }
@@ -26,8 +26,8 @@ namespace Deepflow.Platform.Series.Providers
             var series = await _knower.GetAttributeSeries(guid);
             var random = new Random();
 
-            var minTime = (int)Math.Ceiling((double)timeRange.MinSeconds / series.AggregationSeconds);
-            var maxTime = (int)Math.Floor((double)timeRange.MaxSeconds / series.AggregationSeconds);
+            var minTime = (int)Math.Ceiling((double)timeRange.Min / series.AggregationSeconds);
+            var maxTime = (int)Math.Floor((double)timeRange.Max / series.AggregationSeconds);
             var data = Enumerable.Range(minTime, maxTime - minTime).Select(i => random.NextDouble()).ToList();
             return new RawDataRange(timeRange, data);
         }

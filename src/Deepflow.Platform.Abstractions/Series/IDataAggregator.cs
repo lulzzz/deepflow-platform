@@ -4,6 +4,6 @@ namespace Deepflow.Platform.Abstractions.Series
 {
     public interface IDataAggregator
     {
-        IEnumerable<AggregatedDataRange> Aggregate(IEnumerable<AggregatedDataRange> dataRanges, TimeRange timeRange, IEnumerable<int> aggregationSeconds);
+        Dictionary<int, IEnumerable<AggregatedDataRange>> Aggregate(IEnumerable<AggregatedDataRange> dataRanges, TimeRange timeRange, IEnumerable<int> aggregationSeconds);
     }
 }

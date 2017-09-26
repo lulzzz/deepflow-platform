@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿/*using System.Collections.Generic;
 
 namespace Deepflow.Platform.Abstractions.Series
 {
@@ -6,5 +6,6 @@ namespace Deepflow.Platform.Abstractions.Series
     {
         IEnumerable<TimeRange> SubtractTimeRangesFromRange(TimeRange timeRange, IEnumerable<TimeRange> subtractRanges);
         IEnumerable<TimeRange> SubtractTimeRangesFromRanges(IEnumerable<TimeRange> timeRanges, IEnumerable<TimeRange> subtractRanges);
+        IEnumerable<TimeRange> FilterTimeRangesToRange(IEnumerable<TimeRange> timeRanges, TimeRange filterRange);
     }
-}
+}*/

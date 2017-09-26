@@ -24,10 +24,10 @@ namespace Deepflow.Platform.Series.Providers
             var endDatum = new Datum { Time = endTimeSeconds, Value = endValue };
 
             List<Datum> data = new List<Datum>();
-            data.Add(startDatum);
 
             if (startTimeSeconds == endTimeSeconds)
             {
+                data.Add(startDatum);
                 return ToDataRange((long) (startTimeSeconds - maxTimespan.TotalSeconds), endTimeSeconds, data);
             }
 
@@ -39,13 +39,11 @@ namespace Deepflow.Platform.Series.Providers
 
         private RawDataRange ToDataRange(long minSeconds, long maxSeconds, List<Datum> data)
         {
-            var dataArray = new List<double>();
-            var i = 0;
+            var dataArray = new List<double>(data.Count * 2);
             foreach (var datum in data)
             {
-                dataArray[i * 2] = datum.Time;
-                dataArray[i * 2 + 1] = datum.Value;
-                i++;
+                dataArray.Add(datum.Time);
+                dataArray.Add(datum.Value);
             }
             return new RawDataRange(minSeconds, maxSeconds, dataArray);
         }

@@ -1,5 +1,8 @@
-﻿using Deepflow.Platform.Abstractions.Realtime;
+﻿using System;
+using System.Threading.Tasks;
+using Deepflow.Platform.Abstractions.Realtime;
 using Deepflow.Platform.Abstractions.Series;
+using Deepflow.Platform.Core.Tools;
 using Deepflow.Platform.Realtime;
 using Deepflow.Platform.Series;
 using Deepflow.Platform.Sources.FakeSource.Data;
@@ -35,6 +38,10 @@ namespace Deepflow.Platform.Sources.FakeSource
             services.AddSingleton<IWebsocketsReceiver, SubscriptionManager>();
             services.AddSingleton<IDataGenerator, DataGenerator>();
             services.AddSingleton<IDataAggregator, DataAggregator>();
+
+            var generatorConfiguration = new GeneratorConfiguration();
+            Configuration.GetSection("Generator").Bind(generatorConfiguration);
+            services.AddSingleton(generatorConfiguration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -46,6 +53,23 @@ namespace Deepflow.Platform.Sources.FakeSource
             app.UseWebSocketsHandler("/ws/v1");
 
             app.UseMvc();
+
+            /*var generator = new DataGenerator();
+
+            Task.Run(() =>
+            {
+                Parallel.For(0, 8, new ParallelOptions { MaxDegreeOfParallelism = 8 }, i =>
+                {
+                    while (true)
+                    {
+                        var now = DateTime.Now.SecondsSince1970Utc();
+                        var aggregatedTime = now - (now % 300) + 300;
+                        var aggregatedTimeRange = new TimeRange(aggregatedTime - 300, aggregatedTime);
+
+                        generator.GenerateData(Guid.NewGuid().ToString(), aggregatedTimeRange, 300);
+                    }
+                });
+            });*/
         }
     }
 }

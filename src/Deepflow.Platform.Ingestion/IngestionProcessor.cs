@@ -21,23 +21,23 @@ namespace Deepflow.Platform.Ingestion
             _logger = logger;
         }
 
-        public async Task AddAggregatedRanges(Guid dataSource, string sourceName, int aggregationSeconds, IEnumerable<AggregatedDataRange> dataRanges)
+        public async Task AddData(Guid dataSource, string sourceName, AggregatedDataRange aggregatedRange)
         {
             try
             {
                 ISourceSeriesGrain series = GrainClient.GrainFactory.GetGrain<ISourceSeriesGrain>(SeriesIdHelper.ToSourceSeriesId(dataSource, sourceName));
 
-                foreach (var dataRange in dataRanges)
+                /*foreach (var dataRange in aggregatedRanges)
                 {
                     var slices = dataRange.Chop(_configuration.MaxRangeSeconds);
                     foreach (var slice in slices)
-                    {
+                    {*/
                         _logger.LogInformation("Saving slice");
                         Stopwatch stopwatch = Stopwatch.StartNew();
-                        await series.AddAggregatedData(slice, aggregationSeconds);
+                        await series.AddData(aggregatedRange);
                         _logger.LogInformation($"Saved slice in {stopwatch.ElapsedMilliseconds} ms");
-                    }
-                }
+                    /*}
+                }*/
             }
             catch (Exception exception)
             {

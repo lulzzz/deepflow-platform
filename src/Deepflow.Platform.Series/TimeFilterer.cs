@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿/*
+using System.Collections.Generic;
 using System.Linq;
 using Deepflow.Platform.Abstractions.Series;
 
@@ -20,6 +21,12 @@ namespace Deepflow.Platform.Series
             return remainingRanges;
         }
 
+        /*public IEnumerable<TimeRange> FilterTimeRangesToRange(IEnumerable<TimeRange> timeRanges, TimeRange filterRange)
+        {
+            throw new System.NotImplementedException();
+            asdas
+        }#1#
+
         public IEnumerable<TimeRange> SubtractTimeRangeFromRanges(TimeRange subtractRange, IEnumerable<TimeRange> ranges) {
             IEnumerable<TimeRange> remainingRanges = new List<TimeRange>();
             foreach (var timeRange in ranges)
@@ -31,32 +38,33 @@ namespace Deepflow.Platform.Series
 
         private IEnumerable<TimeRange> SubtractTimeRangeFromRange(TimeRange subtractRange, TimeRange range)
         {
-            if (subtractRange.MaxSeconds <= range.MinSeconds || subtractRange.MinSeconds >= range.MaxSeconds) {
+            if (subtractRange.Max <= range.Min || subtractRange.Min >= range.Max) {
                 return new [] { range };
             }
 
-            if (subtractRange.MinSeconds <= range.MinSeconds && subtractRange.MaxSeconds >= range.MaxSeconds) {
+            if (subtractRange.Min <= range.Min && subtractRange.Max >= range.Max) {
                 return new TimeRange[] { };
             }
 
-            if (subtractRange.MaxSeconds > range.MinSeconds && subtractRange.MinSeconds <= range.MinSeconds && subtractRange.MaxSeconds < range.MaxSeconds) {
-                return new[] { new TimeRange(subtractRange.MaxSeconds, range.MaxSeconds) };
+            if (subtractRange.Max > range.Min && subtractRange.Min <= range.Min && subtractRange.Max < range.Max) {
+                return new[] { new TimeRange(subtractRange.Max, range.Max) };
             }
 
-            if (subtractRange.MaxSeconds > range.MinSeconds && subtractRange.MaxSeconds < range.MaxSeconds && subtractRange.MinSeconds > range.MinSeconds)
+            if (subtractRange.Max > range.Min && subtractRange.Max < range.Max && subtractRange.Min > range.Min)
             {
                 return new[]
                 {
-                    new TimeRange(range.MinSeconds, subtractRange.MinSeconds),
-                    new TimeRange(subtractRange.MaxSeconds, range.MaxSeconds)
+                    new TimeRange(range.Min, subtractRange.Min),
+                    new TimeRange(subtractRange.Max, range.Max)
                 };
             }
 
-            if (subtractRange.MaxSeconds >= range.MaxSeconds && subtractRange.MinSeconds > range.MinSeconds) {
-                return new[] { new TimeRange(range.MinSeconds, subtractRange.MinSeconds) };
+            if (subtractRange.Max >= range.Max && subtractRange.Min > range.Min) {
+                return new[] { new TimeRange(range.Min, subtractRange.Min) };
             }
 
             return null;
         }
     }
 }
+*/

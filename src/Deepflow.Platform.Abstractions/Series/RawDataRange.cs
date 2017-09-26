@@ -1,34 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Deepflow.Platform.Abstractions.Series.Validators;
+using FluentValidation;
 
 namespace Deepflow.Platform.Abstractions.Series
 {
     public class RawDataRange : IDataRange<RawDataRange, RawDataRangeCreator>
     {
+        private static readonly RawDataRangeValidator Validator = new RawDataRangeValidator();
         public TimeRange TimeRange { get; set; }
-        public List<double> Data { get; set; }
-
-        private static readonly double MaxAcceptableTime = (new DateTime(2100, 1, 1) - new DateTime(1970, 1, 1)).TotalSeconds;
-        private static readonly double MinAcceptableTime = 0;
+        public List<double> Data { get; set; } = new List<double>();
 
         public RawDataRange() { }
 
         public RawDataRange(long minSeconds, long maxSeconds)
         {
             TimeRange = new TimeRange(minSeconds, maxSeconds);
+
+            Validator.ValidateAndThrow(this);
         }
 
         public RawDataRange(long minSeconds, long maxSeconds, List<double> data)
         {
             TimeRange = new TimeRange(minSeconds, maxSeconds);
             Data = data;
+
+            Validator.ValidateAndThrow(this);
         }
 
         public RawDataRange(TimeRange timeRange, List<double> data)
         {
             TimeRange = timeRange;
             Data = data;
+
+            Validator.ValidateAndThrow(this);
         }
 
         public RawDataRange(long minSeconds, long maxSeconds, IEnumerable<Datum> data)
@@ -45,6 +51,8 @@ namespace Deepflow.Platform.Abstractions.Series
             }
 
             Data = dataArray.ToList();
+
+            Validator.ValidateAndThrow(this);
         }
 
         public IEnumerable<RawDataRange> Chop(int spanSeconds)
@@ -54,10 +62,10 @@ namespace Deepflow.Platform.Abstractions.Series
                 throw new Exception("Can't chop zero length");
             }
 
-            var minSeconds = TimeRange.MinSeconds;
+            var minSeconds = TimeRange.Min;
             var index = 0;
             var numPoints = Data.Count / 2;
-            while (minSeconds < TimeRange.MaxSeconds)
+            while (minSeconds < TimeRange.Max)
             {
                 var maxSeconds = minSeconds + spanSeconds;
 
@@ -84,81 +92,31 @@ namespace Deepflow.Platform.Abstractions.Series
                 minSeconds += spanSeconds;
             }
         }
-
-        public void Validate()
-        {
-            if (TimeRange == null)
-            {
-                throw new Exception("Data range does not have a time range");
-            }
-
-            if (TimeRange.MinSeconds < MinAcceptableTime)
-            {
-                throw new Exception($"Data range has min time of {TimeRange.MinSeconds} below minimum value of {MinAcceptableTime}");
-            }
-
-            if (TimeRange.MaxSeconds > MaxAcceptableTime)
-            {
-                throw new Exception($"Data range has max time of {TimeRange.MaxSeconds} above maximum value of {MaxAcceptableTime}");
-            }
-
-            if (TimeRange.MaxSeconds < TimeRange.MinSeconds)
-            {
-                throw new Exception($"Data range has max time of {TimeRange.MaxSeconds} below min time of {TimeRange.MinSeconds}");
-            }
-
-            // Aggregation seconds zero or above
-
-            if (Data == null)
-            {
-                throw new Exception("Data range does not have data");
-            }
-
-            if (Data.Count % 2 != 0)
-            {
-                throw new Exception("Data range has odd number of values");
-            }
-
-            var numPoints = Data.Count / 2;
-
-            if (numPoints == 0)
-            {
-                return;
-            }
-
-            var minTime = TimeRange.MinSeconds;
-            var maxTime = TimeRange.MaxSeconds;
-
-            for (var i = 0; i < numPoints; i++)
-            {
-                var time = Data[i * 2];
-                if (time < MinAcceptableTime)
-                {
-                    throw new Exception($"Data range has data point time below minimum value of {MinAcceptableTime}");
-                }
-                if (time > MaxAcceptableTime)
-                {
-                    throw new Exception($"Data range has data point time above maximum value of {MaxAcceptableTime}");
-                }
-                if (time < minTime)
-                {
-                    throw new Exception($"Data range has data point time below minimum value of {MinAcceptableTime}");
-                }
-
-                    var value = Data[i * 2 + 1];
-                if (double.IsNaN(value))
-                {
-                    throw new Exception("Data range has NaN value");
-                }
-            }
-        }
     }
 
-    public class RawDataRangeCreator : IDataRangeCreator<RawDataRange>
+    public class RawDataRangeCreator : IRangeCreator<RawDataRange>
     {
         public RawDataRange Create(TimeRange timeRange, List<double> data, RawDataRange previousRange)
         {
             return new RawDataRange(timeRange, data);
+        }
+    }
+
+    public class RawDataRangeFilteringPolicy : IRangeFilteringPolicy<RawDataRange>
+    {
+        public FilterMode FilterMode { get; } = FilterMode.MinAndMaxInclusive;
+    }
+
+    public class RawDataRangeAccessor : IRangeAccessor<RawDataRange>
+    {
+        public TimeRange GetTimeRange(RawDataRange range)
+        {
+            return range.TimeRange;
+        }
+
+        public List<double> GetData(RawDataRange range)
+        {
+            return range.Data;
         }
     }
 }

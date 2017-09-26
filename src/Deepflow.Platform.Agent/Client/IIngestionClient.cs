@@ -7,7 +7,6 @@ namespace Deepflow.Platform.Agent.Client
     public interface IIngestionClient
     {
         Task Start();
-        Task SendAggregatedRange(string name, RawDataRange dataRange, int aggregationSeconds);
-        Task SendRawRange(string name, RawDataRange dataRange);
+        Task SendData(string name, AggregatedDataRange aggregatedDataRange);
     }
 }

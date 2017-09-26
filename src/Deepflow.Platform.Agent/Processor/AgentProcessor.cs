@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Deepflow.Platform.Abstractions.Series;
 using Deepflow.Platform.Abstractions.Sources;
 using Deepflow.Platform.Agent.Client;
-using Deepflow.Platform.Agent.Core;
 using Deepflow.Platform.Agent.Provider;
 using Deepflow.Platform.Core.Tools;
 using Microsoft.Extensions.Logging;
@@ -76,12 +75,12 @@ namespace Deepflow.Platform.Agent.Processor
 
         private async Task OnReceiveRaw(string sourceName, RawDataRange rawDataRange)
         {
-            var aggregatedTime = rawDataRange.TimeRange.MaxSeconds - (rawDataRange.TimeRange.MaxSeconds % _configuration.AggregationSeconds) + _configuration.AggregationSeconds;
+            var aggregatedTime = rawDataRange.TimeRange.Max - (rawDataRange.TimeRange.Max % _configuration.AggregationSeconds) + _configuration.AggregationSeconds;
             var aggregatedTimeRange = new TimeRange(aggregatedTime - _configuration.AggregationSeconds, aggregatedTime);
             var aggregatedData = await _provider.FetchAggregatedData(sourceName, aggregatedTimeRange, _configuration.AggregationSeconds);
-            var aggregatedTask = _client.SendAggregatedRange(sourceName, aggregatedData, _configuration.AggregationSeconds);
-            var rawTask = _client.SendRawRange(sourceName, rawDataRange);
-            await Task.WhenAll(aggregatedTask, rawTask);
+
+            _logger.LogInformation($"Sending data for {sourceName} with {aggregatedData.Data.Count / 2} aggregated points");
+            await _client.SendData(sourceName, aggregatedData);
         }
 
         private QueueWrapper PrepareNextQueue(SourceSeriesList sourceSeriesList)
@@ -115,7 +114,7 @@ namespace Deepflow.Platform.Agent.Processor
                     try
                     {
                         var data = await _provider.FetchAggregatedData(fetch.SourceName, fetch.TimeRange, _configuration.AggregationSeconds);
-                        await _client.SendAggregatedRange(fetch.SourceName, data, _configuration.AggregationSeconds);
+                        await _client.SendData(fetch.SourceName, data);
                         await Task.Delay(_configuration.BetweenFetchPauseSeconds);
                     }
                     catch (Exception exception)

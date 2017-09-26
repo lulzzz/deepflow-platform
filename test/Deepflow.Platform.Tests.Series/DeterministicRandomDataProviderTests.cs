@@ -23,7 +23,7 @@ namespace Deepflow.Platform.Tests.Series
                 { 200, new Dictionary<long, double> { { 800, 8 }, { 1000, 10 }, { 1200, 12 }, { 1400, 14 }, { 1600, 16 } } }
             };
             var valueGenerator = new MockValueGenerator(values);
-            var generator = new ReverseAverageGenerator(new DataFilterer(), valueGenerator, new DataMerger(new DataFilterer(), new DataJoiner()));
+            var generator = new ReverseAverageGenerator(new RangeFilterer(), valueGenerator, new RangeMerger(new RangeFilterer(), new RangeJoiner()));
             var actual = generator.GenerateReverseAverage(name, timeRange, aggregations, aggregationLevel, 500, 1500);
             var expected = new RawDataRange(timeRange, new List<double> { 1000, 10, 1200, 12, 1400, 14 });
             actual.ShouldBeEquivalentTo(expected);

@@ -10,14 +10,14 @@ namespace Deepflow.Platform.Tests.Series
 {
     public class DataFiltererTests
     {
-        private readonly DataFilterer<AggregatedDataRange> _dataFilterer = new DataFilterer<AggregatedDataRange>(new AggregatedDataRangeCreator());
+        private readonly RangeFilterer<AggregatedDataRange> _rangeFilterer = new RangeFilterer<AggregatedDataRange>(new AggregatedRangeCreator(), new AggregateRangeFilteringPolicy(), new AggregatedRangeAccessor());
 
         [Fact]
         public void FilterSingleBefore()
         {
             var timeRange = new TimeRange(0, 100);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.FilterDataRanges(ranges, timeRange);
+            var actual = _rangeFilterer.FilterDataRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange>();
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -27,7 +27,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(100, 200);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.FilterDataRanges(ranges, timeRange);
+            var actual = _rangeFilterer.FilterDataRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange> { new AggregatedDataRange(200, 200, new List<double> { 200, 20 }, 50) };
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -37,7 +37,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(100, 220);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.FilterDataRanges(ranges, timeRange);
+            var actual = _rangeFilterer.FilterDataRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange> { new AggregatedDataRange(200, 220, new List<double> { 200, 20 }, 50) };
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -47,7 +47,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(100, 250);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.FilterDataRanges(ranges, timeRange);
+            var actual = _rangeFilterer.FilterDataRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange> { new AggregatedDataRange(200, 250, new List<double> { 200, 20, 250, 25 }, 50) };
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -57,7 +57,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(200, 220);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.FilterDataRanges(ranges, timeRange);
+            var actual = _rangeFilterer.FilterDataRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange> { new AggregatedDataRange(200, 220, new List<double> { 200, 20 }, 50) };
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -67,7 +67,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(200, 250);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.FilterDataRanges(ranges, timeRange);
+            var actual = _rangeFilterer.FilterDataRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange> { new AggregatedDataRange(200, 250, new List<double> { 200, 20, 250, 25 }, 50) };
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -77,7 +77,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(220, 250);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.FilterDataRanges(ranges, timeRange);
+            var actual = _rangeFilterer.FilterDataRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange> { new AggregatedDataRange(220, 250, new List<double> { 250, 25 }, 50) };
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -87,7 +87,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(220, 280);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.FilterDataRanges(ranges, timeRange);
+            var actual = _rangeFilterer.FilterDataRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange> { new AggregatedDataRange(220, 280, new List<double> { 250, 25 }, 50) };
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -97,7 +97,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(250, 300);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.FilterDataRanges(ranges, timeRange);
+            var actual = _rangeFilterer.FilterDataRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange> { new AggregatedDataRange(250, 300, new List<double> { 250, 25, 300, 30 }, 50) };
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -107,7 +107,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(220, 300);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.FilterDataRanges(ranges, timeRange);
+            var actual = _rangeFilterer.FilterDataRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange> { new AggregatedDataRange(220, 300, new List<double> { 250, 25, 300, 30 }, 50) };
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -117,7 +117,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(280, 350);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.FilterDataRanges(ranges, timeRange);
+            var actual = _rangeFilterer.FilterDataRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange> { new AggregatedDataRange(280, 300, new List<double> { 300, 30 }, 50) };
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -127,7 +127,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(250, 350);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.FilterDataRanges(ranges, timeRange);
+            var actual = _rangeFilterer.FilterDataRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange> { new AggregatedDataRange(250, 300, new List<double> { 250, 25, 300, 30 }, 50) };
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -137,7 +137,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(300, 350);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.FilterDataRanges(ranges, timeRange);
+            var actual = _rangeFilterer.FilterDataRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange> { new AggregatedDataRange(300, 300, new List<double> { 300, 30 }, 50) };
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -147,7 +147,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(350, 400);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.FilterDataRanges(ranges, timeRange);
+            var actual = _rangeFilterer.FilterDataRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange>();
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -157,7 +157,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(100, 400);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.FilterDataRanges(ranges, timeRange);
+            var actual = _rangeFilterer.FilterDataRanges(ranges, timeRange);
             var expected = ranges;
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -167,7 +167,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(200, 300);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.FilterDataRanges(ranges, timeRange);
+            var actual = _rangeFilterer.FilterDataRanges(ranges, timeRange);
             var expected = ranges;
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -177,7 +177,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(100, 300);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.FilterDataRanges(ranges, timeRange);
+            var actual = _rangeFilterer.FilterDataRanges(ranges, timeRange);
             var expected = ranges;
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -187,7 +187,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(200, 400);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.FilterDataRanges(ranges, timeRange);
+            var actual = _rangeFilterer.FilterDataRanges(ranges, timeRange);
             var expected = ranges;
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -197,7 +197,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             TimeRange timeRange = null;
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.FilterDataRanges(ranges, timeRange);
+            var actual = _rangeFilterer.FilterDataRanges(ranges, timeRange);
             List<AggregatedDataRange> expected = new List<AggregatedDataRange>();
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -207,7 +207,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(350, 400);
             var ranges = new List<AggregatedDataRange>();
-            var actual = _dataFilterer.FilterDataRanges(ranges, timeRange);
+            var actual = _rangeFilterer.FilterDataRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange>();
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -217,7 +217,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(350, 400);
             List<AggregatedDataRange> ranges = null;
-            var actual = _dataFilterer.FilterDataRanges(ranges, timeRange);
+            var actual = _rangeFilterer.FilterDataRanges(ranges, timeRange);
             List<AggregatedDataRange> expected = null;
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -227,7 +227,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(100, 150);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
+            var actual = _rangeFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
             var expected = ranges;
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -237,7 +237,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(100, 200);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
+            var actual = _rangeFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
             var expected = ranges;
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -247,7 +247,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(100, 250);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
+            var actual = _rangeFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange> { new AggregatedDataRange(250, 300, new List<double> { 250, 25, 300, 30 }, 50) };
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -257,7 +257,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(200, 220);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
+            var actual = _rangeFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange> { new AggregatedDataRange(220, 300, new List<double> { 250, 25, 300, 30 }, 50) };
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -267,7 +267,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(200, 250);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
+            var actual = _rangeFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange> { new AggregatedDataRange(250, 300, new List<double> { 250, 25, 300, 30 }, 50) };
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -277,7 +277,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(200, 280);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
+            var actual = _rangeFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange> { new AggregatedDataRange(280, 300, new List<double> { 300, 30 }, 50) };
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -287,7 +287,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(220, 280);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
+            var actual = _rangeFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange> { new AggregatedDataRange(200, 220, new List<double> { 200, 20 }, 50), new AggregatedDataRange(280, 300, new List<double> { 300, 30 }, 50) };
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -297,7 +297,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(220, 220);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
+            var actual = _rangeFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
             var expected = ranges;
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -307,7 +307,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(250, 250);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
+            var actual = _rangeFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
             var expected = ranges;
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -317,7 +317,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(280, 280);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
+            var actual = _rangeFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
             var expected = ranges;
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -327,7 +327,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(280, 300);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
+            var actual = _rangeFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange> { new AggregatedDataRange(200, 280, new List<double> { 200, 20, 250, 25 }, 50) };
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -337,7 +337,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(250, 300);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
+            var actual = _rangeFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange> { new AggregatedDataRange(200, 250, new List<double> { 200, 20, 250, 25 }, 50) };
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -347,7 +347,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(220, 300);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
+            var actual = _rangeFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange> { new AggregatedDataRange(200, 220, new List<double> { 200, 20 }, 50) };
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -357,7 +357,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(220, 350);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
+            var actual = _rangeFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange> { new AggregatedDataRange(200, 220, new List<double> { 200, 20 }, 50) };
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -367,7 +367,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(300, 350);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
+            var actual = _rangeFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
             var expected = ranges;
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -377,7 +377,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(350, 400);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
+            var actual = _rangeFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
             var expected = ranges;
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -387,7 +387,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(200, 300);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
+            var actual = _rangeFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange>();
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -397,7 +397,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(100, 300);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
+            var actual = _rangeFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange>();
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -407,7 +407,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(200, 400);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
+            var actual = _rangeFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange>();
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -417,7 +417,7 @@ namespace Deepflow.Platform.Tests.Series
         {
             var timeRange = new TimeRange(100, 400);
             var ranges = new List<AggregatedDataRange> { new AggregatedDataRange(200, 300, new List<double> { 200, 20, 250, 25, 300, 30 }, 50) };
-            var actual = _dataFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
+            var actual = _rangeFilterer.SubtractTimeRangeFromRanges(ranges, timeRange);
             var expected = new List<AggregatedDataRange>();
             actual.ShouldBeEquivalentTo(expected);
         }
