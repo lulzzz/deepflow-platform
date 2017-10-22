@@ -79,8 +79,8 @@ namespace Deepflow.Platform.Agent.Processor
             var aggregatedTimeRange = new TimeRange(aggregatedTime - _configuration.AggregationSeconds, aggregatedTime);
             var aggregatedData = await _provider.FetchAggregatedData(sourceName, aggregatedTimeRange, _configuration.AggregationSeconds);
 
-            _logger.LogInformation($"Sending data for {sourceName} with {aggregatedData.Data.Count / 2} aggregated points");
-            await _client.SendData(sourceName, aggregatedData);
+            _logger.LogDebug($"Sending data for {sourceName} with {aggregatedData.Data.Count / 2} aggregated points");
+            await _client.SendRealtimeData(sourceName, aggregatedData, rawDataRange);
         }
 
         private QueueWrapper PrepareNextQueue(SourceSeriesList sourceSeriesList)
@@ -98,6 +98,8 @@ namespace Deepflow.Platform.Agent.Processor
 
         private void SwapToNextQueue(QueueWrapper newQueue)
         {
+            _logger.LogInformation($"Switching to new queue with {newQueue.Queue.Count} items");
+
             var oldQueue = _fetchQueue;
             _fetchQueue = newQueue;
             oldQueue.CancellationTokenSource.Cancel();
@@ -114,7 +116,7 @@ namespace Deepflow.Platform.Agent.Processor
                     try
                     {
                         var data = await _provider.FetchAggregatedData(fetch.SourceName, fetch.TimeRange, _configuration.AggregationSeconds);
-                        await _client.SendData(fetch.SourceName, data);
+                        await _client.SendHistoricalData(fetch.SourceName, data);
                         await Task.Delay(_configuration.BetweenFetchPauseSeconds);
                     }
                     catch (Exception exception)

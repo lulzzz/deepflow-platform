@@ -3,7 +3,9 @@
     public enum ResponseType
     {
         FetchAggregatedAttributeData,
+        FetchRawSourceData,
         AddAggregatedAttributeData,
+        AddAggregatedHistoricalAttributeData,
         UpdateAttributeSubscriptions
     }
 }

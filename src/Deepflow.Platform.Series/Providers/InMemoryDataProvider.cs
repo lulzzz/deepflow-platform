@@ -31,7 +31,7 @@ namespace Deepflow.Platform.Series.Providers
                 return new List<AggregatedDataRange>();
             }
 
-            var existingRanges = _dataFilterer.FilterDataRanges(dataRanges, timeRange);
+            var existingRanges = _dataFilterer.FilterRanges(dataRanges, timeRange);
             var rangesToProduce = _timeFilterer.SubtractTimeRangesFromRange(timeRange, existingRanges.Select(x => x.TimeRange));
             var producedRanges = await ProduceAttributeRanges(series, rangesToProduce);
             var mergedInRange = _merger.MergeRangesWithRanges(existingRanges, producedRanges);

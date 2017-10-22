@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Deepflow.Platform.Abstractions.Series;
 using Deepflow.Platform.Abstractions.Series.Attribute;
+using Deepflow.Platform.Core.Tools;
 using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Concurrency;
@@ -20,12 +21,14 @@ namespace Deepflow.Platform.Series.Attributes
         private readonly IAttributeDataProviderFactory _providerFactory;
         private IAttributeDataProvider _provider;
         private readonly ILogger<AttributeSeriesGrain> _logger;
+        private readonly TripCounterFactory _tripCounterFactory;
         private readonly ObserverSubscriptionManager<ISeriesObserver> _subscriptions = new ObserverSubscriptionManager<ISeriesObserver>();
 
-        public AttributeSeriesGrain(IAttributeDataProviderFactory providerFactory, ILogger<AttributeSeriesGrain> logger)
+        public AttributeSeriesGrain(IAttributeDataProviderFactory providerFactory, ILogger<AttributeSeriesGrain> logger, TripCounterFactory tripCounterFactory)
         {
             _providerFactory = providerFactory;
             _logger = logger;
+            _tripCounterFactory = tripCounterFactory;
         }
 
         public override async Task OnActivateAsync()
@@ -49,15 +52,18 @@ namespace Deepflow.Platform.Series.Attributes
         {
             try
             {
-                var affectedAggregations = await _provider.AddData(aggregatedRanges);
-                
-                // Notify subscribers with affected data
-                var notifyAggregations = affectedAggregations.ToDictionary(x => x.AggregationSeconds, x => x);
-                _subscriptions.Notify(observer => observer.ReceiveData(_entity, _attribute, notifyAggregations));
+                using (_tripCounterFactory.Create("AttributeSeriesGrain.ReceiveData"))
+                {
+                    var affectedAggregations = await _provider.AddData(aggregatedRanges);
+
+                    // Notify subscribers with affected data
+                    var notifyAggregations = affectedAggregations.ToDictionary(x => x.AggregationSeconds, x => x);
+                    _subscriptions.Notify(observer => observer.ReceiveData(_entity, _attribute, notifyAggregations));
+                }
             }
             catch (Exception exception)
             {
-                _logger.LogError(null, exception, "Error when adding aggregated data");
+                _logger.LogError(new EventId(103), exception, "Error when adding aggregated data");
                 throw;
             }
         }
@@ -76,7 +82,7 @@ namespace Deepflow.Platform.Series.Attributes
             }
             catch (OrleansException exception)
             {
-                _logger.LogError(null, exception, "Unsubscribed already");
+                _logger.LogError(new EventId(104), exception, "Unsubscribed already");
             }
             return Task.FromResult(0);
         }

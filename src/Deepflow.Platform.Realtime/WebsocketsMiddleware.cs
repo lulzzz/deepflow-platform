@@ -41,7 +41,7 @@ namespace Deepflow.Platform.Realtime
             }
             catch (Exception exception)
             {
-                _logger.LogError(null, exception, "Error with websockets request");
+                _logger.LogError(new EventId(102), exception, "Error with websockets request");
             }
 
             await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", cancellationToken);

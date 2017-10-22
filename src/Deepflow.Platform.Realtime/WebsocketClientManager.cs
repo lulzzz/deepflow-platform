@@ -90,9 +90,9 @@ namespace Deepflow.Platform.Realtime
             var socket = _socket;
             if (socket != null)
             {
-                _logger.LogInformation($"Sending realtime message...");
+                _logger.LogDebug($"Sending realtime message...");
                 await socket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(messageString)), WebSocketMessageType.Text, true, CancellationToken.None);
-                _logger.LogInformation($"Sent realtime message");
+                _logger.LogDebug($"Sent realtime message");
             }
         }
 

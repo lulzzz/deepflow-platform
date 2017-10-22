@@ -5,7 +5,7 @@ namespace Deepflow.Platform.Series
 {
     public static class BinarySearcher
     {
-        public static int? GetFirstIndexPastTimestampBinary(List<double> data, double timestamp) {
+        public static int? GetFirstIndexEqualOrGreaterTimestampBinary(List<double> data, double timestamp) {
             return GetIndexRecursive(data, timestamp, 0, data.Count - 2);
         }
 

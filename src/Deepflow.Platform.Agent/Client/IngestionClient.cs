@@ -22,6 +22,7 @@ namespace Deepflow.Platform.Agent.Client
         private readonly ILogger<IngestionClient> _logger;
         private readonly Core.AgentIngestionConfiguration _configuration;
         private readonly IAgentProcessor _processor;
+        private readonly TripCounterFactory _tripCounterFactory;
         private WebsocketClientManager _listenClient;
         private readonly RetryingHttpClient _pushClient;
         private readonly HttpClient _pullClient = new HttpClient();
@@ -31,16 +32,17 @@ namespace Deepflow.Platform.Agent.Client
         private SemaphoreSlim _sendSemaphore;
         private int _nextActionId = 1;
 
-        public IngestionClient(ILogger<IngestionClient> logger, Core.AgentIngestionConfiguration configuration, IAgentProcessor processor)
+        public IngestionClient(ILogger<IngestionClient> logger, Core.AgentIngestionConfiguration configuration, IAgentProcessor processor, TripCounterFactory tripCounterFactory)
         {
             _logger = logger;
             _configuration = configuration;
             _processor = processor;
+            _tripCounterFactory = tripCounterFactory;
             _processor.SetClient(this);
             _sendSemaphore = new SemaphoreSlim(configuration.SendParallelism);
             _pushClient = new RetryingHttpClient(configuration.PushFailedRetryCount, _configuration.PushFailedPauseSeconds, "Unable to push data to ingestion API", logger);
 
-            _logger.LogInformation($"Starting ingestion client with {configuration.SendParallelism} send parallelism");
+            _logger.LogDebug($"Starting ingestion client with {configuration.SendParallelism} send parallelism");
         }
 
         public async Task Start()
@@ -93,40 +95,76 @@ namespace Deepflow.Platform.Agent.Client
             }
         }
 
-        public async Task SendData(string name, AggregatedDataRange aggregatedDataRange)
+        public async Task SendRealtimeData(string name, AggregatedDataRange aggregatedDataRange, RawDataRange rawDataRange)
         {
-            _logger.LogInformation("About to send data to ingestion API");
-            var message = new AddAggregatedAttributeDataRequest
+            using (_tripCounterFactory.Create("IngestionClient.SendRealtimeData"))
             {
-                ActionId = _nextActionId++,
-                MessageClass = IncomingMessageClass.Request,
-                RequestType = RequestType.AddAggregatedAttributeData,
-                DataSource = _configuration.DataSource,
-                SourceName = name,
-                AggregatedDataRange = aggregatedDataRange
-            };
+                _logger.LogDebug("About to send realtime data to ingestion API");
+                var message = new AddAggregatedAttributeDataRequest
+                {
+                    ActionId = _nextActionId++,
+                    MessageClass = IncomingMessageClass.Request,
+                    RequestType = RequestType.AddAggregatedAttributeData,
+                    DataSource = _configuration.DataSource,
+                    SourceName = name,
+                    AggregatedDataRange = aggregatedDataRange,
+                    RawDataRange = rawDataRange
+                };
 
-            var messageString = JsonConvert.SerializeObject(message, JsonSettings.Setttings);
-            _logger.LogInformation("About to send message to ingestion API");
+                var messageString = JsonConvert.SerializeObject(message, JsonSettings.Setttings);
+                _logger.LogDebug("About to send message to ingestion API");
 
-            try
-            {
-                _logger.LogInformation("Waiting to send data to ingestion API");
-                await _sendSemaphore.WaitAsync();
-                _logger.LogInformation("Sending data to ingestion API");
-                await _listenClient.SendMessage(messageString);
-                _logger.LogInformation("Sent data to ingestion API");
+                try
+                {
+                    _logger.LogDebug("Waiting to send data to ingestion API");
+                    await _sendSemaphore.WaitAsync();
+                    _logger.LogDebug("Sending data to ingestion API");
+                    await _listenClient.SendMessage(messageString);
+                    _logger.LogDebug("Sent data to ingestion API");
+                }
+                finally
+                {
+                    _sendSemaphore.Release();
+                }
             }
-            finally
-            {
-                _sendSemaphore.Release();
-            }
-            
 
             /*var uri = new Uri(_configuration.ApiBaseUrl, $"/api/v1/DataSources/{_configuration.DataSource}/Series/{name}/Data");
             var message = new DataSourceDataPackage { AggregatedRange = aggregatedDataRange };
             var body = JsonConvert.SerializeObject(message);
             await _pushClient.PostAsync(uri, new StringContent(body, Encoding.UTF8, "application/json"));*/
+        }
+
+        public async Task SendHistoricalData(string name, AggregatedDataRange aggregatedDataRange)
+        {
+            using (_tripCounterFactory.Create("IngestionClient.SendHistoricalData"))
+            {
+                _logger.LogDebug("About to send historical data to ingestion API");
+                var message = new AddAggregatedAttributeHistoricalDataRequest()
+                {
+                    ActionId = _nextActionId++,
+                    MessageClass = IncomingMessageClass.Request,
+                    RequestType = RequestType.AddAggregatedHistoricalAttributeData,
+                    DataSource = _configuration.DataSource,
+                    SourceName = name,
+                    AggregatedDataRange = aggregatedDataRange
+                };
+
+                var messageString = JsonConvert.SerializeObject(message, JsonSettings.Setttings);
+                _logger.LogDebug("About to send message to ingestion API");
+
+                try
+                {
+                    _logger.LogDebug("Waiting to send data to ingestion API");
+                    await _sendSemaphore.WaitAsync();
+                    _logger.LogDebug("Sending data to ingestion API");
+                    await _listenClient.SendMessage(messageString);
+                    _logger.LogDebug("Sent data to ingestion API");
+                }
+                finally
+                {
+                    _sendSemaphore.Release();
+                }
+            }
         }
     }
 }

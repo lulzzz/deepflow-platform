@@ -36,7 +36,7 @@ namespace Deepflow.Platform.Sources.FakeSource.Realtime
             if (generator != null)
             {
                 generator.Stop();
-                _logger.LogInformation($"Subscription removed, now {_generatorBySocketId.Count}");
+                _logger.LogDebug($"Subscription removed, now {_generatorBySocketId.Count}");
             }
             return Task.FromResult(0);
         }
@@ -46,7 +46,7 @@ namespace Deepflow.Platform.Sources.FakeSource.Realtime
             var subscriptionRequest = JsonConvert.DeserializeObject<SubscriptionRequest>(message);
             var generator = _generatorBySocketId.GetOrAdd(socketId, new RealtimeGenerator(subscriptionRequest.SourceName, _configuration.SecondsInterval, async dataRange => await SendPoint(socketId, dataRange), _rangeLogger));
             generator.Start();
-            _logger.LogInformation($"Subscription added, now {_generatorBySocketId.Count}");
+            _logger.LogDebug($"Subscription added, now {_generatorBySocketId.Count}");
             return Task.FromResult(0);
         }
 
@@ -59,13 +59,13 @@ namespace Deepflow.Platform.Sources.FakeSource.Realtime
         {
             try
             {
-                _logger.LogInformation("Sending raw point...");
+                _logger.LogDebug("Sending raw point...");
                 var message = JsonConvert.SerializeObject(dataRange);
                 await _sender.Send(socketId, message);
             }
             catch (Exception exception)
             {
-                _logger.LogError(null, exception, "Error sending raw point");
+                _logger.LogError(new EventId(106), exception, "Error sending raw point");
             }
         }
     }

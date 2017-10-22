@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Deepflow.Platform.Abstractions.Series.Validators;
+using Deepflow.Platform.Core.Tools;
 using FluentValidation;
 
 namespace Deepflow.Platform.Abstractions.Series
@@ -28,6 +29,14 @@ namespace Deepflow.Platform.Abstractions.Series
         {
             Min = min;
             Max = max;
+
+            _validator.ValidateAndThrow(this);
+        }
+
+        public TimeRange(DateTime min, DateTime max)
+        {
+            Min = min.SecondsSince1970Utc();
+            Max = max.SecondsSince1970Utc();
 
             _validator.ValidateAndThrow(this);
         }
@@ -218,6 +227,7 @@ namespace Deepflow.Platform.Abstractions.Series
     public class TimeRangeFilteringPolicy : IRangeFilteringPolicy<TimeRange>
     {
         public FilterMode FilterMode { get; } = FilterMode.MinAndMaxInclusive;
+        public bool AreZeroLengthRangesAllowed { get; } = true;
     }
 
     public class TimeRangeAccessor : IRangeAccessor<TimeRange>

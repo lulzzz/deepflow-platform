@@ -26,7 +26,7 @@ namespace Deepflow.Platform.Sources.FakeSource.Data
 
         public RawDataRange GenerateData(string sourceName, TimeRange timeRange, int aggregationSeconds)
         {
-            var chunkSeconds = aggregationSeconds * 1024;
+            var chunkSeconds = aggregationSeconds * 8;
             var quantisedRange = timeRange.Quantise(chunkSeconds);
             var chunks = quantisedRange.Chop(chunkSeconds);
 

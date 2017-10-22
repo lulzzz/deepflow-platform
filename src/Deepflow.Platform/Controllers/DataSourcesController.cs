@@ -54,12 +54,12 @@ namespace Deepflow.Platform.Controllers
             {
                 _validator.ValidateAndThrow(dataPackage);
 
-                _logger.LogInformation($"Received data from data source {dataSource} for {sourceName} with {dataPackage.AggregatedRange.Data.Count / 2} aggregated pointss");
+                _logger.LogDebug($"Received data from data source {dataSource} for {sourceName} with {dataPackage.AggregatedRange.Data.Count / 2} aggregated pointss");
                 return _processor.AddData(dataSource, sourceName, dataPackage.AggregatedRange);
             }
             catch (Exception exception)
             {
-                _logger.LogError(null, exception, "Error when adding aggregated ranges");
+                _logger.LogError(new EventId(101), exception, "Error when adding aggregated ranges");
                 throw;
             }
         }

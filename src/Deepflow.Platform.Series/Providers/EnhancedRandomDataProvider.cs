@@ -65,7 +65,7 @@ namespace Deepflow.Platform.Series.Providers
                 }
             }
 
-            return _dataFilterer.FilterDataRanges(ranges, timeRange).Single();
+            return _dataFilterer.FilterRanges(ranges, timeRange).Single();
         }
     }
 

@@ -20,20 +20,20 @@ namespace Deepflow.Platform.Ingestion.FakeIngestor.Realtime
 
         public Task OnConnected(string socketId)
         {
-            _logger.LogInformation("Socket connected");
+            _logger.LogDebug("Socket connected");
             return Task.FromResult(0);
         }
 
         public Task OnDisconnected(string socketId)
         {
-            _logger.LogInformation("Socket disconnected");
+            _logger.LogDebug("Socket disconnected");
             return Task.FromResult(0);
         }
 
         public Task OnReceive(string socketId, string messageString)
         {
             var message = JsonConvert.DeserializeObject<IEnumerable<RawDataRange>>(messageString);
-            _logger.LogInformation($"Received message with {message.Sum(x => x.Data.Count / 2)} points");
+            _logger.LogDebug($"Received message with {message.Sum(x => x.Data.Count / 2)} points");
             return Task.FromResult(0);
         }
 

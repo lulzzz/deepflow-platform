@@ -105,6 +105,7 @@ namespace Deepflow.Platform.Abstractions.Series
     public class RawDataRangeFilteringPolicy : IRangeFilteringPolicy<RawDataRange>
     {
         public FilterMode FilterMode { get; } = FilterMode.MinAndMaxInclusive;
+        public bool AreZeroLengthRangesAllowed { get; } = true;
     }
 
     public class RawDataRangeAccessor : IRangeAccessor<RawDataRange>

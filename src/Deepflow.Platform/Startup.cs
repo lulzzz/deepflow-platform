@@ -9,6 +9,7 @@ using Deepflow.Platform.Abstractions.Series;
 using Deepflow.Platform.Abstractions.Series.Attribute;
 using Deepflow.Platform.Abstractions.Sources;
 using Deepflow.Platform.Controllers;
+using Deepflow.Platform.Core.Tools;
 using Deepflow.Platform.Ingestion;
 using Deepflow.Platform.Model;
 using Deepflow.Platform.Realtime;
@@ -79,6 +80,7 @@ namespace Deepflow.Platform
             services.AddSingleton<IModelMapProvider, InMemoryModelMapProvider>();
 
             services.AddSingleton(ModelMap);
+            services.AddSingleton<TripCounterFactory>();
 
             var ingestionConfiguration = new IngestionConfiguration();
             Configuration.GetSection("Ingestion").Bind(ingestionConfiguration);
@@ -144,7 +146,9 @@ namespace Deepflow.Platform
             services.AddSingleton<IDataStore, DynamoDbDataStore>();
             services.AddSingleton<IDataValidator, DataValidator>();
             services.AddSingleton<IModelMapProvider, InMemoryModelMapProvider>();
-            
+
+            services.AddSingleton<TripCounterFactory>();
+
             services.AddSingleton(Startup.ModelMap);
 
             

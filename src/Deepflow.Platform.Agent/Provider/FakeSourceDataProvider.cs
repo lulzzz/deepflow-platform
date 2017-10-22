@@ -29,9 +29,11 @@ namespace Deepflow.Platform.Agent.Provider
             return JsonConvert.DeserializeObject<AggregatedDataRange>(responseMessage);
         }
 
-        public Task<RawDataRange> FetchRawData(string sourceName, TimeRange timeRange)
+        public async Task<RawDataRange> FetchRawData(string sourceName, TimeRange timeRange)
         {
-            throw new NotImplementedException();
+            var uri = new Uri(_configuration.ApiBaseUrl, $"api/v1/Data/{sourceName}/Raw?minTimeUtc={timeRange.Min.FromSecondsSince1970Utc():s}&maxTimeUtc={timeRange.Max.FromSecondsSince1970Utc():s}");
+            var responseMessage = await _client.GetStringAsync(uri);
+            return JsonConvert.DeserializeObject<RawDataRange>(responseMessage);
         }
 
         public async Task SubscribeForRawData(string sourceName, CancellationToken cancellationToken, Func<RawDataRange, Task> onReceive)

@@ -180,7 +180,7 @@ namespace Deepflow.Platform.Controllers
                 }
             };
             
-            _logger.LogInformation($"Sent notification for ${entity}:{attribute}");
+            _logger.LogDebug($"Sent notification for ${entity}:{attribute}");
             SendNotification(notification, socketId);
         }
 

@@ -14,6 +14,7 @@ using Deepflow.Platform.Abstractions.Series.Extensions;
 using Deepflow.Platform.Core.Async;
 using Deepflow.Platform.Core.Tools;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Polly;
 using RetryPolicy = Polly.Retry.RetryPolicy;
 
@@ -24,16 +25,20 @@ namespace Deepflow.Platform.Series.DynamoDB
         private readonly DynamoDbConfiguration _configuration;
         private readonly ILogger<DynamoDbDataStore> _logger;
         private readonly IRangeFilterer<TimeRange> _timeFilterer;
+        private readonly TripCounterFactory _tripCounterFactory;
         private readonly AmazonDynamoDBClient _client;
         private readonly DynamoDBContext _context;
         private readonly RetryPolicy _retryPolicy;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(10000);
+        private int _timeRangesSavedSinceLastCheck = 0;
+        private int _dataPointsSavedSinceLastCheck = 0;
 
-        public DynamoDbDataStore(DynamoDbConfiguration configuration, ILogger<DynamoDbDataStore> logger, IRangeFilterer<TimeRange> timeFilterer)
+        public DynamoDbDataStore(DynamoDbConfiguration configuration, ILogger<DynamoDbDataStore> logger, IRangeFilterer<TimeRange> timeFilterer, TripCounterFactory tripCounterFactory)
         {
             _configuration = configuration;
             _logger = logger;
             _timeFilterer = timeFilterer;
+            _tripCounterFactory = tripCounterFactory;
 
             var credentials = new BasicAWSCredentials(configuration.AccessKey, configuration.SecretKey);
             _client = new AmazonDynamoDBClient(credentials, RegionEndpoint.GetBySystemName(configuration.RegionSystemName));
@@ -42,6 +47,18 @@ namespace Deepflow.Platform.Series.DynamoDB
             _retryPolicy = Policy
                 .Handle<ProvisionedThroughputExceededException>()
                 .WaitAndRetryForeverAsync(i => TimeSpan.Zero, (Action<Exception, TimeSpan>) OnRetry);
+
+            Task.Run(async () =>
+            {
+                while (true)
+                {
+                    var timeRanges = Interlocked.Exchange(ref _timeRangesSavedSinceLastCheck, 0);
+                    var dataPoints = Interlocked.Exchange(ref _dataPointsSavedSinceLastCheck, 0);
+
+                    _logger.LogDebug($"{timeRanges} timeRanges {dataPoints} dataPoints");
+                    await Task.Delay(1000);
+                }
+            });
         }
 
         private void OnRetry(Exception exception, TimeSpan timeSpan)
@@ -51,21 +68,31 @@ namespace Deepflow.Platform.Series.DynamoDB
         
         public async Task<Dictionary<Guid, List<TimeRange>>> LoadTimeRanges(IEnumerable<Guid> series)
         {
-            _logger.LogInformation($"Loading time ranges...");
-            var records = await Task.WhenAll(series.Select(LoadTimeRanges));
-            var result = records.GroupBy(x => x.series).ToDictionary(x => x.Key, x => x.SelectMany(y => y.records).Select(y => new TimeRange(y.Min, y.Max)).ToList());
-            _logger.LogInformation($"Loaded time ranges...");
-            return result;
+            try
+            {
+                _logger.LogDebug($"Loading time ranges...");
+                var records = await Task.WhenAll(series.Select(LoadTimeRanges));
+                var result = records.GroupBy(x => x.series).ToDictionary(x => x.Key, x => x.SelectMany(y => y.records).ToList());
+                _logger.LogDebug($"Loaded time ranges...");
+                return result;
+            }
+            catch (Exception exception)
+            {
+                _logger.LogDebug("Failed loading time ranges" + exception.Message);
+                _logger.LogError(new EventId(107), exception, "Failed loading time ranges");
+                throw;
+            }
         }
 
-        private async Task<(Guid series, List<TimeRangeRecord> records)> LoadTimeRanges(Guid series)
+        private async Task<(Guid series, List<TimeRange> records)> LoadTimeRanges(Guid series)
         {
             try
             {
                 await _semaphore.WaitAsync();
                 var search = _context.QueryAsync<TimeRangeRecord>(series.ToString(), new DynamoDBOperationConfig { OverrideTableName = _configuration.RangeTableName });
                 var records = await search.GetRemainingAsync();
-                return (series, records);
+                var timeRanges = records.SelectMany(x => JsonConvert.DeserializeObject<List<TimeRange>>(x.Ranges)).ToList();
+                return (series, timeRanges);
             }
             finally
             {
@@ -76,10 +103,11 @@ namespace Deepflow.Platform.Series.DynamoDB
         public async Task SaveTimeRanges(IEnumerable<(Guid series, List<TimeRange> timeRanges)> timeRanges)
         {
             await _semaphore.WaitAsync();
-            _logger.LogInformation($"Saving time ranges...");
-            var writeRequests = timeRanges.SelectMany(x => x.timeRanges.Select(y => CreateTimeRangeWriteRequest(x.series, y))).ToList();
+            _logger.LogDebug($"Saving time ranges...");
+            var writeRequests = timeRanges.Select(x => CreateTimeRangeWriteRequest(x.series, x.timeRanges)).ToList();
             await Save(writeRequests, _configuration.RangeTableName);
-            _logger.LogInformation($"Saved {writeRequests.Count} time ranges for {timeRanges.Count()} series");
+            Interlocked.Add(ref _timeRangesSavedSinceLastCheck, writeRequests.Count);
+            _logger.LogDebug($"Saved {writeRequests.Count} time ranges for {timeRanges.Count()} series");
         }
 
         public async Task<List<double>> LoadData(Guid series, TimeRange timeRange)
@@ -87,7 +115,7 @@ namespace Deepflow.Platform.Series.DynamoDB
             try
             {
                 await _semaphore.WaitAsync();
-                _logger.LogInformation($"Loading data...");
+                _logger.LogDebug($"Loading data...");
                 var search = _context.QueryAsync<DataRecord>(series.ToString(), QueryOperator.Between, new object[] { timeRange.Min, timeRange.Max }, new DynamoDBOperationConfig { OverrideTableName = _configuration.DataTableName });
                 var records = await search.GetRemainingAsync();
 
@@ -98,21 +126,25 @@ namespace Deepflow.Platform.Series.DynamoDB
                     data.Add(record.Value);
                 }
 
-                _logger.LogInformation($"Loaded data...");
+                _logger.LogDebug($"Loaded data...");
                 return data;
             }
             finally
             {
                 _semaphore.Release();
             }
-            }
+        }
 
         public async Task SaveData(IEnumerable<(Guid series, List<double> data)> dataRangesBySeries)
         {
-            _logger.LogInformation($"Saving data...");
-            var writeRequests = dataRangesBySeries.SelectMany(x => x.data.GetData().Select(y => CreateDataWriteRequest(x.series, y))).ToList();
-            await Save(writeRequests, _configuration.DataTableName);
-            _logger.LogInformation($"Saved data for {dataRangesBySeries.Count()} series");
+            using (_tripCounterFactory.Create("DynamoDbDataStore.SaveData"))
+            {
+                _logger.LogDebug($"Saving data...");
+                var writeRequests = dataRangesBySeries.SelectMany(x => x.data.GetData().Select(y => CreateDataWriteRequest(x.series, y))).ToList();
+                await Save(writeRequests, _configuration.DataTableName);
+                Interlocked.Add(ref _dataPointsSavedSinceLastCheck, writeRequests.Count);
+                _logger.LogDebug($"Saved data for {dataRangesBySeries.Count()} series");
+            }
         }
 
         private async Task Save(List<WriteRequest> writeRequests, string tableName)
@@ -144,38 +176,38 @@ namespace Deepflow.Platform.Series.DynamoDB
             return new WriteRequest(new PutRequest(items));
         }
 
-        private WriteRequest CreateTimeRangeWriteRequest(Guid series, TimeRange timeRange)
+        private WriteRequest CreateTimeRangeWriteRequest(Guid series, IEnumerable<TimeRange> timeRanges)
         {
             var items = new Dictionary<string, AttributeValue>
             {
                 {"Guid", new AttributeValue(series.ToString())},
-                {"Min", new AttributeValue {N = ((int)timeRange.Min).ToString()}},
-                {"Max", new AttributeValue {N = ((int)timeRange.Max).ToString()}}
+                {"Time", new AttributeValue { N = ((int)timeRanges.LastOrDefault()?.Max).ToString() ?? "0" }},
+                {"Ranges", new AttributeValue(JsonConvert.SerializeObject(timeRanges, JsonSettings.Setttings))}
             };
 
             return new WriteRequest(new PutRequest(items));
         }
+    }
 
-        private class DataRecord
-        {
-            [DynamoDBHashKey]
-            public string Guid { get; set; }
+    public class DataRecord
+    {
+        [DynamoDBHashKey]
+        public string Guid { get; set; }
 
-            [DynamoDBRangeKey]
-            public long Time { get; set; }
+        [DynamoDBRangeKey]
+        public long Time { get; set; }
 
-            public double Value { get; set; }
-        }
+        public double Value { get; set; }
+    }
 
-        private class TimeRangeRecord
-        {
-            [DynamoDBHashKey]
-            public string Guid { get; set; } 
+    public class TimeRangeRecord
+    {
+        [DynamoDBHashKey]
+        public string Guid { get; set; }
 
-            [DynamoDBRangeKey]
-            public long Max { get; set; }
-            
-            public long Min { get; set; }
-        }
+        [DynamoDBRangeKey]
+        public long Time { get; set; }
+
+        public string Ranges { get; set; }
     }
 }

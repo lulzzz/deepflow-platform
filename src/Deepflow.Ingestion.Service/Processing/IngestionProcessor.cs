@@ -1,0 +1,123 @@
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Deepflow.Common.Model;
+using Deepflow.Common.Model.Model;
+using Deepflow.Platform.Abstractions.Series;
+using Deepflow.Ingestion.Service.Realtime;
+using Deepflow.Platform.Abstractions.Series.Validators;
+using Deepflow.Platform.Common.Data.Caching;
+using Deepflow.Platform.Common.Data.Persistence;
+using Deepflow.Platform.Core.Tools;
+using FluentValidation;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+
+namespace Deepflow.Ingestion.Service.Processing
+{
+    public class IngestionProcessor : IIngestionProcessor
+    {
+        private readonly IPersistentDataProvider _persistence;
+        private readonly IDataAggregator _aggregator;
+        private readonly IModelProvider _model;
+        private readonly IDataMessenger _messenger;
+        private readonly IRangeMerger<AggregatedDataRange> _aggregatedMerger;
+        private readonly IRangeMerger<TimeRange> _timeMerger;
+        private readonly IRangeFilterer<AggregatedDataRange> _filterer;
+        private readonly SeriesConfiguration _configuration;
+        private readonly ILogger<IngestionProcessor> _logger;
+        private readonly TripCounterFactory _tripCounterFactory;
+        private readonly ConcurrentDictionary<Guid, SemaphoreSlim> _seriesSemaphores = new ConcurrentDictionary<Guid, SemaphoreSlim>();
+        private readonly AggregatedDataRangeValidator _aggregatedDataRangeValidator = new AggregatedDataRangeValidator();
+        private int _id = 0;
+
+        public IngestionProcessor(IPersistentDataProvider persistence, IDataAggregator aggregator, IModelProvider model, IDataMessenger messenger, IRangeMerger<AggregatedDataRange> aggregatedMerger, IRangeMerger<TimeRange> timeMerger, IRangeFilterer<AggregatedDataRange> filterer, SeriesConfiguration configuration, ILogger<IngestionProcessor> logger, TripCounterFactory tripCounterFactory)
+        {
+            _persistence = persistence;
+            _aggregator = aggregator;
+            _model = model;
+            _messenger = messenger;
+            _aggregatedMerger = aggregatedMerger;
+            _timeMerger = timeMerger;
+            _filterer = filterer;
+            _configuration = configuration;
+            _logger = logger;
+            _tripCounterFactory = tripCounterFactory;
+        }
+
+        public async Task ReceiveRealtimeData(Guid entity, Guid attribute, AggregatedDataRange dataRange, RawDataRange rawDataRange)
+        {
+            _logger.LogDebug("Received realtime data");
+
+            var affectedAggregatedPoints = await SaveHistoricalData(entity, attribute, dataRange);
+            await _messenger.Notify(entity, attribute, affectedAggregatedPoints, rawDataRange);
+
+            _logger.LogDebug("Saved data");
+        }
+
+        public async Task ReceiveHistoricalData(Guid entity, Guid attribute, AggregatedDataRange dataRange)
+        {
+            _logger.LogDebug("Received historical data");
+            await SaveHistoricalData(entity, attribute, dataRange);
+        }
+
+        private async Task<Dictionary<int, AggregatedDataRange>> SaveHistoricalData(Guid entity, Guid attribute, AggregatedDataRange dataRange)
+        {
+            _aggregatedDataRangeValidator.ValidateAndThrow(dataRange);
+
+            var minAggregationSeconds = _configuration.AggregationsSeconds.Min();
+            if (dataRange.AggregationSeconds != minAggregationSeconds)
+            {
+                throw new Exception($"Must be lowest aggregation {minAggregationSeconds}");
+            }
+
+            var series = await _model.ResolveSeries(entity, attribute, minAggregationSeconds).ConfigureAwait(false);
+            _logger.LogDebug("Resolved series");
+            var maxAggregationSeconds = _configuration.AggregationsSeconds.Max();
+            var quantised = dataRange.TimeRange.Quantise(maxAggregationSeconds);
+
+            var semaphore = _seriesSemaphores.GetOrAdd(series, s => new SemaphoreSlim(1));
+            await semaphore.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                //var cached = await _cache.GetData(series, quantised, minAggregationSeconds);
+                var persisted = await _tripCounterFactory.Run("Persistence.GetData", _persistence.GetData(series, quantised)).ConfigureAwait(false);
+                var existingTimeRanges = await _tripCounterFactory.Run("Persistence.GetAllTimeRanges", _persistence.GetAllTimeRanges(series)).ConfigureAwait(false);
+                _logger.LogDebug("Got cached");
+                var merged = _aggregatedMerger.MergeRangeWithRanges(persisted, dataRange);
+                var aggregations = _aggregator.Aggregate(merged, quantised, _configuration.AggregationsSeconds);
+                var affectedAggregatedPoints = aggregations.Select(x => FilterAggregationToAffectedRange(x.Value, dataRange.TimeRange, x.Key)).Where(x => x != null).ToList();
+                var rangesToPersist = await Task.WhenAll(affectedAggregatedPoints.Select(async range => new ValueTuple<Guid, IEnumerable<AggregatedDataRange>>(await _model.ResolveSeries(entity, attribute, range.AggregationSeconds), new List<AggregatedDataRange> { range })));
+                await _persistence.SaveData(rangesToPersist);
+
+                //await Task.WhenAll(_tripCounterFactory.Run("Persistence.Save", aggregations.Select(async x => _persistence.SaveData(await _model.ResolveSeries(entity, attribute, x.Key).ConfigureAwait(false), x.Value)))).ConfigureAwait(false);
+                //var existingTimeRanges = await existingTimeRangesTask.ConfigureAwait(false); ;
+                var afterTimeRanges = _timeMerger.MergeRangeWithRanges(existingTimeRanges, dataRange.TimeRange);
+                await _tripCounterFactory.Run("Persistence.SaveTimeRanges", _persistence.SaveTimeRanges(series, afterTimeRanges)).ConfigureAwait(false);
+
+                //File.WriteAllText(_id++ + ".json", $"Before: {JsonConvert.SerializeObject(existingTimeRanges)} {Environment.NewLine}{Environment.NewLine}Adding:{JsonConvert.SerializeObject(dataRange.TimeRange)}{Environment.NewLine}{Environment.NewLine}After: {JsonConvert.SerializeObject(afterTimeRanges)}");
+
+                //var lowestAggregation = aggregations.OrderBy(x => x.Key).First();
+                //var cache = _tripCounterFactory.Run("Cache.Save", _cache.SaveData(series, lowestAggregation.Value));
+                //await Task.WhenAll(dataPersistence, timeRangePersistence).ConfigureAwait(false); ;
+                _logger.LogDebug("Saved persistence");
+
+                return affectedAggregatedPoints.ToDictionary(x => x.AggregationSeconds, x => x);
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        }
+
+        private AggregatedDataRange FilterAggregationToAffectedRange(IEnumerable<AggregatedDataRange> dataRanges, TimeRange timeRange, int aggregationSeconds)
+        {
+            var filtered = _filterer.FilterRanges(dataRanges, timeRange.Quantise(aggregationSeconds));
+            return filtered.SingleOrDefault();
+        }
+    }
+}

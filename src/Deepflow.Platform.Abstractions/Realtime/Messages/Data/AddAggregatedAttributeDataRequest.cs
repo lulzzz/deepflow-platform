@@ -8,5 +8,6 @@ namespace Deepflow.Platform.Abstractions.Realtime.Messages.Data
         public Guid DataSource { get; set; }
         public string SourceName { get; set; }
         public AggregatedDataRange AggregatedDataRange { get; set; }
+        public RawDataRange RawDataRange { get; set; }
     }
 }

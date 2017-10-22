@@ -15,7 +15,7 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double> { 100, 10, 200, 20, 300, 30, 400, 40, 500, 50 };
             var time = 0;
             var expected = 0;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
 
@@ -25,7 +25,7 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double> { 100, 10, 200, 20, 300, 30, 400, 40, 500, 50 };
             var time = 100;
             var expected = 0;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
 
@@ -35,7 +35,7 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double> { 100, 10, 200, 20, 300, 30, 400, 40, 500, 50 };
             var time = 150;
             var expected = 2;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
 
@@ -45,7 +45,7 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double> { 100, 10, 200, 20, 300, 30, 400, 40, 500, 50 };
             var time = 200;
             var expected = 2;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
 
@@ -55,7 +55,7 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double> { 100, 10, 200, 20, 300, 30, 400, 40, 500, 50 };
             var time = 250;
             var expected = 4;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
 
@@ -65,7 +65,7 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double> { 100, 10, 200, 20, 300, 30, 400, 40, 500, 50 };
             var time = 300;
             var expected = 4;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
 
@@ -75,7 +75,7 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double> { 100, 10, 200, 20, 300, 30, 400, 40, 500, 50 };
             var time = 350;
             var expected = 6;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
 
@@ -85,7 +85,7 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double> { 100, 10, 200, 20, 300, 30, 400, 40, 500, 50 };
             var time = 400;
             var expected = 6;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
 
@@ -95,7 +95,7 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double> { 100, 10, 200, 20, 300, 30, 400, 40, 500, 50 };
             var time = 450;
             var expected = 8;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
 
@@ -105,7 +105,7 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double> { 100, 10, 200, 20, 300, 30, 400, 40, 500, 50 };
             var time = 500;
             var expected = 8;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
 
@@ -115,7 +115,7 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double> { 100, 10, 200, 20, 300, 30, 400, 40, 500, 50 };
             var time = 550;
             var expected = (int?)null;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
         
@@ -125,7 +125,7 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double> { 100, 10, 200, 20, 300, 30, 400, 40 };
             var time = 0;
             var expected = 0;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
 
@@ -135,7 +135,7 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double> { 100, 10, 200, 20, 300, 30, 400, 40 };
             var time = 100;
             var expected = 0;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
 
@@ -145,7 +145,7 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double> { 100, 10, 200, 20, 300, 30, 400, 40 };
             var time = 150;
             var expected = 2;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
 
@@ -155,7 +155,7 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double> { 100, 10, 200, 20, 300, 30, 400, 40 };
             var time = 200;
             var expected = 2;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
 
@@ -165,7 +165,7 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double> { 100, 10, 200, 20, 300, 30, 400, 40 };
             var time = 250;
             var expected = 4;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
 
@@ -175,7 +175,7 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double> { 100, 10, 200, 20, 300, 30, 400, 40 };
             var time = 300;
             var expected = 4;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
 
@@ -185,7 +185,7 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double> { 100, 10, 200, 20, 300, 30, 400, 40 };
             var time = 350;
             var expected = 6;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
 
@@ -195,7 +195,7 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double> { 100, 10, 200, 20, 300, 30, 400, 40 };
             var time = 400;
             var expected = 6;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
 
@@ -205,7 +205,7 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double> { 100, 10, 200, 20, 300, 30, 400, 40 };
             var time = 450;
             var expected = (int?)null;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
 
@@ -215,7 +215,7 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double> { 100, 10 };
             var time = 50;
             var expected = 0;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
 
@@ -225,7 +225,7 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double> { 100, 10 };
             var time = 100;
             var expected = 0;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
 
@@ -235,7 +235,7 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double> { 100, 10 };
             var time = 150;
             var expected = (int?)null;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
 
@@ -245,8 +245,18 @@ namespace Deepflow.Platform.Tests.Series
             var data = new List<double>();
             var time = 100;
             var expected = (int?)null;
-            var actual = BinarySearcher.GetFirstIndexPastTimestampBinary(data, time);
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
             actual.ShouldBeEquivalentTo(expected);
         }
+
+        /*[Fact]
+        public void SearchEmpty()
+        {
+            var data = new List<double> { 250, 25, 300, 30 };
+            var time = 250;
+            var expected = (int?)null;
+            var actual = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, time);
+            actual.ShouldBeEquivalentTo(expected);
+        }*/
     }
 }

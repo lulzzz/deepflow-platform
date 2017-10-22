@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Deepflow.Platform.Abstractions.Realtime;
 using Deepflow.Platform.Agent.Client;
-using Deepflow.Platform.Agent.Core;
 using Deepflow.Platform.Agent.Processor;
 using Deepflow.Platform.Agent.Provider;
-using Deepflow.Platform.Series.DynamoDB;
+using Deepflow.Platform.Agent.Realtime;
+using Deepflow.Platform.Core.Tools;
+using Deepflow.Platform.Realtime;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -37,6 +35,11 @@ namespace Deepflow.Platform.Agent
             services.AddSingleton<ISourceDataProvider, FakeSourceDataProvider>();
             services.AddSingleton<IIngestionClient, IngestionClient>();
             services.AddSingleton<IAgentProcessor, AgentProcessor>();
+            services.AddSingleton<TripCounterFactory>();
+            
+            services.AddSingleton<IWebsocketsManager, WebsocketsManager>();
+            services.AddSingleton<IWebsocketsSender, WebsocketsManager>();
+            services.AddSingleton<IWebsocketsReceiver, RealtimeMessageHandler>();
 
             var fakeSourceConfiguration = new FakeSourceConfiguration();
             Configuration.GetSection("FakeSource").Bind(fakeSourceConfiguration);
@@ -45,6 +48,8 @@ namespace Deepflow.Platform.Agent
             var ingestionConfiguration = new Core.AgentIngestionConfiguration();
             Configuration.GetSection("Ingestion").Bind(ingestionConfiguration);
             services.AddSingleton(ingestionConfiguration);
+
+            services.AddCors();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -56,8 +61,12 @@ namespace Deepflow.Platform.Agent
             var client = app.ApplicationServices.GetService<IIngestionClient>();
             app.ApplicationServices.GetService<IAgentProcessor>().Start();
             client.Start();
+            
+            app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod().AllowCredentials());
 
             app.UseMvc();
+
+            app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod().AllowCredentials());
         }
     }
 }

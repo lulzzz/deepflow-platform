@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Deepflow.Platform.Abstractions.Series;
 using Deepflow.Platform.Abstractions.Series.Attribute;
 using Deepflow.Platform.Core.Async;
+using Deepflow.Platform.Core.Tools;
 using Microsoft.Extensions.Logging;
 
 namespace Deepflow.Platform.Series.Attributes
@@ -17,6 +18,7 @@ namespace Deepflow.Platform.Series.Attributes
         private readonly Guid _attribute;
         private readonly ISeriesConfiguration _configuration;
         private readonly ILogger<AttributeDataProvider> _logger;
+        private readonly TripCounterFactory _tripCounterFactory;
         private readonly IDataStore _store;
         private readonly IDataValidator _validator;
         private readonly IDataAggregator _aggregator;
@@ -28,12 +30,13 @@ namespace Deepflow.Platform.Series.Attributes
         private readonly SemaphoreSlim _timeRangesCacheSemaphore = new SemaphoreSlim(1);
         private ConcurrentDictionary<Guid, List<TimeRange>> _timeRangesCache;
 
-        public AttributeDataProvider(Guid entity, Guid attribute, IDataStore store, IDataValidator validator, IDataAggregator aggregator, ISeriesKnower seriesKnower, IRangeFilterer<AggregatedDataRange> filterer, IRangeMerger<AggregatedDataRange> aggregatedMerger, IRangeMerger<TimeRange> timeMerger, ISeriesConfiguration configuration, ILogger<AttributeDataProvider> logger)
+        public AttributeDataProvider(Guid entity, Guid attribute, IDataStore store, IDataValidator validator, IDataAggregator aggregator, ISeriesKnower seriesKnower, IRangeFilterer<AggregatedDataRange> filterer, IRangeMerger<AggregatedDataRange> aggregatedMerger, IRangeMerger<TimeRange> timeMerger, ISeriesConfiguration configuration, ILogger<AttributeDataProvider> logger, TripCounterFactory tripCounterFactory)
         {
             _entity = entity;
             _attribute = attribute;
             _configuration = configuration;
             _logger = logger;
+            _tripCounterFactory = tripCounterFactory;
             _store = store;
             _validator = validator;
             _aggregator = aggregator;
@@ -68,34 +71,38 @@ namespace Deepflow.Platform.Series.Attributes
 
         public async Task<List<AggregatedDataRange>> AddData(AggregatedDataRange dataRange)
         {
-            _validator.ValidateDataRangesIsOfAggregation(dataRange, _configuration.LowestAggregationSeconds, $"Data to be added must be aggregated to the lowest aggregation level which is {_configuration.LowestAggregationSeconds} seconds");
+            using (_tripCounterFactory.Create("AttributeDataProvider.AddData"))
+            {
+                _validator.ValidateDataRangesIsOfAggregation(dataRange, _configuration.LowestAggregationSeconds, $"Data to be added must be aggregated to the lowest aggregation level which is {_configuration.LowestAggregationSeconds} seconds");
 
-            // Work out quantised range
-            var quantisedRange = dataRange.TimeRange.Quantise(_configuration.HighestAggregationSeconds);
+                // Work out quantised range
+                var quantisedRange = dataRange.TimeRange.Quantise(_configuration.HighestAggregationSeconds);
 
-            // Fetch lowest aggregation from provider
-            var existingRanges = await GetData(quantisedRange, _configuration.LowestAggregationSeconds);
+                // Fetch lowest aggregation from provider
+                var existingRanges = await GetData(quantisedRange, _configuration.LowestAggregationSeconds);
 
-            // Add incoming data to lowest aggregation
-            var merged = _aggregatedMerger.MergeRangeWithRanges(existingRanges, dataRange);
-            _validator.ValidateAtLeastOneDataRange(merged, "Incoming data merged with existing data didn't produce a single ranges");
+                // Add incoming data to lowest aggregation
+                _logger.LogDebug($"Merging {existingRanges.Count} existing ranges with new lowest aggregation range");
+                var merged = _aggregatedMerger.MergeRangeWithRanges(existingRanges, dataRange);
+                _validator.ValidateAtLeastOneDataRange(merged, "Incoming data merged with existing data didn't produce a single ranges");
 
-            // Recalculate higher aggregations
+                // Recalculate higher aggregations
 
-            _logger.LogInformation($"Aggregating {merged.Sum(x => x.Data.Count / 2)} points to higher bins");
-            var aggregations = _aggregator.Aggregate(merged, quantisedRange, _configuration.AggregationsSecondsDescending);
-            var affectedAggregatedPoints = aggregations.Select(x => FilterAggregationToNewPoint(x.Value, dataRange.TimeRange)).ToList();
-            var aggregationsToSave = await Task.WhenAll(affectedAggregatedPoints.Select(PrepareToSaveAggregation));
+                _logger.LogDebug($"Aggregating {merged.Sum(x => x.Data.Count / 2)} points to higher bins");
+                var aggregations = _aggregator.Aggregate(merged, quantisedRange, _configuration.AggregationsSecondsDescending);
+                var affectedAggregatedPoints = aggregations.Select(x => FilterAggregationToNewPoint(x.Value, dataRange.TimeRange)).ToList();
+                var aggregationsToSave = await Task.WhenAll(affectedAggregatedPoints.Select(PrepareToSaveAggregation));
 
-            _logger.LogInformation($"Adding aggregated data");
-            await _store.SaveData(aggregationsToSave);
+                _logger.LogDebug($"Adding aggregated data");
+                await _store.SaveData(aggregationsToSave);
 
-            await AddRangesToTimeRangesCache(affectedAggregatedPoints);
+                await AddRangesToTimeRangesCache(affectedAggregatedPoints);
 
-            await PersistTimeRangesCache();
+                await PersistTimeRangesCache();
 
-            // Obtain affected data
-            return affectedAggregatedPoints;
+                // Obtain affected data
+                return affectedAggregatedPoints;
+            }
         }
 
         private async Task<(Guid series, List<double> data)> PrepareToSaveAggregation(AggregatedDataRange dataRange)
@@ -116,6 +123,7 @@ namespace Deepflow.Platform.Series.Attributes
                 {
                     var series = seriesGuids[i];
                     var timeRanges = timeRangesCache.GetOrAdd(series, new List<TimeRange>());
+                    _logger.LogDebug($"Merging {timeRanges.Count} with data range");
                     timeRangesCache[series] = _timeMerger.MergeRangeWithRanges(timeRanges, dataRange.TimeRange).ToList();
                     i++;
                 }
@@ -124,7 +132,7 @@ namespace Deepflow.Platform.Series.Attributes
 
         private AggregatedDataRange FilterAggregationToNewPoint(IEnumerable<AggregatedDataRange> dataRanges, TimeRange timeRange)
         {
-            var filtered = _filterer.FilterDataRanges(dataRanges, timeRange);
+            var filtered = _filterer.FilterRanges(dataRanges, timeRange);
             _validator.ValidateExactlyOneDataRange(filtered, $"Filtered aggregated data was expected to be exactly one data range but was {filtered.Count()}");
             return filtered.Single();
         }

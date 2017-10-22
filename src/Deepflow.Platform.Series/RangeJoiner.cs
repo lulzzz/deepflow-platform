@@ -24,20 +24,20 @@ namespace Deepflow.Platform.Series
         {
             if (newDataRanges == null || !newDataRanges.Any())
             {
-                _logger.LogInformation("No new data ranges");
+                _logger.LogDebug("No new data ranges");
                 return dataRanges;
             }
 
             if (dataRanges == null)
             {
-                _logger.LogInformation("Null existing data ranges");
+                _logger.LogDebug("Null existing data ranges");
                 return newDataRanges;
             }
 
             IEnumerable<TRange> joined = dataRanges;
 
-            _logger.LogInformation($"{dataRanges.Count()} existing data ranges");
-            _logger.LogInformation($"{newDataRanges.Count()} new data ranges");
+            _logger.LogDebug($"{dataRanges.Count()} existing data ranges");
+            _logger.LogDebug($"{newDataRanges.Count()} new data ranges");
 
             foreach (var newDataRange in newDataRanges)
             {
@@ -51,13 +51,13 @@ namespace Deepflow.Platform.Series
         {
             if (ranges == null || !ranges.Any())
             {
-                _logger.LogInformation($"No ranges to join to {ranges}");
+                _logger.LogDebug($"No ranges to join to");
                 return new [] { newRange };
             }
 
             if (newRange == null)
             {
-                _logger.LogInformation($"No new range");
+                _logger.LogDebug($"No new range");
                 return ranges;
             }
             
@@ -111,8 +111,15 @@ namespace Deepflow.Platform.Series
                 return insert;
             }
 
-            var endTakeOldIndex = BinarySearcher.GetFirstIndexPastTimestampBinary(old, insert[0]);
-            var startTakeOldIndex = BinarySearcher.GetFirstIndexPastTimestampBinary(old, insert[insert.Count - 2]) + 2;
+            var minInsertTime = insert[0];
+            var maxInsertTime = insert[insert.Count - 2];
+
+            var endTakeOldIndex = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(old, minInsertTime);
+            var startTakeOldIndex = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(old, maxInsertTime);
+            if (startTakeOldIndex.HasValue && old[startTakeOldIndex.Value] == maxInsertTime)
+            {
+                startTakeOldIndex += 2;
+            }
 
             return old.Take(endTakeOldIndex ?? old.Count).Concat(insert).Concat(old.Skip(startTakeOldIndex ?? old.Count)).ToList();
         }

@@ -59,7 +59,7 @@ namespace Deepflow.Platform.AttributeSeries
             var loadedRanges = await _provider.GetAggregatedData(seriesGuid, timeRanges);
             dataRanges = _dataJoiner.JoinDataRangesToDataRanges(dataRanges, loadedRanges);
 
-            return _dataFilterer.FilterDataRanges(dataRanges, timeRange);
+            return _dataFilterer.FilterRanges(dataRanges, timeRange);
         }
 
         public Task Subscribe(ISeriesObserver observer)

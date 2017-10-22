@@ -42,7 +42,7 @@ namespace Deepflow.Platform.Ingestion.FakeIngestor.Controllers
         [HttpPost("{dataSource}/Series/{sourceName}/Data")]
         public Task AddData(Guid dataSource, string sourceName, DataSourceDataPackage dataPackage)
         {
-            _logger.LogInformation($"Received data for {dataSource}/Series/{sourceName}/Data with {dataPackage.AggregatedRange.Data.Count / 2} points");
+            _logger.LogDebug($"Received data for {dataSource}/Series/{sourceName}/Data with {dataPackage.AggregatedRange.Data.Count / 2} points");
             return Task.FromResult(0);
         }
     }

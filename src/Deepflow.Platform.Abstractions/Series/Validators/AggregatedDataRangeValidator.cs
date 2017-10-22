@@ -13,7 +13,6 @@ namespace Deepflow.Platform.Abstractions.Series.Validators
                 .Cascade(CascadeMode.StopOnFirstFailure)
                 .NotNull().WithMessage("Time range must be not null")
                 .SetValidator(new TimeRangeValidator())
-                .Must(BeQuantised).WithMessage("Time range must be quantised to the aggregation seconds interval")
                 .Must(BeNonZeroLength).WithMessage("Time range must be non zero length for an aggregated data range");
 
             RuleFor(x => x.AggregationSeconds)
@@ -24,18 +23,13 @@ namespace Deepflow.Platform.Abstractions.Series.Validators
                 .NotNull().WithMessage("Data must be not null")
                 .Must(BeEven).WithMessage("Size of data in aggregated data range must be an even number")
                 .Must(BeValidTimesAndValues).WithMessage("Values in aggregated data range must be valid")
-                .Must(BeInsideTimeRange).WithMessage("Data in aggregated data range must be inside time range and at least one aggregation seconds interval greater than the min time")
+                .Must(BeInsideTimeRange).WithMessage("Data in aggregated data range must be inside time range and be at least one aggregation interval greater than the min time")
                 .Must(BeInOrder).WithMessage("Data in raw aggregated range must be in order, not duplicated, and quantised to the aggregation seconds interval");
         }
 
         private bool BeNonZeroLength(TimeRange timeRange)
         {
             return timeRange.Min < timeRange.Max;
-        }
-
-        private bool BeQuantised(AggregatedDataRange dataRange, TimeRange timeRange)
-        {
-            return timeRange.IsQuantisedTo(dataRange.AggregationSeconds);
         }
 
         private bool BeEven(List<double> data)

@@ -43,15 +43,20 @@ namespace Deepflow.Platform.Realtime
                         break;
                     }
 
-                    _logger.LogInformation($"Waiting to receive realtime message...");
+                    _logger.LogDebug($"Waiting to receive realtime message...");
                     var message = await ReceiveStringAsync(socket, cancellationToken);
                     if (!string.IsNullOrEmpty(message))
                     {
-                        _logger.LogInformation($"Received realtime message...");
+                        _logger.LogDebug($"Received realtime message...");
                         await _receiver.OnReceive(socketId, message).ConfigureAwait(false);
-                        _logger.LogInformation($"Realtime message complete");
+                        _logger.LogDebug($"Realtime message complete");
                     }
                 }
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(new EventId(100), exception, "Error receving websockets message");
+                throw;
             }
             finally
             {
@@ -81,7 +86,7 @@ namespace Deepflow.Platform.Realtime
                     }
                     catch (WebSocketException exception)
                     {
-                        _logger.LogInformation($"Web socket exception, likely it was closed by the client: {exception.Message}");
+                        _logger.LogWarning($"Web socket exception, likely it was closed by the client: {exception.Message}");
                     }
 
                     if (ct.IsCancellationRequested)
@@ -89,10 +94,10 @@ namespace Deepflow.Platform.Realtime
                         return null;
                     }
                 }
-                while (!result.EndOfMessage);
+                while (result != null && !result.EndOfMessage);
 
                 ms.Seek(0, SeekOrigin.Begin);
-                if (result.MessageType != WebSocketMessageType.Text)
+                if (result == null || result.MessageType != WebSocketMessageType.Text)
                 {
                     return null;
                 }

@@ -18,6 +18,15 @@ namespace Deepflow.Platform.Tests.Series
         private static readonly Mock<ILogger<DataAggregator>> LoggerMock = new Mock<ILogger<DataAggregator>>();
         private readonly DataAggregator _aggregator = new DataAggregator(LoggerMock.Object);
 
+        [Fact]
+        public void TestNotFull()
+        {
+            var input = new AggregatedDataRange(300, 400, new List<double> { 350, 35, 400, 40 }, 50);
+            var actual = _aggregator.Aggregate(new List<AggregatedDataRange> { input }, new TimeRange(200, 400), 200);
+            var expected = new List<AggregatedDataRange> { new AggregatedDataRange(200, 400, new List<double> { 400, 37.5 }, 200) };
+            actual.ShouldBeEquivalentTo(expected);
+        }
+
         /*[Fact]
         public void TestNoPoints()
         {

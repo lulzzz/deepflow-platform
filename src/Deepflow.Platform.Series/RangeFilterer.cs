@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Deepflow.Platform.Abstractions.Series;
-using Deepflow.Platform.Abstractions.Series.Extensions;
 
 namespace Deepflow.Platform.Series
 {
@@ -11,22 +10,24 @@ namespace Deepflow.Platform.Series
         private readonly IRangeCreator<TRange> _creator;
         private readonly IRangeFilteringPolicy<TRange> _policy;
         private readonly IRangeAccessor<TRange> _accessor;
+        private readonly Func<TimeRange, TimeRange, bool> _intersector;
 
         public RangeFilterer(IRangeCreator<TRange> creator, IRangeFilteringPolicy<TRange> policy, IRangeAccessor<TRange> accessor)
         {
             _creator = creator;
             _policy = policy;
             _accessor = accessor;
+            _intersector = _policy.AreZeroLengthRangesAllowed ? (Func<TimeRange, TimeRange, bool>) RangeTouchesRange : RangeIntersectsRange;
         }
 
-        public IEnumerable<TRange> FilterDataRanges(IEnumerable<TRange> ranges, TimeRange timeRange)
+        public IEnumerable<TRange> FilterRanges(IEnumerable<TRange> ranges, TimeRange timeRange)
         {
-            return ranges?.Where(dataRange => RangeTouchesRange(_accessor.GetTimeRange(dataRange), timeRange)).Select(range => FilterRange(range, timeRange, _policy.FilterMode));
+            return ranges?.Where(dataRange => _intersector(_accessor.GetTimeRange(dataRange), timeRange)).Select(range => FilterRange(range, timeRange, _policy.FilterMode));
         }
 
         public TRange FilterDataRange(TRange range, TimeRange timeRange)
         {
-            return FilterDataRanges(new List<TRange> { range }, timeRange).SingleOrDefault();
+            return FilterRanges(new List<TRange> { range }, timeRange).SingleOrDefault();
         }
 
         public IEnumerable<TRange> SubtractTimeRangeFromRanges(IEnumerable<TRange> ranges, TimeRange subtractRange)
@@ -44,9 +45,21 @@ namespace Deepflow.Platform.Series
             IEnumerable<TRange> remainingRanges = new List<TRange>();
             foreach (var range in ranges)
             {
-                remainingRanges = remainingRanges.Concat(SubtractTimeRangeFromRange(subtractRange, range));
+                remainingRanges = remainingRanges.Concat(SubtractTimeRangeFromRange(range, subtractRange));
             }
             return remainingRanges;
+        }
+
+        public IEnumerable<TRange> SubtractTimeRangesFromRange(TRange range, IEnumerable<TimeRange> subtractRanges)
+        {
+            IEnumerable<TRange> subtractedRanges = new List<TRange> { range };
+
+            foreach (var subtractRange in subtractRanges)
+            {
+                subtractedRanges = SubtractTimeRangeFromRanges(subtractedRanges, subtractRange);
+            }
+
+            return subtractedRanges;
         }
 
         private TRange FilterRange(TRange range, TimeRange timeRange, FilterMode filterMode)
@@ -61,8 +74,8 @@ namespace Deepflow.Platform.Series
                 return null;
             }
 
-            var startIndex = BinarySearcher.GetFirstIndexPastTimestampBinary(data, timeRange.Min);
-            var endIndex = BinarySearcher.GetFirstIndexPastTimestampBinary(data, timeRange.Max);
+            var startIndex = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, timeRange.Min);
+            var endIndex = BinarySearcher.GetFirstIndexEqualOrGreaterTimestampBinary(data, timeRange.Max);
 
             if (endIndex == null)
             {
@@ -125,7 +138,7 @@ namespace Deepflow.Platform.Series
             return true;
         }
 
-        private IEnumerable<TRange> SubtractTimeRangeFromRange(TimeRange subtractRange, TRange range)
+        public IEnumerable<TRange> SubtractTimeRangeFromRange(TRange range, TimeRange subtractRange)
         {
             var timeRange = _accessor.GetTimeRange(range);
             var data = _accessor.GetData(range);

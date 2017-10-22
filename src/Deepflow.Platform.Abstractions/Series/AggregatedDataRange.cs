@@ -84,13 +84,22 @@ namespace Deepflow.Platform.Abstractions.Series
     {
         public AggregatedDataRange Create(TimeRange timeRange, List<double> data, AggregatedDataRange range)
         {
-            return new AggregatedDataRange(timeRange.Quantise(range.AggregationSeconds), data, range.AggregationSeconds);
+            if (data.Any())
+            {
+                var minTime = data[0];
+                var quantisedMinTime = minTime - range.AggregationSeconds;
+                var newMinTime = (long)Math.Min(quantisedMinTime, timeRange.Min);
+                var quantisedTimeRange = new TimeRange(newMinTime, timeRange.Max);
+                return new AggregatedDataRange(quantisedTimeRange, data, range.AggregationSeconds);
+            }
+            return new AggregatedDataRange(timeRange, data, range.AggregationSeconds);
         }
     }
 
     public class AggregateRangeFilteringPolicy : IRangeFilteringPolicy<AggregatedDataRange>
     {
         public FilterMode FilterMode { get; } = FilterMode.MaxInclusive;
+        public bool AreZeroLengthRangesAllowed { get; } = false;
     }
 
     public class AggregatedRangeAccessor : IRangeAccessor<AggregatedDataRange>
