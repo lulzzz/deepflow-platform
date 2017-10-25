@@ -5,7 +5,7 @@ This repository contains the code for the Deepflow Backend and Agent. We will sp
 The Deepflow Backend sits in the cloud and receives customer data via an Agent deployed on the customers premises, behind their firewall. The data is visualised with a browser-based interface.
 
 ## Backend
-The Backend is a series of services for providing fast data access and entity modelling. It consists of an Ingestion API, Aggregated Store, Data API, Model Store and Model API. All of these services are hosted in a cloud environment, and so messages between the customer and the Backend will need to move across the internet in a secured manner.
+The Backend is a series of services for providing fast data access and an entity model. It consists of an Ingestion API, Aggregated Store, Data API, Model Store and Model API. All of these services are hosted in a cloud environment, and so messages between the customer's network and the Backend will need to move across the internet in a secured manner.
 
 ### Ingestion API
 This is a REST API exposed to the internet but secured for private login. It's job is to receive incoming data into the Deepflow Backend. It provides orders and recieves data from the Agent.
