@@ -41,6 +41,10 @@ namespace Deepflow.Ingestion.Service
             Configuration.GetSection("DynamoDb").Bind(dynamoDbConfiguration);
             services.AddSingleton(dynamoDbConfiguration);
 
+            var cassandraConfiguration = new CassandraConfiguration();
+            Configuration.GetSection("Cassandra").Bind(cassandraConfiguration);
+            services.AddSingleton(cassandraConfiguration);
+
             var seriesConfiguration = new Common.Model.SeriesConfiguration();
             Configuration.GetSection("Series").Bind(seriesConfiguration);
             services.AddSingleton(seriesConfiguration);
@@ -55,7 +59,7 @@ namespace Deepflow.Ingestion.Service
 
             services.AddSingleton<IIngestionProcessor, IngestionProcessor>();
             services.AddSingleton<ICachedDataProvider, RedisCachedDataProvider>();
-            services.AddSingleton<IPersistentDataProvider, DynamoDbPersistentDataProvider>();
+            services.AddSingleton<IPersistentDataProvider, CassandraPersistentDataProvider>();
             services.AddSingleton<IDataAggregator, DataAggregator>();
             services.AddSingleton<IModelProvider, ModelProvider>();
             services.AddSingleton<IDataMessenger, PusherDataMessenger>();

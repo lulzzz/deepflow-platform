@@ -1,4 +1,6 @@
-﻿using Deepflow.Platform.Abstractions.Sources;
+﻿using System.Threading.Tasks;
+using Deepflow.Platform.Abstractions.Series;
+using Deepflow.Platform.Abstractions.Sources;
 using Deepflow.Platform.Agent.Client;
 
 namespace Deepflow.Platform.Agent.Processor
@@ -8,5 +10,6 @@ namespace Deepflow.Platform.Agent.Processor
         void SetClient(IIngestionClient client);
         void Start();
         void SetSourceSeriesList(SourceSeriesList sourceSeriesList);
+        Task ReceiveRaw(string sourceName, RawDataRange rawDataRange);
     }
 }

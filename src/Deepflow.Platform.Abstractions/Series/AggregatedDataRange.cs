@@ -15,22 +15,28 @@ namespace Deepflow.Platform.Abstractions.Series
 
         public AggregatedDataRange() { }
 
-        public AggregatedDataRange(long minSeconds, long maxSeconds, List<double> data, int aggregationSeconds)
+        public AggregatedDataRange(long minSeconds, long maxSeconds, List<double> data, int aggregationSeconds, bool skipValidation = false)
         {
             TimeRange = new TimeRange(minSeconds, maxSeconds);
             AggregationSeconds = aggregationSeconds;
             Data = data;
-
-            Validator.ValidateAndThrow(this);
+            
+            if (!skipValidation)
+            {
+                Validator.ValidateAndThrow(this);
+            }
         }
 
-        public AggregatedDataRange(TimeRange timeRange, List<double> data, int aggregationSeconds)
+        public AggregatedDataRange(TimeRange timeRange, List<double> data, int aggregationSeconds, bool skipValidation = false)
         {
             TimeRange = timeRange;
             AggregationSeconds = aggregationSeconds;
             Data = data;
-
-            Validator.ValidateAndThrow(this);
+            
+            if (!skipValidation)
+            {
+                Validator.ValidateAndThrow(this);
+            }
         }
 
         public IEnumerable<AggregatedDataRange> Chop(int spanSeconds)
@@ -90,7 +96,7 @@ namespace Deepflow.Platform.Abstractions.Series
                 var quantisedMinTime = minTime - range.AggregationSeconds;
                 var newMinTime = (long)Math.Min(quantisedMinTime, timeRange.Min);
                 var quantisedTimeRange = new TimeRange(newMinTime, timeRange.Max);
-                return new AggregatedDataRange(quantisedTimeRange, data, range.AggregationSeconds);
+                return new AggregatedDataRange(quantisedTimeRange, data, range.AggregationSeconds, true);
             }
             return new AggregatedDataRange(timeRange, data, range.AggregationSeconds);
         }

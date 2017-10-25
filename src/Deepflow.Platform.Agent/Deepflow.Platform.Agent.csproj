@@ -27,7 +27,6 @@
     <ProjectReference Include="..\Deepflow.Platform.Abstractions\Deepflow.Platform.Abstractions.csproj" />
     <ProjectReference Include="..\Deepflow.Platform.Core\Deepflow.Platform.Core.csproj" />
     <ProjectReference Include="..\Deepflow.Platform.Realtime\Deepflow.Platform.Realtime.csproj" />
-    <ProjectReference Include="..\Deepflow.Platform.Series.DynamoDB\Deepflow.Platform.Series.DynamoDB.csproj" />
   </ItemGroup>
 
 </Project>

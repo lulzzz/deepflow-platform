@@ -14,7 +14,7 @@ namespace Deepflow.Platform.Realtime
     {
         private readonly IWebsocketsReceiver _receiver;
         private readonly ILogger<WebsocketsManager> _logger;
-        private static readonly ConcurrentDictionary<string, WebSocket> Sockets = new ConcurrentDictionary<string, WebSocket>();
+        private static readonly ConcurrentDictionary<string, WebsocketWrapper> Sockets = new ConcurrentDictionary<string, WebsocketWrapper>();
 
         public WebsocketsManager(IWebsocketsReceiver receiver, ILogger<WebsocketsManager> logger)
         {
@@ -26,7 +26,7 @@ namespace Deepflow.Platform.Realtime
         public async Task HandleWebsocket(WebSocket socket, CancellationToken cancellationToken)
         {
             var socketId = Guid.NewGuid().ToString();
-            Sockets.TryAdd(socketId, socket);
+            Sockets.TryAdd(socketId, new WebsocketWrapper { WebSocket = socket });
             await _receiver.OnConnected(socketId);
 
             try
@@ -60,8 +60,7 @@ namespace Deepflow.Platform.Realtime
             }
             finally
             {
-                WebSocket dummy;
-                Sockets.TryRemove(socketId, out dummy);
+                Sockets.TryRemove(socketId, out WebsocketWrapper dummy);
                 await _receiver.OnDisconnected(socketId);
             }
         }
@@ -112,14 +111,29 @@ namespace Deepflow.Platform.Realtime
 
         public async Task Send(string socketId, string message)
         {
-            if (!Sockets.TryGetValue(socketId, out WebSocket socket))
+            if (!Sockets.TryGetValue(socketId, out WebsocketWrapper socket))
             {
                 return;
             }
 
             var buffer = Encoding.UTF8.GetBytes(message);
             var segment = new ArraySegment<byte>(buffer);
-            await socket.SendAsync(segment, WebSocketMessageType.Text, true, default(CancellationToken));
+
+            await socket.Semaphore.WaitAsync();
+            try
+            {
+                await socket.WebSocket.SendAsync(segment, WebSocketMessageType.Text, true, default(CancellationToken));
+            }
+            finally
+            {
+                socket.Semaphore.Release();
+            }
+        }
+
+        private class WebsocketWrapper
+        {
+            public WebSocket WebSocket { get; set; }
+            public SemaphoreSlim Semaphore { get; set; } = new SemaphoreSlim(1);
         }
     }
 }

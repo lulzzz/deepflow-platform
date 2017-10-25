@@ -13,7 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Deepflow.Platform\Deepflow.Platform.csproj" />
     <ProjectReference Include="..\..\src\Deepflow.Platform.Core\Deepflow.Platform.Core.csproj" />
     <ProjectReference Include="..\..\src\Deepflow.Platform.Series\Deepflow.Platform.Series.csproj" />
   </ItemGroup>

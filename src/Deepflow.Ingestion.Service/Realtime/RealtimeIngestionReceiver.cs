@@ -46,10 +46,10 @@ namespace Deepflow.Ingestion.Service.Realtime
 
         public async Task OnReceive(string socketId, string messageString)
         {
-            using (_trip.Create("RealtimeIngestionReceiver.OnReceive"))
+            await _trip.Run("RealtimeIngestionReceiver.OnReceive", async () =>
             {
                 await _queue.AddAsync(new ValueTuple<string, string>(socketId, messageString));
-            }
+            });
         }
 
         private async Task ProcessLoop()
@@ -60,7 +60,7 @@ namespace Deepflow.Ingestion.Service.Realtime
                 try
                 {
                     item = await _queue.TakeAsync();
-                    using (_trip.Create("RealtimeIngestionReceiver.ProcessLoop"))
+                    await _trip.Run("RealtimeIngestionReceiver.ProcessLoop", async () =>
                     {
                         var message = JsonConvert.DeserializeObject<IncomingMessage>(item.message, JsonSettings.Setttings);
                         if (message.MessageClass == IncomingMessageClass.Request)
@@ -70,7 +70,7 @@ namespace Deepflow.Ingestion.Service.Realtime
                             var responseText = JsonConvert.SerializeObject(response, JsonSettings.Setttings);
                             await _sender.Send(item.socket, responseText).ConfigureAwait(false);
                         }
-                    }
+                    });
                 }
                 catch (Exception exception)
                 {

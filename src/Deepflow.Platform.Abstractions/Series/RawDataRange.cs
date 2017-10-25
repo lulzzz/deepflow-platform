@@ -14,27 +14,36 @@ namespace Deepflow.Platform.Abstractions.Series
 
         public RawDataRange() { }
 
-        public RawDataRange(long minSeconds, long maxSeconds)
+        public RawDataRange(long minSeconds, long maxSeconds, bool skipValidation = false)
         {
             TimeRange = new TimeRange(minSeconds, maxSeconds);
 
-            Validator.ValidateAndThrow(this);
+            if (!skipValidation)
+            {
+                Validator.ValidateAndThrow(this);
+            }
         }
 
-        public RawDataRange(long minSeconds, long maxSeconds, List<double> data)
+        public RawDataRange(long minSeconds, long maxSeconds, List<double> data, bool skipValidation = false)
         {
             TimeRange = new TimeRange(minSeconds, maxSeconds);
             Data = data;
 
-            Validator.ValidateAndThrow(this);
+            if (!skipValidation)
+            {
+                Validator.ValidateAndThrow(this);
+            }
         }
 
-        public RawDataRange(TimeRange timeRange, List<double> data)
+        public RawDataRange(TimeRange timeRange, List<double> data, bool skipValidation = false)
         {
             TimeRange = timeRange;
             Data = data;
 
-            Validator.ValidateAndThrow(this);
+            if (!skipValidation)
+            {
+                Validator.ValidateAndThrow(this);
+            }
         }
 
         public RawDataRange(long minSeconds, long maxSeconds, IEnumerable<Datum> data)
@@ -98,7 +107,7 @@ namespace Deepflow.Platform.Abstractions.Series
     {
         public RawDataRange Create(TimeRange timeRange, List<double> data, RawDataRange previousRange)
         {
-            return new RawDataRange(timeRange, data);
+            return new RawDataRange(timeRange, data, true);
         }
     }
 

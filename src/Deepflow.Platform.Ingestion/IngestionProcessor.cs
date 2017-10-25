@@ -30,22 +30,14 @@ namespace Deepflow.Platform.Ingestion
         {
             try
             {
-                using (_tripCounterFactory.Create("IngestionProcessor.AddData"))
+                await _tripCounterFactory.Run("IngestionProcessor.AddData", async () =>
                 {
                     ISourceSeriesGrain series = GrainClient.GrainFactory.GetGrain<ISourceSeriesGrain>(SeriesIdHelper.ToSourceSeriesId(dataSource, sourceName));
-
-                    /*foreach (var dataRange in aggregatedRanges)
-                    {
-                        var slices = dataRange.Chop(_configuration.MaxRangeSeconds);
-                        foreach (var slice in slices)
-                        {*/
                     _logger.LogDebug("Saving slice");
                     Stopwatch stopwatch = Stopwatch.StartNew();
                     await series.AddData(aggregatedRange);
                     _logger.LogDebug($"Saved slice number {Interlocked.Increment(ref _count)} in {stopwatch.ElapsedMilliseconds} ms");
-                    /*}
-                }*/
-                }
+                });
             }
             catch (Exception exception)
             {

@@ -45,7 +45,7 @@ namespace Deepflow.Platform.Series.Providers
                 dataArray.Add(datum.Time);
                 dataArray.Add(datum.Value);
             }
-            return new RawDataRange(minSeconds, maxSeconds, dataArray);
+            return new RawDataRange(minSeconds, maxSeconds, dataArray, true);
         }
 
         private void SplitValueRecursive(Datum start, Datum end, double maxVariance, List<Datum> data, TimeSpan maxTimespan, Random random)

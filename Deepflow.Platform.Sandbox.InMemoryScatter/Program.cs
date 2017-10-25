@@ -18,7 +18,7 @@ namespace Deepflow.Platform.Sandbox.InMemoryScatter
     {
         static void Main(string[] args)
         {
-            var generator = new DataGenerator(new Logger<RangeJoiner<RawDataRange>>());
+            /*var generator = new DataGenerator(new Logger<RangeJoiner<RawDataRange>>());
 
             var start = new DateTime(2007, 1, 1).SecondsSince1970Utc();
             var end = new DateTime(2017, 1, 1).SecondsSince1970Utc();
@@ -88,7 +88,7 @@ namespace Deepflow.Platform.Sandbox.InMemoryScatter
 
             Console.WriteLine("All " + allStopwatch.ElapsedMilliseconds);
 
-            Console.ReadKey();
+            Console.ReadKey();*/
         }
 
         private static IEnumerable<JoinedDatum> JoinData(List<double> oneData, List<double> twoData)

@@ -8,7 +8,6 @@ namespace Deepflow.Platform.Common.Data.Persistence
     public interface IPersistentDataProvider
     {
         Task<IEnumerable<AggregatedDataRange>> GetData(Guid series, TimeRange timeRange);
-        Task SaveData(Guid series, IEnumerable<AggregatedDataRange> dataRanges);
         Task SaveData(IEnumerable<(Guid series, IEnumerable<AggregatedDataRange> dataRanges)> seriesData);
 
         Task<IEnumerable<TimeRange>> GetTimeRanges(Guid series, TimeRange timeRange);

@@ -141,7 +141,7 @@ namespace Deepflow.Platform
             services.AddSingleton<IRangeJoiner<RawDataRange>, RangeJoiner<RawDataRange>>();
             services.AddSingleton<IRangeMerger<RawDataRange>, RangeMerger<RawDataRange>>();
 
-            services.AddSingleton<IAttributeDataProviderFactory, AttributeDataProviderFactory>();
+            //services.AddSingleton<IAttributeDataProviderFactory, AttributeDataProviderFactory>();
             services.AddSingleton<ISeriesKnower, SeriesKnower>();
             services.AddSingleton<IDataStore, DynamoDbDataStore>();
             services.AddSingleton<IDataValidator, DataValidator>();

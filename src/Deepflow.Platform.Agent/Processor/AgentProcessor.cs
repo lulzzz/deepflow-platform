@@ -52,7 +52,7 @@ namespace Deepflow.Platform.Agent.Processor
                 foreach (var newSubscription in newSubscriptions)
                 {
                     _subscriptions.TryAdd(newSubscription.SourceName, newSubscription.CancellationTokenSource);
-                    _provider.SubscribeForRawData(newSubscription.SourceName, newSubscription.CancellationTokenSource.Token, dataRange => OnReceiveRaw(newSubscription.SourceName, dataRange));
+                    _provider.SubscribeForRawData(newSubscription.SourceName, newSubscription.CancellationTokenSource.Token, dataRange => ReceiveRaw(newSubscription.SourceName, dataRange));
                 }
 
                 var removeSourceNames = _subscriptions.Keys.Where(existingSourceName => !nextSourceNames.Contains(existingSourceName));
@@ -73,7 +73,7 @@ namespace Deepflow.Platform.Agent.Processor
             public string SourceName;
         }
 
-        private async Task OnReceiveRaw(string sourceName, RawDataRange rawDataRange)
+        public async Task ReceiveRaw(string sourceName, RawDataRange rawDataRange)
         {
             var aggregatedTime = rawDataRange.TimeRange.Max - (rawDataRange.TimeRange.Max % _configuration.AggregationSeconds) + _configuration.AggregationSeconds;
             var aggregatedTimeRange = new TimeRange(aggregatedTime - _configuration.AggregationSeconds, aggregatedTime);
@@ -86,7 +86,7 @@ namespace Deepflow.Platform.Agent.Processor
         private QueueWrapper PrepareNextQueue(SourceSeriesList sourceSeriesList)
         {
             var fetches = ListToFetches(sourceSeriesList);
-            fetches.Shuffle(); // Randomise the fetch order so we aren't always prioritising the same series
+            //fetches.Shuffle(); // Randomise the fetch order so we aren't always prioritising the same series
 
             var queue = new QueueWrapper();
             foreach (var ingestionFetch in fetches)

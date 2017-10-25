@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Deepflow.Platform.Abstractions.Series;
@@ -41,3 +42,4 @@ namespace Deepflow.Platform.Series.Attributes
         }
     }
 }
+*/

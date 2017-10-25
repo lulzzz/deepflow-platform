@@ -65,7 +65,7 @@ namespace Deepflow.Platform.Sources.FakeSource.Realtime
                         return;
                     }
 
-                    var point = _generator.GenerateData(_sourceName, new TimeRange(nextQuantisedSeconds, nextQuantisedSeconds), _intervalSeconds);
+                    var point = _generator.GenerateRawPoint(_sourceName, (int)nextQuantisedSeconds, _intervalSeconds);
                     _onPoint(point);
                 }
                 catch (TaskCanceledException)

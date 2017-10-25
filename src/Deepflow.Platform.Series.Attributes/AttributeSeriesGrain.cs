@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -52,14 +53,14 @@ namespace Deepflow.Platform.Series.Attributes
         {
             try
             {
-                using (_tripCounterFactory.Create("AttributeSeriesGrain.ReceiveData"))
+                await _tripCounterFactory.Run("AttributeSeriesGrain.ReceiveData", async () =>
                 {
                     var affectedAggregations = await _provider.AddData(aggregatedRanges);
 
                     // Notify subscribers with affected data
                     var notifyAggregations = affectedAggregations.ToDictionary(x => x.AggregationSeconds, x => x);
                     _subscriptions.Notify(observer => observer.ReceiveData(_entity, _attribute, notifyAggregations));
-                }
+                });
             }
             catch (Exception exception)
             {
@@ -88,3 +89,4 @@ namespace Deepflow.Platform.Series.Attributes
         }
     }
 }
+*/

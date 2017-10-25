@@ -4,6 +4,7 @@ namespace Deepflow.Platform.Agent.Core
 {
     public class AgentIngestionConfiguration
     {
+        public bool Disabled { get;set }
         public Uri ApiBaseUrl { get; set; }
         public Uri RealtimeBaseUrl { get; set; }
         public Guid DataSource { get; set; }

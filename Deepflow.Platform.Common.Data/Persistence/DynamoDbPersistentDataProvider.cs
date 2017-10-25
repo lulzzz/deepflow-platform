@@ -228,36 +228,36 @@ namespace Deepflow.Platform.Common.Data.Persistence
 
         private async Task RunWithRampUp(Func<Task> task)
         {
-            await _semaphoreSlim.WaitAsync().ConfigureAwait(false);
+            /*await _semaphoreSlim.WaitAsync().ConfigureAwait(false);
             try
-            {
+            {*/
                 await task().ConfigureAwait(false);
-            }
+            /*}
             finally
             {
-                _semaphoreSlim.Release();
+                _semaphoreSlim.Release();*/
                 /*if (Interlocked.Increment(ref _count) == _rampUpCount)
                 {
                     _semaphoreSlim = new SemaphoreSlim(_rampedUpParallelism);
                 }*/
-            }
+            //}
         }
 
         private async Task<T> RunWithRampUp<T>(Func<Task<T>> task)
         {
-            await _semaphoreSlim.WaitAsync().ConfigureAwait(false);
+            /*await _semaphoreSlim.WaitAsync().ConfigureAwait(false);
             try
-            {
+            {*/
                 return await task().ConfigureAwait(false);
-            }
+            /*}
             finally
             {
-                _semaphoreSlim.Release();
+                _semaphoreSlim.Release();*/
                 /*if (Interlocked.Increment(ref _count) == _rampUpCount)
                 {
                     _semaphoreSlim = new SemaphoreSlim(_rampedUpParallelism);
                 }*/
-            }
+            //}
         }
     }
 }

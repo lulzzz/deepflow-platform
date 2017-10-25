@@ -97,7 +97,7 @@ namespace Deepflow.Platform.Agent.Client
 
         public async Task SendRealtimeData(string name, AggregatedDataRange aggregatedDataRange, RawDataRange rawDataRange)
         {
-            using (_tripCounterFactory.Create("IngestionClient.SendRealtimeData"))
+            await _tripCounterFactory.Run("IngestionClient.SendRealtimeData", async () =>
             {
                 _logger.LogDebug("About to send realtime data to ingestion API");
                 var message = new AddAggregatedAttributeDataRequest
@@ -126,7 +126,7 @@ namespace Deepflow.Platform.Agent.Client
                 {
                     _sendSemaphore.Release();
                 }
-            }
+            });
 
             /*var uri = new Uri(_configuration.ApiBaseUrl, $"/api/v1/DataSources/{_configuration.DataSource}/Series/{name}/Data");
             var message = new DataSourceDataPackage { AggregatedRange = aggregatedDataRange };
@@ -136,7 +136,7 @@ namespace Deepflow.Platform.Agent.Client
 
         public async Task SendHistoricalData(string name, AggregatedDataRange aggregatedDataRange)
         {
-            using (_tripCounterFactory.Create("IngestionClient.SendHistoricalData"))
+            await _tripCounterFactory.Run("IngestionClient.SendHistoricalData", async () =>
             {
                 _logger.LogDebug("About to send historical data to ingestion API");
                 var message = new AddAggregatedAttributeHistoricalDataRequest()
@@ -164,7 +164,7 @@ namespace Deepflow.Platform.Agent.Client
                 {
                     _sendSemaphore.Release();
                 }
-            }
+            });
         }
     }
 }
