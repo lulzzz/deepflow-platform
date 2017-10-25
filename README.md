@@ -41,7 +41,7 @@ There will be a REST API which will take a tag name and time range and will retu
 
 #### Path
 ```
-GET api/v1/Tags/{sourceName}/Raw/Data?minTime={minTime}&maxTime={maxTime}
+GET api/v1/Tags/{tag}/Raw/Data?minTime={minTime}&maxTime={maxTime}
 ```
 `Example: api/v1/Tags/TAGONE/Raw/Data?minTime=2017-10-25T09:23:16Z&maxTime=2017-10-25T10:23:16Z`
 
@@ -70,7 +70,7 @@ There will be a REST API which will take a tag name, time range and aggregation 
 
 #### Path
 ```
-GET api/v1/Tags/{sourceName}/Aggregations/{aggregationSeconds}/Data?minTime={minTime}&maxTime={maxTime}
+GET api/v1/Tags/{tag}/Aggregations/{aggregationSeconds}/Data?minTime={minTime}&maxTime={maxTime}
 ```
 `Example: api/v1/Tags/TAGONE/Aggregations/300/Data?minTime=2017-10-25T09:23:16Z&maxTime=2017-10-25T10:23:16Z`
 
@@ -100,7 +100,7 @@ The data source must also notify the Agent's REST API when new raw data is avail
 
 #### Path
 ```
-POST api/v1/Tags/{sourceName}/Raw/Data
+POST api/v1/Tags/{tag}/Raw/Data
 ```
 `Example: api/v1/Tags/TAGONE/Raw/Data`
 
