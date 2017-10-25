@@ -4,3 +4,4 @@
 .suo
 .vs
 *.log
+.vs/Deepflow.Platform/v15/sqlite3/storage.ide
