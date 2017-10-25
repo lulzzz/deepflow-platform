@@ -117,4 +117,4 @@ POST api/v1/Tags/{sourceName}/Raw/Data
     ]
 }
 ```
-Note: The `Min` and `Max` are UNIX timestamps (seconds since Jan 1 1970, 12 AM UTC - this is just the way i've done it for now). The data is an array of [UNIX timestamp, value].
+Note: The `Min` and `Max` are UNIX timestamps (seconds since Jan 1 1970, 12 AM UTC - this is just the way i've done it for now). The data is an array of [UNIX timestamp, value] of the fresh raw point.
