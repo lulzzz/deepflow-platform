@@ -29,10 +29,10 @@ namespace Deepflow.Platform.Agent.Client
         private SourceSeriesList _sourceSeriesList;
         private CancellationTokenSource _listenCancellationTokenSource = new CancellationTokenSource();
         private CancellationToken _listenCancellationToken;
-        private SemaphoreSlim _sendSemaphore;
+        private readonly SemaphoreSlim _sendSemaphore;
         private int _nextActionId = 1;
 
-        public IngestionClient(ILogger<IngestionClient> logger, Core.AgentIngestionConfiguration configuration, IAgentProcessor processor, TripCounterFactory tripCounterFactory)
+        public IngestionClient(ILogger<IngestionClient> logger, AgentIngestionConfiguration configuration, IAgentProcessor processor, TripCounterFactory tripCounterFactory)
         {
             _logger = logger;
             _configuration = configuration;
@@ -97,6 +97,11 @@ namespace Deepflow.Platform.Agent.Client
 
         public async Task SendRealtimeData(string name, AggregatedDataRange aggregatedDataRange, RawDataRange rawDataRange)
         {
+            if (_configuration.Disabled)
+            {
+                return;
+            }
+
             await _tripCounterFactory.Run("IngestionClient.SendRealtimeData", async () =>
             {
                 _logger.LogDebug("About to send realtime data to ingestion API");
@@ -136,6 +141,11 @@ namespace Deepflow.Platform.Agent.Client
 
         public async Task SendHistoricalData(string name, AggregatedDataRange aggregatedDataRange)
         {
+            if (_configuration.Disabled)
+            {
+                return;
+            }
+
             await _tripCounterFactory.Run("IngestionClient.SendHistoricalData", async () =>
             {
                 _logger.LogDebug("About to send historical data to ingestion API");

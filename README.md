@@ -100,9 +100,9 @@ The data source must also notify the Agent's REST API when new raw data is avail
 
 #### Path
 ```
-POST api/v1/Tags/{tag}/Raw/Data
+POST http://54.206.102.97:5002/api/v1/Tags/{tag}/Raw/Data
 ```
-`Example: api/v1/Tags/TAGONE/Raw/Data`
+`Example: http://54.206.102.97:5002/api/v1/Tags/TAGONE/Raw/Data`
 
 #### Request Body
 ```

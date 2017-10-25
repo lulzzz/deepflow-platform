@@ -4,7 +4,8 @@ namespace Deepflow.Platform.Agent.Core
 {
     public class AgentIngestionConfiguration
     {
-        public bool Disabled { get;set }
+        public SourcePlugin SourcePlugin { get; set; }
+        public bool Disabled { get; set; }
         public Uri ApiBaseUrl { get; set; }
         public Uri RealtimeBaseUrl { get; set; }
         public Guid DataSource { get; set; }
@@ -17,5 +18,11 @@ namespace Deepflow.Platform.Agent.Core
         public int MaxFetchSpanSeconds { get; set; }
         public int BetweenFetchPauseSeconds { get; set; }
         public int SendParallelism { get; set; }
+    }
+
+    public enum SourcePlugin
+    {
+        FakeSource,
+        PISim
     }
 }

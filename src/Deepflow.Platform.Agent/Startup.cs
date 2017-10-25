@@ -1,5 +1,6 @@
 ﻿using Deepflow.Platform.Abstractions.Realtime;
 using Deepflow.Platform.Agent.Client;
+using Deepflow.Platform.Agent.Core;
 using Deepflow.Platform.Agent.Processor;
 using Deepflow.Platform.Agent.Provider;
 using Deepflow.Platform.Agent.Realtime;
@@ -32,7 +33,6 @@ namespace Deepflow.Platform.Agent
         {
             // Add framework services.
             services.AddMvc();
-            services.AddSingleton<ISourceDataProvider, FakeSourceDataProvider>();
             services.AddSingleton<IIngestionClient, IngestionClient>();
             services.AddSingleton<IAgentProcessor, AgentProcessor>();
             services.AddSingleton<TripCounterFactory>();
@@ -41,13 +41,26 @@ namespace Deepflow.Platform.Agent
             services.AddSingleton<IWebsocketsSender, WebsocketsManager>();
             services.AddSingleton<IWebsocketsReceiver, RealtimeMessageHandler>();
 
-            var fakeSourceConfiguration = new FakeSourceConfiguration();
-            Configuration.GetSection("FakeSource").Bind(fakeSourceConfiguration);
-            services.AddSingleton(fakeSourceConfiguration);
-
             var ingestionConfiguration = new Core.AgentIngestionConfiguration();
             Configuration.GetSection("Ingestion").Bind(ingestionConfiguration);
             services.AddSingleton(ingestionConfiguration);
+
+            if (ingestionConfiguration.SourcePlugin == SourcePlugin.FakeSource)
+            {
+                services.AddSingleton<ISourceDataProvider, FakeSourceDataProvider>();
+
+                var fakeSourceConfiguration = new FakeSourceConfiguration();
+                Configuration.GetSection("FakeSource").Bind(fakeSourceConfiguration);
+                services.AddSingleton(fakeSourceConfiguration);
+            }
+            else if (ingestionConfiguration.SourcePlugin == SourcePlugin.PISim)
+            {
+                services.AddSingleton<ISourceDataProvider, PiSimDataProvider>();
+
+                var piSimConfiguration = new PiSimConfiguration();
+                Configuration.GetSection("PiSim").Bind(piSimConfiguration);
+                services.AddSingleton(piSimConfiguration);
+            }
 
             services.AddCors();
         }
