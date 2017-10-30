@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -230,16 +231,16 @@ namespace Deepflow.Platform.Common.Data.Persistence
         {
             /*await _semaphoreSlim.WaitAsync().ConfigureAwait(false);
             try
-            {*/
+            {#1#
                 await task().ConfigureAwait(false);
             /*}
             finally
             {
-                _semaphoreSlim.Release();*/
+                _semaphoreSlim.Release();#1#
                 /*if (Interlocked.Increment(ref _count) == _rampUpCount)
                 {
                     _semaphoreSlim = new SemaphoreSlim(_rampedUpParallelism);
-                }*/
+                }#1#
             //}
         }
 
@@ -247,17 +248,18 @@ namespace Deepflow.Platform.Common.Data.Persistence
         {
             /*await _semaphoreSlim.WaitAsync().ConfigureAwait(false);
             try
-            {*/
+            {#1#
                 return await task().ConfigureAwait(false);
             /*}
             finally
             {
-                _semaphoreSlim.Release();*/
+                _semaphoreSlim.Release();#1#
                 /*if (Interlocked.Increment(ref _count) == _rampUpCount)
                 {
                     _semaphoreSlim = new SemaphoreSlim(_rampedUpParallelism);
-                }*/
+                }#1#
             //}
         }
     }
 }
+*/

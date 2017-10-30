@@ -1,6 +1,7 @@
 ﻿using Deepflow.Platform.Abstractions.Realtime;
 using Deepflow.Platform.Agent.Client;
 using Deepflow.Platform.Agent.Core;
+using Deepflow.Platform.Agent.Errors;
 using Deepflow.Platform.Agent.Processor;
 using Deepflow.Platform.Agent.Provider;
 using Deepflow.Platform.Agent.Realtime;
@@ -32,11 +33,12 @@ namespace Deepflow.Platform.Agent
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
-            services.AddMvc();
+            services.AddMvc(options => { options.Filters.AddService(typeof(AgentGlobalExceptionFilter)); });
             services.AddSingleton<IIngestionClient, IngestionClient>();
             services.AddSingleton<IAgentProcessor, AgentProcessor>();
             services.AddSingleton<TripCounterFactory>();
-            
+            services.AddSingleton<AgentGlobalExceptionFilter>();
+
             services.AddSingleton<IWebsocketsManager, WebsocketsManager>();
             services.AddSingleton<IWebsocketsSender, WebsocketsManager>();
             services.AddSingleton<IWebsocketsReceiver, RealtimeMessageHandler>();

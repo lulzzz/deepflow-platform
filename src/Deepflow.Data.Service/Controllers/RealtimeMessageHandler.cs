@@ -61,8 +61,7 @@ namespace Deepflow.Platform.Controllers
 
         private async Task<FetchAggregatedAttributeDataResponse> ReceiveFetchAggregatedAttributeDataRequest(FetchAggregatedAttributeDataRequest request)
         {
-            var series = await _model.ResolveSeries(request.EntityGuid, request.AttributeGuid, request.AggregationSeconds);
-            var dataRanges = await _persistence.GetData(series, request.TimeRange);
+            var dataRanges = await _persistence.GetData(request.EntityGuid, request.AttributeGuid, request.AggregationSeconds, request.TimeRange);
             return new FetchAggregatedAttributeDataResponse
             {
                 ActionId = request.ActionId,

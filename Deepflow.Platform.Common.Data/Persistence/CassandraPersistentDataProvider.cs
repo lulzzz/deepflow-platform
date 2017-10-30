@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Cassandra;
+using Deepflow.Common.Model;
 using Deepflow.Common.Model.Model;
 using Deepflow.Platform.Abstractions.Series;
 using Deepflow.Platform.Abstractions.Series.Extensions;
@@ -18,11 +19,13 @@ namespace Deepflow.Platform.Common.Data.Persistence
         private readonly IRangeFilterer<TimeRange> _filterer;
         private readonly IModelProvider _model;
         private readonly ISession _session;
+        private readonly int _lowestAggregation;
 
-        public CassandraPersistentDataProvider(CassandraConfiguration configuration, IRangeFilterer<TimeRange> filterer, IModelProvider model)
+        public CassandraPersistentDataProvider(CassandraConfiguration configuration, SeriesConfiguration series, IRangeFilterer<TimeRange> filterer, IModelProvider model)
         {
             _filterer = filterer;
             _model = model;
+            _lowestAggregation = series.AggregationsSeconds.Min();
             var cluster = Cluster.Builder()
                 .AddContactPoints(configuration.Address)
                 .WithCredentials(configuration.Username, configuration.Password)
@@ -32,11 +35,12 @@ namespace Deepflow.Platform.Common.Data.Persistence
             _session = cluster.Connect();
         }
 
-        public async Task<IEnumerable<AggregatedDataRange>> GetData(Guid series, TimeRange timeRange)
+        public async Task<IEnumerable<AggregatedDataRange>> GetData(Guid entity, Guid attribute, int aggregationSeconds, TimeRange timeRange)
         {
+            var series = await _model.ResolveSeries(entity, attribute, aggregationSeconds);
             var query = $"SELECT Time, Value FROM deepflowdata WHERE Guid = {series} AND Time >= {timeRange.Min} AND Time < {timeRange.Max};";
             var aggregationTask = _model.ResolveAggregationForSeries(series);
-            var timeRangesTask = GetAllTimeRanges(series);
+            var timeRangesTask = GetAllTimeRanges(entity, attribute);
             var rowSet = await _session.ExecuteAsync(new SimpleStatement(query)).ConfigureAwait(false);
             var alTimeRanges = await timeRangesTask.ConfigureAwait(false);
             var timeRanges = _filterer.FilterRanges(alTimeRanges, timeRange);
@@ -44,10 +48,16 @@ namespace Deepflow.Platform.Common.Data.Persistence
             return ToDataRanges(timeRanges, rowSet.Reverse().ToList(), timeRange, aggregation);
         }
 
-        public async Task SaveData(IEnumerable<(Guid series, IEnumerable<AggregatedDataRange> dataRanges)> seriesData)
+        public async Task SaveData(IEnumerable<(Guid entity, Guid attribute, int aggregationSeconds, IEnumerable<AggregatedDataRange> dataRanges)> entityAttributeData)
         {
+            var seriesData = await Task.WhenAll(entityAttributeData.Select(async entityAttribute =>
+            {
+                var series = await _model.ResolveSeries(entityAttribute.entity, entityAttribute.attribute, entityAttribute.aggregationSeconds);
+                return (series, entityAttribute.dataRanges);
+            }));
+
             var preparedStatement = _session.Prepare($"INSERT INTO deepflowdata (Guid, Time, Value) VALUES (?, ?, ?)");
-            await Task.WhenAll(Enumerate(seriesData).Batch(10000).Select(async batch =>
+            await Task.WhenAll(Enumerate(seriesData).Batch(500).Select(async batch =>
             {
                 var batchStatement = new BatchStatement();
                 foreach (var datum in batch)
@@ -58,6 +68,34 @@ namespace Deepflow.Platform.Common.Data.Persistence
 
                 await _session.ExecuteAsync(batchStatement);
             }));
+        }
+
+        public async Task<IEnumerable<TimeRange>> GetTimeRanges(Guid entity, Guid attribute, TimeRange timeRange)
+        {
+            var all = await GetAllTimeRanges(entity, attribute);
+            return _filterer.FilterRanges(all, timeRange);
+        }
+
+        public async Task<IEnumerable<TimeRange>> GetAllTimeRanges(Guid entity, Guid attribute)
+        {
+            var lowestAggregationSeries = await _model.ResolveSeries(entity, attribute, _lowestAggregation);
+
+            var query = $"SELECT Ranges FROM deepflowtimeranges WHERE Guid = {lowestAggregationSeries};";
+            var rowSet = await _session.ExecuteAsync(new SimpleStatement(query));
+            var rows = rowSet.ToList();
+            var row = rows.SingleOrDefault();
+            if (row == null)
+            {
+                return new List<TimeRange>();
+            }
+            var ranges = row.GetValue<string>(0);
+            return JsonConvert.DeserializeObject<IEnumerable<TimeRange>>(ranges);
+        }
+
+        public async Task SaveTimeRanges(Guid entity, Guid attribute, IEnumerable<TimeRange> timeRanges)
+        {
+            var series = await _model.ResolveSeries(entity, attribute, _lowestAggregation);
+            await _session.ExecuteAsync(new SimpleStatement("INSERT INTO deepflowtimeranges (Guid, Ranges) VALUES (?, ?)", series, JsonConvert.SerializeObject(timeRanges)));
         }
 
         private IEnumerable<(Guid series, int time, double value)> Enumerate(IEnumerable<(Guid series, IEnumerable<AggregatedDataRange> dataRanges)> seriesData)
@@ -73,31 +111,6 @@ namespace Deepflow.Platform.Common.Data.Persistence
                     yield return datum;
                 }
             }
-        }
-
-        public async Task<IEnumerable<TimeRange>> GetTimeRanges(Guid series, TimeRange timeRange)
-        {
-            var all = await GetAllTimeRanges(series);
-            return _filterer.FilterRanges(all, timeRange);
-        }
-
-        public async Task<IEnumerable<TimeRange>> GetAllTimeRanges(Guid series)
-        {
-            var query = $"SELECT Ranges FROM deepflowtimeranges WHERE Guid = {series};";
-            var rowSet = await _session.ExecuteAsync(new SimpleStatement(query));
-            var rows = rowSet.ToList();
-            var row = rows.SingleOrDefault();
-            if (row == null)
-            {
-                return new List<TimeRange>();
-            }
-            var ranges = row.GetValue<string>(0);
-            return JsonConvert.DeserializeObject<IEnumerable<TimeRange>>(ranges);
-        }
-
-        public async Task SaveTimeRanges(Guid series, IEnumerable<TimeRange> timeRanges)
-        {
-            await _session.ExecuteAsync(new SimpleStatement("INSERT INTO deepflowtimeranges (Guid, Ranges) VALUES (?, ?)", series, JsonConvert.SerializeObject(timeRanges)));
         }
 
         private IEnumerable<AggregatedDataRange> ToDataRanges(IEnumerable<TimeRange> timeRanges, List<Row> data, TimeRange filterTimeRange, int aggregationSeconds)
@@ -127,6 +140,11 @@ namespace Deepflow.Platform.Common.Data.Persistence
                     rangeData.Add(time);
                     rangeData.Add(record.GetValue<double>(1));
                     index += 1;
+                }
+
+                if (rangeData.Any())
+                {
+                    thisTimeRange.Min = Math.Min(thisTimeRange.Min, (long)rangeData[0] - aggregationSeconds);
                 }
 
                 if (rangeData.Count > 0)

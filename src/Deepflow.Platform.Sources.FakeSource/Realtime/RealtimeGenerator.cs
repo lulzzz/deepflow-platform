@@ -17,16 +17,17 @@ namespace Deepflow.Platform.Sources.FakeSource.Realtime
         private readonly int _intervalSeconds;
         private readonly Action<RawDataRange> _onPoint;
         private static readonly SHA1 Sha1 = SHA1.Create();
-        private readonly DataGenerator _generator;
+        private readonly IDataGenerator _generator;
         private readonly int _offsetSeconds;
         private CancellationTokenSource _cancellationTokenSource;
 
-        public RealtimeGenerator(string sourceName, int intervalSeconds, Action<RawDataRange> onPoint, ILogger<RangeJoiner<RawDataRange>> logger)
+        public RealtimeGenerator(string sourceName, int intervalSeconds, Action<RawDataRange> onPoint, ILogger<RangeJoiner<RawDataRange>> logger, IDataGenerator generator)
         {
             _sourceName = sourceName;
             _intervalSeconds = intervalSeconds;
             _onPoint = onPoint;
-            _generator = new DataGenerator(logger);
+            _generator = generator;
+            //_generator = new DeterministicDataGenerator(logger);
 
             var hash = Sha1.ComputeHash(Encoding.UTF8.GetBytes(sourceName));
             var seed = BitConverter.ToInt32(hash, 0);

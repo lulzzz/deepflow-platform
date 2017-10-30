@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Deepflow.Platform.Abstractions.Ingestion;
 using Deepflow.Platform.Abstractions.Realtime.Messages;
 using Deepflow.Platform.Abstractions.Realtime.Messages.Data;
 using Deepflow.Platform.Abstractions.Series;
@@ -81,7 +82,7 @@ namespace Deepflow.Platform.Agent.Client
         {
             while (true)
             {
-                var uri = new Uri(_configuration.ApiBaseUrl, $"api/v1/DataSources/{_configuration.DataSource}/Series");
+                var uri = new Uri(_configuration.ApiBaseUrl, $"api/v1/DataSources/{_configuration.DataSource}/Tags");
                 try
                 {
                     var responseString = await _pullClient.GetStringAsync(uri);
@@ -105,7 +106,18 @@ namespace Deepflow.Platform.Agent.Client
             await _tripCounterFactory.Run("IngestionClient.SendRealtimeData", async () =>
             {
                 _logger.LogDebug("About to send realtime data to ingestion API");
-                var message = new AddAggregatedAttributeDataRequest
+
+                var request = new AggregatedDataSubmissionRequest
+                {
+                    AggregatedDataRange = aggregatedDataRange,
+                    RawDataRange = rawDataRange
+                };
+
+                var message = JsonConvert.SerializeObject(request, JsonSettings.Setttings);
+                var uri = new Uri(_configuration.ApiBaseUrl, $"api/v1/DataSources/{_configuration.DataSource}/Tags/{name}/Aggregations/{aggregatedDataRange.AggregationSeconds}/Data/Realtime");
+                await _pushClient.PostAsync(uri, new StringContent(message, Encoding.UTF8, "application/json"));
+
+                /*var message = new AddAggregatedAttributeDataRequest
                 {
                     ActionId = _nextActionId++,
                     MessageClass = IncomingMessageClass.Request,
@@ -130,7 +142,7 @@ namespace Deepflow.Platform.Agent.Client
                 finally
                 {
                     _sendSemaphore.Release();
-                }
+                }*/
             });
 
             /*var uri = new Uri(_configuration.ApiBaseUrl, $"/api/v1/DataSources/{_configuration.DataSource}/Series/{name}/Data");
@@ -149,7 +161,14 @@ namespace Deepflow.Platform.Agent.Client
             await _tripCounterFactory.Run("IngestionClient.SendHistoricalData", async () =>
             {
                 _logger.LogDebug("About to send historical data to ingestion API");
-                var message = new AddAggregatedAttributeHistoricalDataRequest()
+
+                var message = JsonConvert.SerializeObject(aggregatedDataRange, JsonSettings.Setttings);
+                var uri = new Uri(_configuration.ApiBaseUrl, $"api/v1/DataSources/{_configuration.DataSource}/Tags/{name}/Aggregations/{aggregatedDataRange.AggregationSeconds}/Data/Historical");
+                await _pushClient.PostAsync(uri, new StringContent(message, Encoding.UTF8, "application/json"));
+
+                _logger.LogDebug("Sent data to ingestion API");
+
+                /*var message = new AddAggregatedAttributeHistoricalDataRequest()
                 {
                     ActionId = _nextActionId++,
                     MessageClass = IncomingMessageClass.Request,
@@ -173,7 +192,7 @@ namespace Deepflow.Platform.Agent.Client
                 finally
                 {
                     _sendSemaphore.Release();
-                }
+                }*/
             });
         }
     }

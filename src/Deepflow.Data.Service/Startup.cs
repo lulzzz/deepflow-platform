@@ -51,7 +51,7 @@ namespace Deepflow.Data.Service
             services.AddSingleton<IWebsocketsReceiver, RealtimeMessageHandler>();
 
             services.AddSingleton<IModelMapProvider, InMemoryModelMapProvider>();
-            services.AddSingleton<IPersistentDataProvider, DynamoDbPersistentDataProvider>();
+            //services.AddSingleton<IPersistentDataProvider, DynamoDbPersistentDataProvider>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

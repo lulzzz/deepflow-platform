@@ -1,8 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
-using Deepflow.Platform.Abstractions.Realtime;
+﻿using Deepflow.Platform.Abstractions.Realtime;
 using Deepflow.Platform.Abstractions.Series;
-using Deepflow.Platform.Core.Tools;
 using Deepflow.Platform.Realtime;
 using Deepflow.Platform.Series;
 using Deepflow.Platform.Sources.FakeSource.Data;
@@ -36,12 +33,34 @@ namespace Deepflow.Platform.Sources.FakeSource
             services.AddMvc();
             services.AddSingleton<IWebsocketsManager, WebsocketsManager>();
             services.AddSingleton<IWebsocketsReceiver, SubscriptionManager>();
-            services.AddSingleton<IDataGenerator, DataGenerator>();
             services.AddSingleton<IDataAggregator, DataAggregator>();
+
+            services.AddSingleton<IRangeCreator<AggregatedDataRange>, AggregatedRangeCreator>();
+            services.AddSingleton<IRangeAccessor<AggregatedDataRange>, AggregatedRangeAccessor>();
+            services.AddSingleton<IRangeFilteringPolicy<AggregatedDataRange>, AggregateRangeFilteringPolicy>();
+            services.AddSingleton<IRangeFilterer<AggregatedDataRange>, RangeFilterer<AggregatedDataRange>>();
+            services.AddSingleton<IRangeJoiner<AggregatedDataRange>, RangeJoiner<AggregatedDataRange>>();
+            services.AddSingleton<IRangeMerger<AggregatedDataRange>, RangeMerger<AggregatedDataRange>>();
+
+            services.AddSingleton<IRangeCreator<RawDataRange>, RawDataRangeCreator>();
+            services.AddSingleton<IRangeAccessor<RawDataRange>, RawDataRangeAccessor>();
+            services.AddSingleton<IRangeFilteringPolicy<RawDataRange>, RawDataRangeFilteringPolicy>();
+            services.AddSingleton<IRangeFilterer<RawDataRange>, RangeFilterer<RawDataRange>>();
+            services.AddSingleton<IRangeJoiner<RawDataRange>, RangeJoiner<RawDataRange>>();
+            services.AddSingleton<IRangeMerger<RawDataRange>, RangeMerger<RawDataRange>>();
 
             var generatorConfiguration = new GeneratorConfiguration();
             Configuration.GetSection("Generator").Bind(generatorConfiguration);
             services.AddSingleton(generatorConfiguration);
+
+            if (generatorConfiguration.GeneratorPlugin == GeneratorPlugin.Deterministic)
+            {
+                services.AddSingleton<IDataGenerator, DeterministicDataGenerator>();
+            }
+            else if (generatorConfiguration.GeneratorPlugin == GeneratorPlugin.Random)
+            {
+                services.AddSingleton<IDataGenerator, RandomDataGenerator>();
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -53,23 +72,6 @@ namespace Deepflow.Platform.Sources.FakeSource
             app.UseWebSocketsHandler("/ws/v1");
 
             app.UseMvc();
-
-            /*var generator = new DataGenerator();
-
-            Task.Run(() =>
-            {
-                Parallel.For(0, 8, new ParallelOptions { MaxDegreeOfParallelism = 8 }, i =>
-                {
-                    while (true)
-                    {
-                        var now = DateTime.Now.SecondsSince1970Utc();
-                        var aggregatedTime = now - (now % 300) + 300;
-                        var aggregatedTimeRange = new TimeRange(aggregatedTime - 300, aggregatedTime);
-
-                        generator.GenerateData(Guid.NewGuid().ToString(), aggregatedTimeRange, 300);
-                    }
-                });
-            });*/
         }
     }
 }

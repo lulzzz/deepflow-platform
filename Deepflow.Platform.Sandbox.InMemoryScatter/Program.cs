@@ -18,7 +18,7 @@ namespace Deepflow.Platform.Sandbox.InMemoryScatter
     {
         static void Main(string[] args)
         {
-            /*var generator = new DataGenerator(new Logger<RangeJoiner<RawDataRange>>());
+            /*var generator = new DeterministicDataGenerator(new Logger<RangeJoiner<RawDataRange>>());
 
             var start = new DateTime(2007, 1, 1).SecondsSince1970Utc();
             var end = new DateTime(2017, 1, 1).SecondsSince1970Utc();

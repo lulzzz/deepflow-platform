@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Deepflow.Platform.Abstractions.Realtime;
 using Deepflow.Platform.Abstractions.Series;
 using Deepflow.Platform.Series;
+using Deepflow.Platform.Sources.FakeSource.Data;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -14,14 +15,16 @@ namespace Deepflow.Platform.Sources.FakeSource.Realtime
         private readonly ILogger<SubscriptionManager> _logger;
         private readonly ILogger<RangeJoiner<RawDataRange>> _rangeLogger;
         private readonly GeneratorConfiguration _configuration;
+        private readonly IDataGenerator _generator;
         private IWebsocketsSender _sender;
         private readonly ConcurrentDictionary<string, RealtimeGenerator> _generatorBySocketId = new ConcurrentDictionary<string, RealtimeGenerator>();
 
-        public SubscriptionManager(ILogger<SubscriptionManager> logger, ILogger<RangeJoiner<RawDataRange>> rangeLogger, GeneratorConfiguration configuration)
+        public SubscriptionManager(ILogger<SubscriptionManager> logger, ILogger<RangeJoiner<RawDataRange>> rangeLogger, GeneratorConfiguration configuration, IDataGenerator generator)
         {
             _logger = logger;
             _rangeLogger = rangeLogger;
             _configuration = configuration;
+            _generator = generator;
         }
 
         public Task OnConnected(string socketId)
@@ -44,7 +47,7 @@ namespace Deepflow.Platform.Sources.FakeSource.Realtime
         public Task OnReceive(string socketId, string message)
         {
             var subscriptionRequest = JsonConvert.DeserializeObject<SubscriptionRequest>(message);
-            var generator = _generatorBySocketId.GetOrAdd(socketId, new RealtimeGenerator(subscriptionRequest.SourceName, _configuration.SecondsInterval, async dataRange => await SendPoint(socketId, dataRange), _rangeLogger));
+            var generator = _generatorBySocketId.GetOrAdd(socketId, new RealtimeGenerator(subscriptionRequest.SourceName, _configuration.SecondsInterval, async dataRange => await SendPoint(socketId, dataRange), _rangeLogger, _generator));
             generator.Start();
             _logger.LogDebug($"Subscription added, now {_generatorBySocketId.Count}");
             return Task.FromResult(0);

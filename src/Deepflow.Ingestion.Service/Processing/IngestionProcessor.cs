@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Deepflow.Common.Model;
 using Deepflow.Common.Model.Model;
+using Deepflow.Ingestion.Service.Metrics;
 using Deepflow.Platform.Abstractions.Series;
 using Deepflow.Ingestion.Service.Realtime;
 using Deepflow.Platform.Abstractions.Series.Validators;
@@ -30,6 +31,7 @@ namespace Deepflow.Ingestion.Service.Processing
         private readonly IRangeFilterer<AggregatedDataRange> _filterer;
         private readonly SeriesConfiguration _configuration;
         private readonly ILogger<IngestionProcessor> _logger;
+
         private readonly TripCounterFactory _tripCounterFactory;
         private readonly ConcurrentDictionary<Guid, SemaphoreSlim> _seriesSemaphores = new ConcurrentDictionary<Guid, SemaphoreSlim>();
         private readonly AggregatedDataRangeValidator _aggregatedDataRangeValidator = new AggregatedDataRangeValidator();
@@ -85,19 +87,19 @@ namespace Deepflow.Ingestion.Service.Processing
             try
             {
                 //var cached = await _cache.GetData(series, quantised, minAggregationSeconds);
-                var persisted = await _tripCounterFactory.Run("Persistence.GetData", _persistence.GetData(series, quantised)).ConfigureAwait(false);
-                var existingTimeRanges = await _tripCounterFactory.Run("Persistence.GetAllTimeRanges", _persistence.GetAllTimeRanges(series)).ConfigureAwait(false);
+                var persisted = await _tripCounterFactory.Run("Persistence.GetData", _persistence.GetData(entity, attribute, dataRange.AggregationSeconds, quantised));
+                var existingTimeRanges = await _tripCounterFactory.Run("Persistence.GetAllTimeRanges", _persistence.GetAllTimeRanges(entity, attribute)).ConfigureAwait(false);
                 _logger.LogDebug("Got cached");
                 var merged = _aggregatedMerger.MergeRangeWithRanges(persisted, dataRange);
                 var aggregations = _aggregator.Aggregate(merged, quantised, _configuration.AggregationsSeconds);
                 var affectedAggregatedPoints = aggregations.Select(x => FilterAggregationToAffectedRange(x.Value, dataRange.TimeRange, x.Key)).Where(x => x != null).ToList();
-                var rangesToPersist = await Task.WhenAll(affectedAggregatedPoints.Select(async range => new ValueTuple<Guid, IEnumerable<AggregatedDataRange>>(await _model.ResolveSeries(entity, attribute, range.AggregationSeconds), new List<AggregatedDataRange> { range })));
+                var rangesToPersist = await Task.WhenAll(affectedAggregatedPoints.Select(async range => new ValueTuple<Guid, Guid, int, IEnumerable<AggregatedDataRange>>(entity, attribute, range.AggregationSeconds, new List<AggregatedDataRange> { range })));
                 await _persistence.SaveData(rangesToPersist);
 
                 //await Task.WhenAll(_tripCounterFactory.Run("Persistence.Save", aggregations.Select(async x => _persistence.SaveData(await _model.ResolveSeries(entity, attribute, x.Key).ConfigureAwait(false), x.Value)))).ConfigureAwait(false);
                 //var existingTimeRanges = await existingTimeRangesTask.ConfigureAwait(false); ;
                 var afterTimeRanges = _timeMerger.MergeRangeWithRanges(existingTimeRanges, dataRange.TimeRange);
-                await _tripCounterFactory.Run("Persistence.SaveTimeRanges", _persistence.SaveTimeRanges(series, afterTimeRanges)).ConfigureAwait(false);
+                await _tripCounterFactory.Run("Persistence.SaveTimeRanges", _persistence.SaveTimeRanges(entity, attribute, afterTimeRanges)).ConfigureAwait(false);
 
                 //File.WriteAllText(_id++ + ".json", $"Before: {JsonConvert.SerializeObject(existingTimeRanges)} {Environment.NewLine}{Environment.NewLine}Adding:{JsonConvert.SerializeObject(dataRange.TimeRange)}{Environment.NewLine}{Environment.NewLine}After: {JsonConvert.SerializeObject(afterTimeRanges)}");
 

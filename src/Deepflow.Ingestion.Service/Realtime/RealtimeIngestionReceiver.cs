@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using App.Metrics;
+using App.Metrics.Core.Options;
 using Deepflow.Common.Model.Model;
 using Deepflow.Ingestion.Service.Processing;
 using Deepflow.Platform.Abstractions.Realtime;
@@ -22,6 +24,8 @@ namespace Deepflow.Ingestion.Service.Realtime
         private readonly TripCounterFactory _trip;
         private IWebsocketsSender _sender;
         private readonly AsyncCollection<(string socket, string message)> _queue = new AsyncCollection<(string socket, string message)>(null, 1000);
+        private readonly MeterOptions _realtimeSubmissionsMeter;
+        private readonly MeterOptions _historicalSubmissionsMeter;
 
         public RealtimeIngestionReceiver(IIngestionProcessor processor, IModelProvider model, IPersistentDataProvider persistence, ILogger<RealtimeIngestionReceiver> logger, TripCounterFactory trip)
         {
@@ -30,6 +34,18 @@ namespace Deepflow.Ingestion.Service.Realtime
             _persistence = persistence;
             _logger = logger;
             _trip = trip;
+
+            _realtimeSubmissionsMeter = new MeterOptions
+            {
+                Name = "Realtime Submissions",
+                MeasurementUnit = Unit.Calls
+            };
+
+            _historicalSubmissionsMeter = new MeterOptions
+            {
+                Name = "Historical Submissions",
+                MeasurementUnit = Unit.Calls
+            };
 
             Enumerable.Range(0, 10).ForEach(x => Task.Run(ProcessLoop));
         }
@@ -97,6 +113,7 @@ namespace Deepflow.Ingestion.Service.Realtime
                 var fetchRequest = JsonConvert.DeserializeObject<FetchAggregatedAttributeDataRequest>(messageString, JsonSettings.Setttings);
                 return await ReceiveFetchAggregatedAttributeDataRequest(fetchRequest).ConfigureAwait(false);
             }
+            
             return null;
         }
 
@@ -128,8 +145,7 @@ namespace Deepflow.Ingestion.Service.Realtime
 
         private async Task<FetchAggregatedAttributeDataResponse> ReceiveFetchAggregatedAttributeDataRequest(FetchAggregatedAttributeDataRequest request)
         {
-            var series = await _model.ResolveSeries(request.EntityGuid, request.AttributeGuid, request.AggregationSeconds);
-            var dataRanges = await _persistence.GetData(series, request.TimeRange);
+            var dataRanges = await _persistence.GetData(request.EntityGuid, request.AttributeGuid, request.AggregationSeconds, request.TimeRange);
             return new FetchAggregatedAttributeDataResponse
             {
                 ActionId = request.ActionId,

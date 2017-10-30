@@ -12,18 +12,19 @@ namespace Deepflow.Sandbox.FakeSourcePerf
     {
         static void Main(string[] args)
         {
-            var dataGenerator = new DataGenerator(new Logger<RangeJoiner<RawDataRange>>());
+            var dataGenerator = new DeterministicDataGenerator(new Logger<RangeJoiner<RawDataRange>>());
 
             var stopwatch = Stopwatch.StartNew();
 
             while (true)
             {
+                stopwatch = Stopwatch.StartNew();
                 dataGenerator.GenerateRange("test", new TimeRange(DateTime.UtcNow.Subtract(TimeSpan.FromDays(365)), DateTime.UtcNow), 300);
+                Console.WriteLine($"{stopwatch.ElapsedMilliseconds} ms");
             }
             
             //dataGenerator.GenerateRawPoint("test", (int)DateTime.UtcNow.SecondsSince1970Utc(), 300);
 
-            Console.WriteLine($"{stopwatch.ElapsedMilliseconds} ms");
             Console.ReadKey();
         }
     }

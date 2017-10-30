@@ -29,6 +29,15 @@ namespace Deepflow.Platform.Agent.Processor
             _logger = logger;
             _configuration = configuration;
             _provider = provider;
+
+            Task.Run(async () =>
+            {
+                while (true)
+                {
+                    await Task.Delay(3000);
+                    _logger.LogWarning($"{_fetchQueue.Queue.Count} remaining in queue");
+                }
+            });
         }
 
         public void SetClient(IIngestionClient client)

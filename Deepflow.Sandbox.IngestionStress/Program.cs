@@ -25,7 +25,7 @@ namespace Deepflow.Sandbox.IngestionStress
 
         private static async Task Do()
         {
-            var dynamodbConfiguration = new DynamoDbConfiguration { AccessKey = "AKIAJ6RFWYERKM4SI6LA", SecretKey = "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", RegionSystemName = "ap-southeast-2", RangeTableName = "DeepflowTimeRanges", DataTableName = "DeepflowData" };
+            /*var dynamodbConfiguration = new DynamoDbConfiguration { AccessKey = "AKIAJ6RFWYERKM4SI6LA", SecretKey = "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", RegionSystemName = "ap-southeast-2", RangeTableName = "DeepflowTimeRanges", DataTableName = "DeepflowData" };
             var timeCreator = new TimeRangeCreator();
             var timePolicy = new TimeRangeFilteringPolicy();
             var timeAccessor = new TimeRangeAccessor();
@@ -65,7 +65,7 @@ namespace Deepflow.Sandbox.IngestionStress
             /*modelConfiguration.Entities.Select(entity =>
             {
                 return 
-            });*/
+            });#1#
 
             while (true)
             {
@@ -78,7 +78,7 @@ namespace Deepflow.Sandbox.IngestionStress
             }
 
             Console.WriteLine("Done");
-            Console.ReadKey();
+            Console.ReadKey();*/
         }
     }
 

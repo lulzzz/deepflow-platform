@@ -4,12 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Deepflow.Common.Model.Model;
 using Deepflow.Ingestion.Service.Configuration;
+using Deepflow.Platform.Abstractions.Ingestion;
 using Deepflow.Platform.Abstractions.Series;
 using Deepflow.Platform.Abstractions.Sources;
 using Deepflow.Platform.Common.Data.Persistence;
 using Deepflow.Platform.Core.Tools;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using IIngestionProcessor = Deepflow.Ingestion.Service.Processing.IIngestionProcessor;
 
 namespace Deepflow.Ingestion.Service.Controllers
 {
@@ -20,20 +22,23 @@ namespace Deepflow.Ingestion.Service.Controllers
         private readonly IPersistentDataProvider _persistence;
         private readonly IRangeFilterer<TimeRange> _filterer;
         private readonly IngestionConfiguration _configuration;
+        private readonly IIngestionProcessor _processor;
+        private readonly IModelProvider _model;
 
-        public DataSourcesController(ILogger<DataSourcesController> logger, IModelProvider modelProvider, IPersistentDataProvider persistence, IRangeFilterer<TimeRange> filterer, IngestionConfiguration configuration)
+        public DataSourcesController(ILogger<DataSourcesController> logger, IModelProvider modelProvider, IPersistentDataProvider persistence, IRangeFilterer<TimeRange> filterer, IngestionConfiguration configuration, IIngestionProcessor processor, IModelProvider model)
         {
             _modelProvider = modelProvider;
             _persistence = persistence;
             _filterer = filterer;
             _configuration = configuration;
+            _processor = processor;
+            _model = model;
         }
 
-        [HttpGet("{dataSource}/Series")]
+        [HttpGet("{dataSource}/Tags")]
         public async Task<SourceSeriesList> GetSourceSeriesList(Guid dataSource)
         {
             var sourceNames = await _modelProvider.ResolveSourceNamesForDataSource(dataSource);
-            var aggregationSeconds = 300;
 
             return new SourceSeriesList
             {
@@ -42,19 +47,34 @@ namespace Deepflow.Ingestion.Service.Controllers
                 {
                     Realtime = true,
                     SourceName = x,
-                    TimeRanges = await GetMissingTimeRangesForSourceName(dataSource, x, aggregationSeconds)
+                    TimeRanges = await GetMissingTimeRangesForSourceName(dataSource, x)
                 }))
             };
         }
 
-        private async Task<IEnumerable<TimeRange>> GetMissingTimeRangesForSourceName(Guid dataSource, string sourceName, int aggregationSeconds)
+        [HttpPost("{dataSource}/Tags/{sourceName}/Aggregations/{aggregationSeconds}/Data/Historical")]
+        public async Task AddHistoricalData(Guid dataSource, string sourceName, int aggregationSeconds, [FromBody] AggregatedDataRange dataRange)
+        {
+            var (entity, attribute) = await _model.ResolveEntityAndAttribute(dataSource, sourceName);
+            await _processor.ReceiveHistoricalData(entity, attribute, dataRange);
+        }
+
+        [HttpPost("{dataSource}/Tags/{sourceName}/Aggregations/{aggregationSeconds}/Data/Realtime")]
+        public async Task AddRealtimeData(Guid dataSource, string sourceName, int aggregationSeconds, [FromBody] AggregatedDataSubmissionRequest request)
+        {
+            var (entity, attribute) = await _model.ResolveEntityAndAttribute(dataSource, sourceName);
+            await _processor.ReceiveRealtimeData(entity, attribute, request.AggregatedDataRange, request.RawDataRange);
+        }
+
+        private async Task<IEnumerable<TimeRange>> GetMissingTimeRangesForSourceName(Guid dataSource, string sourceName)
         {
             var entityAttribute = await _modelProvider.ResolveEntityAndAttribute(dataSource, sourceName);
-            var series = await _modelProvider.ResolveSeries(entityAttribute.entity, entityAttribute.attribute, aggregationSeconds);
 
-            var existingTimeRanges = await _persistence.GetAllTimeRanges(series);
+            var existingTimeRanges = await _persistence.GetAllTimeRanges(entityAttribute.Item1, entityAttribute.Item2);
             var desiredTimeRange = new TimeRange(_configuration.MinHistoryUtcSeconds.FromSecondsSince1970Utc(), DateTime.UtcNow);
             return _filterer.SubtractTimeRangesFromRange(desiredTimeRange, existingTimeRanges);
         }
+
+        
     }
 }
