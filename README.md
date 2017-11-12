@@ -1,7 +1,7 @@
 # Deepflow Platform
 This repository contains the code for the Deepflow Backend and Agent. We will split them out after the prototype stage but for now they are together.
 
-## Environment
+## Environments
 We have the following environments running Deepflow:
 
 ### Demo:
