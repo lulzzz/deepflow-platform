@@ -129,6 +129,31 @@ namespace Deepflow.Platform.Core.Tools
             }
         }
 
+        public static IEnumerable<T> MergeMany<T>(this IEnumerable<IEnumerable<T>> sources)
+        {
+            var enumerators = sources.Select(x => x.GetEnumerator()).ToArray();
+            var remaining = true;
+            while (remaining)
+            {
+                remaining = false;
+                for (var i = 0; i < enumerators.Length; i++)
+                {
+                    var enumerator = enumerators[i];
+                    if (enumerator != null)
+                    {
+                        if (!enumerator.MoveNext())
+                        {
+                            enumerators[i] = null;
+                            continue;
+                        }
+
+                        yield return enumerator.Current;
+                        remaining = true;
+                    }
+                }
+            }
+        }
+
         private static readonly Random shuffleRandom = new Random();
         public static void Shuffle<T>(this IList<T> list)
         {

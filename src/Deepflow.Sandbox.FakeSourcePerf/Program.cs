@@ -19,7 +19,7 @@ namespace Deepflow.Sandbox.FakeSourcePerf
             while (true)
             {
                 stopwatch = Stopwatch.StartNew();
-                dataGenerator.GenerateRange("test", new TimeRange(DateTime.UtcNow.Subtract(TimeSpan.FromDays(365)), DateTime.UtcNow), 300);
+                dataGenerator.GenerateRange("test", new TimeRange(DateTime.Parse("2017-10-30T17:12:40.169Z"), DateTime.Parse("2017-10-31T01:32:40.169Z")), 5);
                 Console.WriteLine($"{stopwatch.ElapsedMilliseconds} ms");
             }
             

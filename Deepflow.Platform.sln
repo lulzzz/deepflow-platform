@@ -61,11 +61,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{B4182F8E-6
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deepflow.Ingestion.Service.Tests", "test\Deepflow.Ingestion.Service.Tests\Deepflow.Ingestion.Service.Tests.csproj", "{C26FE239-FDB1-46A6-B888-6326707554FA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deepflow.Sandbox.IngestionStress", "Deepflow.Sandbox.IngestionStress\Deepflow.Sandbox.IngestionStress.csproj", "{C6EF677A-0573-4C5A-B947-8AD86BBE1B58}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deepflow.Sandbox.IngestionStress", "Deepflow.Sandbox.IngestionStress\Deepflow.Sandbox.IngestionStress.csproj", "{C6EF677A-0573-4C5A-B947-8AD86BBE1B58}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deepflow.Sandbox.FakeSourcePerf", "src\Deepflow.Sandbox.FakeSourcePerf\Deepflow.Sandbox.FakeSourcePerf.csproj", "{E7F8B946-0FE2-4995-95E0-FA1824AB8303}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deepflow.Sandbox.FakeSourcePerf", "src\Deepflow.Sandbox.FakeSourcePerf\Deepflow.Sandbox.FakeSourcePerf.csproj", "{E7F8B946-0FE2-4995-95E0-FA1824AB8303}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deepflow.Core", "src\Deepflow.Core\Deepflow.Core.csproj", "{33D97E3C-60EE-464A-A298-9C21FF912C45}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deepflow.Core", "src\Deepflow.Core\Deepflow.Core.csproj", "{33D97E3C-60EE-464A-A298-9C21FF912C45}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

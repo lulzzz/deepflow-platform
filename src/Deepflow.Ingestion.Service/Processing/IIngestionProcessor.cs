@@ -6,7 +6,8 @@ namespace Deepflow.Ingestion.Service.Processing
 {
     public interface IIngestionProcessor
     {
-        Task ReceiveRealtimeData(Guid entity, Guid attribute, AggregatedDataRange dataRange, RawDataRange rawDataRange);
+        Task ReceiveRealtimeRawData(Guid entity, Guid attribute, RawDataRange rawDataRange);
+        Task ReceiveRealtimeAggregatedData(Guid entity, Guid attribute, AggregatedDataRange dataRange);
         Task ReceiveHistoricalData(Guid entity, Guid attribute, AggregatedDataRange dataRange);
     }
 }

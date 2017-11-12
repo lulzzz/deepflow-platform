@@ -1,9 +1,4 @@
-﻿using System;
-using App.Metrics.Configuration;
-using App.Metrics.Extensions.Reporting.InfluxDB;
-using App.Metrics.Extensions.Reporting.InfluxDB.Client;
-using App.Metrics.Reporting.Interfaces;
-using Deepflow.Common.Model;
+﻿using Deepflow.Common.Model;
 using Deepflow.Common.Model.Model;
 using Deepflow.Ingestion.Service.Configuration;
 using Deepflow.Ingestion.Service.Metrics;
@@ -19,7 +14,6 @@ using Deepflow.Platform.Realtime;
 using Deepflow.Platform.Series;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -68,6 +62,13 @@ namespace Deepflow.Ingestion.Service
                 .AddMetricsMiddleware(options => options.IgnoredHttpStatusCodes = new[] { 404 });*/
 
             //services.AddMvc(options => options.AddMetricsResourceFilter());
+
+            /*services.AddSingleton<StatsN.IStatsd>(provider => new StatsN.Statsd(new StatsN.StatsdOptions()
+            {
+                HostOrIp = "127.0.0.1",
+                Port = 8125
+            }));*/
+            
             services.AddMvc();
 
             var seriesConfiguration = new Common.Model.SeriesConfiguration();
@@ -82,6 +83,10 @@ namespace Deepflow.Ingestion.Service
             Configuration.GetSection("Ingestion").Bind(ingestionConfiguration);
             services.AddSingleton(ingestionConfiguration);
 
+            var realtimeConfiguration = new RealtimeConfiguration();
+            Configuration.GetSection("Realtime").Bind(realtimeConfiguration);
+            services.AddSingleton(realtimeConfiguration);
+            
             if (ingestionConfiguration.PersistencePlugin == PersistencePlugin.Cassandra)
             {
                 services.AddSingleton<IPersistentDataProvider, CassandraPersistentDataProvider>();
@@ -128,7 +133,7 @@ namespace Deepflow.Ingestion.Service
             services.AddSingleton<IWebsocketsReceiver, RealtimeIngestionReceiver>();
 
             services.AddSingleton<TripCounterFactory>();
-            //services.AddSingleton<IMetricsReporter, MetricsReporter>();
+            services.AddSingleton<IMetricsReporter, MetricsReporter>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime lifetime)

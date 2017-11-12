@@ -20,6 +20,7 @@ namespace Deepflow.Platform.Agent.Processor
         private readonly ISourceDataProvider _provider;
         private IIngestionClient _client;
         private readonly ConcurrentDictionary<string, CancellationTokenSource> _subscriptions = new ConcurrentDictionary<string, CancellationTokenSource>();
+        private ConcurrentDictionary<string, AggregationWorker> _workers = new ConcurrentDictionary<string, AggregationWorker>();
         private readonly object _subscriptionsLock = new object();
 
         private QueueWrapper _fetchQueue = new QueueWrapper();
@@ -61,7 +62,8 @@ namespace Deepflow.Platform.Agent.Processor
                 foreach (var newSubscription in newSubscriptions)
                 {
                     _subscriptions.TryAdd(newSubscription.SourceName, newSubscription.CancellationTokenSource);
-                    _provider.SubscribeForRawData(newSubscription.SourceName, newSubscription.CancellationTokenSource.Token, dataRange => ReceiveRaw(newSubscription.SourceName, dataRange));
+                    _provider.SubscribeForRawData(newSubscription.SourceName, newSubscription.CancellationTokenSource.Token, dataRange => ReceiveRealtimeRaw(newSubscription.SourceName, dataRange));
+                    _workers.GetOrAdd(newSubscription.SourceName, sourceName => new AggregationWorker(sourceName, _configuration.AggregationSeconds, _configuration.MaximumSourceDelaySeconds, _provider, dataRange => ReceiveRealtimeAggregates(sourceName, dataRange)));
                 }
 
                 var removeSourceNames = _subscriptions.Keys.Where(existingSourceName => !nextSourceNames.Contains(existingSourceName));
@@ -82,14 +84,14 @@ namespace Deepflow.Platform.Agent.Processor
             public string SourceName;
         }
 
-        public async Task ReceiveRaw(string sourceName, RawDataRange rawDataRange)
+        public async Task ReceiveRealtimeAggregates(string sourceName, AggregatedDataRange dataRange)
         {
-            var aggregatedTime = rawDataRange.TimeRange.Max - (rawDataRange.TimeRange.Max % _configuration.AggregationSeconds) + _configuration.AggregationSeconds;
-            var aggregatedTimeRange = new TimeRange(aggregatedTime - _configuration.AggregationSeconds, aggregatedTime);
-            var aggregatedData = await _provider.FetchAggregatedData(sourceName, aggregatedTimeRange, _configuration.AggregationSeconds);
+            await _client.SendRealtimeAggregatedData(sourceName, dataRange);
+        }
 
-            _logger.LogDebug($"Sending data for {sourceName} with {aggregatedData.Data.Count / 2} aggregated points");
-            await _client.SendRealtimeData(sourceName, aggregatedData, rawDataRange);
+        public async Task ReceiveRealtimeRaw(string sourceName, RawDataRange dataRange)
+        {
+            await _client.SendRealtimeRawData(sourceName, dataRange);
         }
 
         private QueueWrapper PrepareNextQueue(SourceSeriesList sourceSeriesList)
@@ -144,12 +146,12 @@ namespace Deepflow.Platform.Agent.Processor
 
         private IList<IngestionFetch> ListToFetches(SourceSeriesList sourceSeriesList)
         {
-            return sourceSeriesList.Series.SelectMany(BuildFetchesForSeries).ToList();
+            return sourceSeriesList.Series.Select(BuildFetchesForSeries).MergeMany().ToList();
         }
 
         private IEnumerable<IngestionFetch> BuildFetchesForSeries(SourceSeriesFetchRequests series)
         {
-            return series.TimeRanges.SelectMany(range => BuildFetchesForTimeRange(series.SourceName, range));
+            return series.TimeRanges.SelectMany(range => BuildFetchesForTimeRange(series.SourceName, range)).Reverse();
         }
 
         private IEnumerable<IngestionFetch> BuildFetchesForTimeRange(string sourceName, TimeRange timeRange)

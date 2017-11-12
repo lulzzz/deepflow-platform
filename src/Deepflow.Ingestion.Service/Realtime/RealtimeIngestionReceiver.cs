@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using App.Metrics;
-using App.Metrics.Core.Options;
 using Deepflow.Common.Model.Model;
 using Deepflow.Ingestion.Service.Processing;
 using Deepflow.Platform.Abstractions.Realtime;
@@ -24,8 +22,6 @@ namespace Deepflow.Ingestion.Service.Realtime
         private readonly TripCounterFactory _trip;
         private IWebsocketsSender _sender;
         private readonly AsyncCollection<(string socket, string message)> _queue = new AsyncCollection<(string socket, string message)>(null, 1000);
-        private readonly MeterOptions _realtimeSubmissionsMeter;
-        private readonly MeterOptions _historicalSubmissionsMeter;
 
         public RealtimeIngestionReceiver(IIngestionProcessor processor, IModelProvider model, IPersistentDataProvider persistence, ILogger<RealtimeIngestionReceiver> logger, TripCounterFactory trip)
         {
@@ -34,18 +30,6 @@ namespace Deepflow.Ingestion.Service.Realtime
             _persistence = persistence;
             _logger = logger;
             _trip = trip;
-
-            _realtimeSubmissionsMeter = new MeterOptions
-            {
-                Name = "Realtime Submissions",
-                MeasurementUnit = Unit.Calls
-            };
-
-            _historicalSubmissionsMeter = new MeterOptions
-            {
-                Name = "Historical Submissions",
-                MeasurementUnit = Unit.Calls
-            };
 
             Enumerable.Range(0, 10).ForEach(x => Task.Run(ProcessLoop));
         }
@@ -98,7 +82,7 @@ namespace Deepflow.Ingestion.Service.Realtime
 
         private async Task<ResponseMessage> ReceiveRequest(RequestMessage request, string messageString)
         {
-            if (request.RequestType == RequestType.AddAggregatedAttributeData)
+            /*if (request.RequestType == RequestType.AddAggregatedAttributeData)
             {
                 var addRequest = JsonConvert.DeserializeObject<AddAggregatedAttributeDataRequest>(messageString, JsonSettings.Setttings);
                 return await ReceiveAddAttributeSubscriptionsRequest(addRequest);
@@ -107,7 +91,7 @@ namespace Deepflow.Ingestion.Service.Realtime
             {
                 var addHistoricalRequest = JsonConvert.DeserializeObject<AddAggregatedAttributeHistoricalDataRequest>(messageString, JsonSettings.Setttings);
                 return await ReceiveAddAttributeHistoricalSubscriptionsRequest(addHistoricalRequest);
-            }
+            }*/
             if (request.RequestType == RequestType.FetchAggregatedAttributeData)
             {
                 var fetchRequest = JsonConvert.DeserializeObject<FetchAggregatedAttributeDataRequest>(messageString, JsonSettings.Setttings);
@@ -117,7 +101,7 @@ namespace Deepflow.Ingestion.Service.Realtime
             return null;
         }
 
-        private async Task<AddAggregatedAttributeDataResponse> ReceiveAddAttributeSubscriptionsRequest(AddAggregatedAttributeDataRequest request)
+        /*private async Task<AddAggregatedAttributeDataResponse> ReceiveAddAttributeSubscriptionsRequest(AddAggregatedAttributeDataRequest request)
         {
             var (entity, attribute) = await _model.ResolveEntityAndAttribute(request.DataSource, request.SourceName);
             await _processor.ReceiveRealtimeData(entity, attribute, request.AggregatedDataRange, request.RawDataRange);
@@ -141,7 +125,7 @@ namespace Deepflow.Ingestion.Service.Realtime
                 ResponseType = ResponseType.AddAggregatedHistoricalAttributeData,
                 Succeeded = true
             };
-        }
+        }*/
 
         private async Task<FetchAggregatedAttributeDataResponse> ReceiveFetchAggregatedAttributeDataRequest(FetchAggregatedAttributeDataRequest request)
         {

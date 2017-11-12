@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,12 +10,10 @@ using Deepflow.Ingestion.Service.Metrics;
 using Deepflow.Platform.Abstractions.Series;
 using Deepflow.Ingestion.Service.Realtime;
 using Deepflow.Platform.Abstractions.Series.Validators;
-using Deepflow.Platform.Common.Data.Caching;
 using Deepflow.Platform.Common.Data.Persistence;
 using Deepflow.Platform.Core.Tools;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace Deepflow.Ingestion.Service.Processing
 {
@@ -33,11 +30,12 @@ namespace Deepflow.Ingestion.Service.Processing
         private readonly ILogger<IngestionProcessor> _logger;
 
         private readonly TripCounterFactory _tripCounterFactory;
+        private readonly IMetricsReporter _metrics;
         private readonly ConcurrentDictionary<Guid, SemaphoreSlim> _seriesSemaphores = new ConcurrentDictionary<Guid, SemaphoreSlim>();
         private readonly AggregatedDataRangeValidator _aggregatedDataRangeValidator = new AggregatedDataRangeValidator();
         private int _id = 0;
 
-        public IngestionProcessor(IPersistentDataProvider persistence, IDataAggregator aggregator, IModelProvider model, IDataMessenger messenger, IRangeMerger<AggregatedDataRange> aggregatedMerger, IRangeMerger<TimeRange> timeMerger, IRangeFilterer<AggregatedDataRange> filterer, SeriesConfiguration configuration, ILogger<IngestionProcessor> logger, TripCounterFactory tripCounterFactory)
+        public IngestionProcessor(IPersistentDataProvider persistence, IDataAggregator aggregator, IModelProvider model, IDataMessenger messenger, IRangeMerger<AggregatedDataRange> aggregatedMerger, IRangeMerger<TimeRange> timeMerger, IRangeFilterer<AggregatedDataRange> filterer, SeriesConfiguration configuration, ILogger<IngestionProcessor> logger, TripCounterFactory tripCounterFactory, IMetricsReporter metrics)
         {
             _persistence = persistence;
             _aggregator = aggregator;
@@ -49,22 +47,41 @@ namespace Deepflow.Ingestion.Service.Processing
             _configuration = configuration;
             _logger = logger;
             _tripCounterFactory = tripCounterFactory;
+            _metrics = metrics;
         }
 
-        public async Task ReceiveRealtimeData(Guid entity, Guid attribute, AggregatedDataRange dataRange, RawDataRange rawDataRange)
+        public async Task ReceiveRealtimeRawData(Guid entity, Guid attribute, RawDataRange rawDataRange)
         {
-            _logger.LogDebug("Received realtime data");
+            _logger.LogDebug("Received realtime raw data");
 
-            var affectedAggregatedPoints = await SaveHistoricalData(entity, attribute, dataRange);
-            await _messenger.Notify(entity, attribute, affectedAggregatedPoints, rawDataRange);
+            await _metrics.Run("realtimesubmissions", async () =>
+            {
+                await _messenger.NotifyRaw(entity, attribute, rawDataRange);
+            });
 
-            _logger.LogDebug("Saved data");
+            _logger.LogDebug("Saved realtime raw data");
+        }
+
+        public async Task ReceiveRealtimeAggregatedData(Guid entity, Guid attribute, AggregatedDataRange dataRange)
+        {
+            _logger.LogDebug("Received realtime aggregated data");
+
+            await _metrics.Run("realtimesubmissions", async () =>
+            {
+                var affectedAggregatedPoints = await SaveHistoricalData(entity, attribute, dataRange);
+                await _messenger.NotifyAggregated(entity, attribute, affectedAggregatedPoints);
+            });
+
+            _logger.LogDebug("Saved realtime aggregated data");
         }
 
         public async Task ReceiveHistoricalData(Guid entity, Guid attribute, AggregatedDataRange dataRange)
         {
-            _logger.LogDebug("Received historical data");
-            await SaveHistoricalData(entity, attribute, dataRange);
+            await _metrics.Run("historicalsubmissions", async () =>
+            {
+                _logger.LogDebug("Received historical data");
+                await SaveHistoricalData(entity, attribute, dataRange);
+            });
         }
 
         private async Task<Dictionary<int, AggregatedDataRange>> SaveHistoricalData(Guid entity, Guid attribute, AggregatedDataRange dataRange)
@@ -93,7 +110,7 @@ namespace Deepflow.Ingestion.Service.Processing
                 var merged = _aggregatedMerger.MergeRangeWithRanges(persisted, dataRange);
                 var aggregations = _aggregator.Aggregate(merged, quantised, _configuration.AggregationsSeconds);
                 var affectedAggregatedPoints = aggregations.Select(x => FilterAggregationToAffectedRange(x.Value, dataRange.TimeRange, x.Key)).Where(x => x != null).ToList();
-                var rangesToPersist = await Task.WhenAll(affectedAggregatedPoints.Select(async range => new ValueTuple<Guid, Guid, int, IEnumerable<AggregatedDataRange>>(entity, attribute, range.AggregationSeconds, new List<AggregatedDataRange> { range })));
+                var rangesToPersist = affectedAggregatedPoints.Select(range => new ValueTuple<Guid, Guid, int, IEnumerable<AggregatedDataRange>>(entity, attribute, range.AggregationSeconds, new List<AggregatedDataRange> { range }));
                 await _persistence.SaveData(rangesToPersist);
 
                 //await Task.WhenAll(_tripCounterFactory.Run("Persistence.Save", aggregations.Select(async x => _persistence.SaveData(await _model.ResolveSeries(entity, attribute, x.Key).ConfigureAwait(false), x.Value)))).ConfigureAwait(false);

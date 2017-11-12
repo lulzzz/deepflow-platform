@@ -3,7 +3,7 @@ using Deepflow.Platform.Abstractions.Realtime;
 
 namespace Deepflow.Platform.Realtime
 {
-    public class NoOpWebsocketsReceiver : IWebsocketsReceiver
+    public class NoopWebsocketsReceiver : IWebsocketsReceiver
     {
         public Task OnConnected(string socketId)
         {

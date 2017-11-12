@@ -18,7 +18,7 @@ namespace Deepflow.Platform.Agent.Controllers
         [HttpPost("{sourceName}/Raw/Data")]
         public Task NotifyRealtime(string sourceName, [FromBody] RawDataRange dataRange)
         {
-            return _processor.ReceiveRaw(sourceName, dataRange);
+            return _processor.ReceiveRealtimeRaw(sourceName, dataRange);
         }
     }
 }

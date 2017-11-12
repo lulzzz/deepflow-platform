@@ -1,6 +1,17 @@
 # Deepflow Platform
 This repository contains the code for the Deepflow Backend and Agent. We will split them out after the prototype stage but for now they are together.
 
+## Environment
+We have the following environments running Deepflow:
+
+### Demo:
+URL: `http://deepflow-demo.s3-website-ap-southeast-2.amazonaws.com/0.3.0/`
+Backend Host: `54.252.191.213`
+
+### Test:
+URL: `http://deepflow-test.s3-website-ap-southeast-2.amazonaws.com/0.3.0/`
+Backend Host: `54.206.127.10`
+
 # Architecture
 The Deepflow Backend sits in the cloud and receives customer data via an Agent deployed on the customers premises, behind their firewall. The data is visualised with a browser-based interface.
 
@@ -41,9 +52,9 @@ There will be a REST API which will take a tag name and time range and will retu
 
 #### Path
 ```
-GET api/v1/Tags/{tag}/Raw/Data?minTime={minTime}&maxTime={maxTime}
+GET http://{host}/api/v1/Tags/{tag}/Raw/Data?minTime={minTime}&maxTime={maxTime}
 ```
-`Example: api/v1/Tags/TAGONE/Raw/Data?minTime=2017-10-25T09:23:16Z&maxTime=2017-10-25T10:23:16Z`
+`Example: http://{host}/api/v1/Tags/TAGONE/Raw/Data?minTime=2017-10-25T09:23:16Z&maxTime=2017-10-25T10:23:16Z`
 
 Note: The `minTime` and `maxTime` are in ISO 8601 UTC date format (with the T in the middle and the Z at the end to indicate UTC) - exactly as in the example.
 
@@ -70,9 +81,9 @@ There will be a REST API which will take a tag name, time range and aggregation 
 
 #### Path
 ```
-GET api/v1/Tags/{tag}/Aggregations/{aggregationSeconds}/Data?minTime={minTime}&maxTime={maxTime}
+GET http://{host}/api/v1/Tags/{tag}/Aggregations/{aggregationSeconds}/Data?minTime={minTime}&maxTime={maxTime}
 ```
-`Example: api/v1/Tags/TAGONE/Aggregations/300/Data?minTime=2017-10-25T09:23:16Z&maxTime=2017-10-25T10:23:16Z`
+`Example: http://{host}/api/v1/Tags/TAGONE/Aggregations/300/Data?minTime=2017-10-25T09:23:16Z&maxTime=2017-10-25T10:23:16Z`
 
 Note: The `minTime` and `maxTime` are in ISO 8601 UTC date format (with the T in the middle and the Z at the end to indicate UTC) - exactly as in the example.
 
@@ -100,9 +111,9 @@ The data source must also notify the Agent's REST API when new raw data is avail
 
 #### Path
 ```
-POST http://54.206.102.97:5002/api/v1/Tags/{tag}/Raw/Data
+POST http://{host}:5002/api/v1/Tags/{tag}/Raw/Data
 ```
-`Example: http://54.206.102.97:5002/api/v1/Tags/TAGONE/Raw/Data`
+`Example: http://{host}:5002/api/v1/Tags/TAGONE/Raw/Data`
 
 #### Request Body
 ```

@@ -12,9 +12,4 @@ namespace Deepflow.Ingestion.Service.Metrics
         Task Run(string name, IEnumerable<Task> tasks);
         Task<T> Run<T>(string name, Task<T> task);
     }
-
-    public interface IMetricsTimerReporter : IDisposable
-    {
-        
-    }
 }

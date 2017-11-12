@@ -15,6 +15,7 @@ namespace Deepflow.Platform.Agent.Core
         public int PushFailedPauseSeconds { get; set; }
         public int PushFailedRetryCount { get; set; }
         public int AggregationSeconds { get; set; }
+        public int MaximumSourceDelaySeconds { get; set; }
         public int MaxFetchSpanSeconds { get; set; }
         public int BetweenFetchPauseSeconds { get; set; }
         public int SendParallelism { get; set; }

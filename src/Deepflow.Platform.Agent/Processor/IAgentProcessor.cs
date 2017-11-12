@@ -10,6 +10,6 @@ namespace Deepflow.Platform.Agent.Processor
         void SetClient(IIngestionClient client);
         void Start();
         void SetSourceSeriesList(SourceSeriesList sourceSeriesList);
-        Task ReceiveRaw(string sourceName, RawDataRange rawDataRange);
+        Task ReceiveRealtimeRaw(string sourceName, RawDataRange rawDataRange);
     }
 }

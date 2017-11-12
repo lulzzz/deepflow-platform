@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Deepflow.Ingestion.Service.Configuration;
 using Deepflow.Platform.Abstractions.Series;
 using Deepflow.Platform.Core.Tools;
 using Newtonsoft.Json;
@@ -10,23 +11,24 @@ namespace Deepflow.Ingestion.Service.Realtime
 {
     public class PusherDataMessenger : IDataMessenger
     {
+        private readonly RealtimeConfiguration _configuration;
         private readonly Pusher _pusher;
 
-        public PusherDataMessenger()
+        public PusherDataMessenger(RealtimeConfiguration configuration)
         {
+            _configuration = configuration;
             var options = new PusherOptions { Cluster = "ap1", Encrypted = true };
-            _pusher = new Pusher("408288", "22ff7105446ab14b8512", "bf56749c3712246ac403", options);
+            _pusher = new Pusher(_configuration.AppId, _configuration.AppKey, _configuration.AppSecret, options);
         }
 
-        public async Task Notify(Guid entity, Guid attribute, Dictionary<int, AggregatedDataRange> dataRanges, RawDataRange rawDataRange)
+        public async Task NotifyRaw(Guid entity, Guid attribute, RawDataRange dataRange)
         {
-            await _pusher.TriggerAsync($"deepflow-demo", $"{entity}_{attribute}", JsonConvert.SerializeObject(new NotificationPackage { AggregatedDataRanges = dataRanges, RawDataRange = rawDataRange }, JsonSettings.Setttings));
+            await _pusher.TriggerAsync(_configuration.ChannelName, $"{entity}_{attribute}_raw", JsonConvert.SerializeObject(dataRange, JsonSettings.Setttings));
         }
 
-        private class NotificationPackage
+        public async Task NotifyAggregated(Guid entity, Guid attribute, Dictionary<int, AggregatedDataRange> dataRanges)
         {
-            public Dictionary<int, AggregatedDataRange> AggregatedDataRanges { get; set; }
-            public RawDataRange RawDataRange { get; set; }
+            await _pusher.TriggerAsync(_configuration.ChannelName, $"{entity}_{attribute}_aggregated", JsonConvert.SerializeObject(dataRanges, JsonSettings.Setttings));
         }
     }
 }

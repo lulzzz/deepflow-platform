@@ -51,19 +51,26 @@ namespace Deepflow.Ingestion.Service.Controllers
                 }))
             };
         }
-
-        [HttpPost("{dataSource}/Tags/{sourceName}/Aggregations/{aggregationSeconds}/Data/Historical")]
-        public async Task AddHistoricalData(Guid dataSource, string sourceName, int aggregationSeconds, [FromBody] AggregatedDataRange dataRange)
+        
+        [HttpPost("{dataSource}/Tags/{sourceName}/Data/Aggregations/{aggregationSeconds}/Historical")]
+        public async Task AddHistoricalAggregatedData(Guid dataSource, string sourceName, int aggregationSeconds, [FromBody] AggregatedDataRange dataRange)
         {
             var (entity, attribute) = await _model.ResolveEntityAndAttribute(dataSource, sourceName);
             await _processor.ReceiveHistoricalData(entity, attribute, dataRange);
         }
 
-        [HttpPost("{dataSource}/Tags/{sourceName}/Aggregations/{aggregationSeconds}/Data/Realtime")]
-        public async Task AddRealtimeData(Guid dataSource, string sourceName, int aggregationSeconds, [FromBody] AggregatedDataSubmissionRequest request)
+        [HttpPost("{dataSource}/Tags/{sourceName}/Data/Raw/Realtime")]
+        public async Task AddRealtimeRawData(Guid dataSource, string sourceName, int aggregationSeconds, [FromBody] RawDataRange dataRange)
         {
             var (entity, attribute) = await _model.ResolveEntityAndAttribute(dataSource, sourceName);
-            await _processor.ReceiveRealtimeData(entity, attribute, request.AggregatedDataRange, request.RawDataRange);
+            await _processor.ReceiveRealtimeRawData(entity, attribute, dataRange);
+        }
+
+        [HttpPost("{dataSource}/Tags/{sourceName}/Data/Aggregations/{aggregationSeconds}/Realtime")]
+        public async Task AddRealtimeAggregatedData(Guid dataSource, string sourceName, int aggregationSeconds, [FromBody] AggregatedDataRange dataRange)
+        {
+            var (entity, attribute) = await _model.ResolveEntityAndAttribute(dataSource, sourceName);
+            await _processor.ReceiveRealtimeAggregatedData(entity, attribute, dataRange);
         }
 
         private async Task<IEnumerable<TimeRange>> GetMissingTimeRangesForSourceName(Guid dataSource, string sourceName)

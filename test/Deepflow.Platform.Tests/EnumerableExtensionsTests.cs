@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Deepflow.Platform.Core.Tools;
 using FluentAssertions;
 using Xunit;
@@ -100,6 +101,126 @@ namespace Deepflow.Platform.Tests.Core
         private int JoinItem(int one, int two)
         {
             return one;
+        }
+        
+        [Fact]
+        public void MergeManyOneList()
+        {
+            IEnumerable<IEnumerable<int>> enumerables = new List<IEnumerable<int>> { new List<int> { 1, 2, 3 } };
+            var actual = enumerables.MergeMany();
+            var expected = new List<int> { 1, 2, 3 };
+            actual.ShouldBeEquivalentTo(expected);
+        }
+        
+        [Fact]
+        public void MergeManyTwoLists()
+        {
+            IEnumerable<IEnumerable<int>> enumerables = new List<IEnumerable<int>>
+            {
+                new List<int> { 1, 2, 3 },
+                new List<int> { 4, 5, 6 }
+            };
+            var actual = enumerables.MergeMany();
+            var expected = new List<int> { 1, 4, 2, 5, 3, 6 };
+            actual.ShouldBeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void MergeManyThreeLists()
+        {
+            IEnumerable<IEnumerable<int>> enumerables = new List<IEnumerable<int>>
+            {
+                new List<int> { 1, 2, 3 },
+                new List<int> { 4, 5, 6 },
+                new List<int> { 7, 8, 9 }
+            };
+            var actual = enumerables.MergeMany();
+            var expected = new List<int> { 1, 4, 7, 2, 5, 8, 3, 6, 9 };
+            actual.ShouldBeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void MergeManyThreeListsFirstShorter()
+        {
+            IEnumerable<IEnumerable<int>> enumerables = new List<IEnumerable<int>>
+            {
+                new List<int> { 1 },
+                new List<int> { 4, 5, 6 },
+                new List<int> { 7, 8, 9 }
+            };
+            var actual = enumerables.MergeMany();
+            var expected = new List<int> { 1, 4, 7, 5, 8, 6, 9 };
+            actual.ShouldBeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void MergeManyThreeListsSecondShorter()
+        {
+            IEnumerable<IEnumerable<int>> enumerables = new List<IEnumerable<int>>
+            {
+                new List<int> { 1, 2, 3 },
+                new List<int> { 4 },
+                new List<int> { 7, 8, 9 }
+            };
+            var actual = enumerables.MergeMany();
+            var expected = new List<int> { 1, 4, 7, 2, 8, 3, 9 };
+            actual.ShouldBeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void MergeManyThreeListsThirdShorter()
+        {
+            IEnumerable<IEnumerable<int>> enumerables = new List<IEnumerable<int>>
+            {
+                new List<int> { 1, 2, 3 },
+                new List<int> { 4, 5, 6 },
+                new List<int> { 7 }
+            };
+            var actual = enumerables.MergeMany();
+            var expected = new List<int> { 1, 4, 7, 2, 5, 3, 6 };
+            actual.ShouldBeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void MergeManyThreeListsFirstEmpty()
+        {
+            IEnumerable<IEnumerable<int>> enumerables = new List<IEnumerable<int>>
+            {
+                new List<int> { },
+                new List<int> { 4, 5, 6 },
+                new List<int> { 7, 8, 9 }
+            };
+            var actual = enumerables.MergeMany();
+            var expected = new List<int> { 4, 7, 5, 8, 6, 9 };
+            actual.ShouldBeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void MergeManyThreeListsSecondEmpty()
+        {
+            IEnumerable<IEnumerable<int>> enumerables = new List<IEnumerable<int>>
+            {
+                new List<int> { 1, 2, 3 },
+                new List<int> { },
+                new List<int> { 7, 8, 9 }
+            };
+            var actual = enumerables.MergeMany();
+            var expected = new List<int> { 1, 7, 2, 8, 3, 9 };
+            actual.ShouldBeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void MergeManyThreeListsThirdEmpty()
+        {
+            IEnumerable<IEnumerable<int>> enumerables = new List<IEnumerable<int>>
+            {
+                new List<int> { 1, 2, 3 },
+                new List<int> { 4, 5, 6 },
+                new List<int> { }
+            };
+            var actual = enumerables.MergeMany();
+            var expected = new List<int> { 1, 4, 2, 5, 3, 6 };
+            actual.ShouldBeEquivalentTo(expected);
         }
     }
 }

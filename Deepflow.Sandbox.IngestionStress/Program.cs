@@ -102,7 +102,12 @@ namespace Deepflow.Sandbox.IngestionStress
 
     class Messenger : IDataMessenger
     {
-        public Task Notify(Guid entity, Guid attribute, Dictionary<int, AggregatedDataRange> aggregatedDataRanges, RawDataRange rawDataRange)
+        public Task NotifyRaw(Guid entity, Guid attribute, RawDataRange dataRange)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task NotifyAggregated(Guid entity, Guid attribute, Dictionary<int, AggregatedDataRange> dataRanges)
         {
             return Task.CompletedTask;
         }

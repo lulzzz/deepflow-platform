@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Deepflow.Common.Model.Model;
-using Deepflow.Ingestion.Service.Metrics;
 using Deepflow.Ingestion.Service.Processing;
 using Deepflow.Ingestion.Service.Realtime;
 using Deepflow.Platform.Abstractions.Series;
