@@ -14,7 +14,7 @@ namespace Deepflow.Platform.Sandbox.MakeAggregationFastAgain
         {
             Console.WriteLine("Hello World!");
 
-            /*var data = new List<double>();
+            var data = new List<double>();
             var minTime = new DateTime(2016, 1, 1).SecondsSince1970Utc();
             var maxTime = new DateTime(2016, 6, 1).SecondsSince1970Utc();
             var random = new Random();
@@ -29,10 +29,10 @@ namespace Deepflow.Platform.Sandbox.MakeAggregationFastAgain
             DataAggregator aggregator = new DataAggregator(new Logger<DataAggregator>());
 
             Stopwatch stopwatch = Stopwatch.StartNew();
-            var result = aggregator.Aggregate(dataRange, (int) TimeSpan.FromHours(1).TotalSeconds);
+            var result = aggregator.Aggregate(dataRange, dataRange.TimeRange, 300);
 
             Console.WriteLine($"Took {stopwatch.ElapsedMilliseconds} ms");
-            Console.ReadKey();*/
+            Console.ReadKey();
         }
     }
 

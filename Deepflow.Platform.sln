@@ -67,6 +67,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deepflow.Sandbox.FakeSource
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Deepflow.Core", "src\Deepflow.Core\Deepflow.Core.csproj", "{33D97E3C-60EE-464A-A298-9C21FF912C45}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deepflow.Platform.Sources.PISim", "src\Deepflow.Platform.Sources.PISim\Deepflow.Platform.Sources.PISim.csproj", "{79327FAF-D04E-4D0B-A02D-302D02E839A4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -165,6 +167,10 @@ Global
 		{33D97E3C-60EE-464A-A298-9C21FF912C45}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{33D97E3C-60EE-464A-A298-9C21FF912C45}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{33D97E3C-60EE-464A-A298-9C21FF912C45}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79327FAF-D04E-4D0B-A02D-302D02E839A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79327FAF-D04E-4D0B-A02D-302D02E839A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79327FAF-D04E-4D0B-A02D-302D02E839A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79327FAF-D04E-4D0B-A02D-302D02E839A4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -200,6 +206,7 @@ Global
 		{C6EF677A-0573-4C5A-B947-8AD86BBE1B58} = {D7AE0E08-B00E-4945-AB37-29DC8FE2B1FF}
 		{E7F8B946-0FE2-4995-95E0-FA1824AB8303} = {D7AE0E08-B00E-4945-AB37-29DC8FE2B1FF}
 		{33D97E3C-60EE-464A-A298-9C21FF912C45} = {0866F0FB-FDD1-426B-85CD-5CED103111F0}
+		{79327FAF-D04E-4D0B-A02D-302D02E839A4} = {26ADDCA7-4DD6-4AE5-9025-2926B173F0C1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {66BBDC02-1F4F-4678-A6D5-FEAAA0D60797}

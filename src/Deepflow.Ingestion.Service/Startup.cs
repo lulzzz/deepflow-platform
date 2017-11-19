@@ -112,8 +112,10 @@ namespace Deepflow.Ingestion.Service
             services.AddSingleton<ICachedDataProvider, RedisCachedDataProvider>();
             services.AddSingleton<IDataAggregator, DataAggregator>();
             services.AddSingleton<IModelProvider, ModelProvider>();
-            services.AddSingleton<IDataMessenger, PusherDataMessenger>();
-
+            services.AddSingleton<RealtimeIngestionReceiver>();
+            services.AddSingleton<IDataMessenger>(options => options.GetService<RealtimeIngestionReceiver>());
+            services.AddSingleton<IRealtimeSubscriptions>(options => options.GetService<RealtimeIngestionReceiver>());
+            
             services.AddSingleton<IRangeCreator<AggregatedDataRange>, AggregatedRangeCreator>();
             services.AddSingleton<IRangeAccessor<AggregatedDataRange>, AggregatedRangeAccessor>();
             services.AddSingleton<IRangeFilteringPolicy<AggregatedDataRange>, AggregateRangeFilteringPolicy>();
@@ -130,7 +132,7 @@ namespace Deepflow.Ingestion.Service
 
             services.AddSingleton<IWebsocketsManager, WebsocketsManager>();
             services.AddSingleton<IWebsocketsSender, WebsocketsManager>();
-            services.AddSingleton<IWebsocketsReceiver, RealtimeIngestionReceiver>();
+            services.AddSingleton<IWebsocketsReceiver>(options => options.GetService<RealtimeIngestionReceiver>());
 
             services.AddSingleton<TripCounterFactory>();
             services.AddSingleton<IMetricsReporter, MetricsReporter>();

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Deepflow.Common.Model.Model;
@@ -6,6 +8,8 @@ using Deepflow.Ingestion.Service.Processing;
 using Deepflow.Platform.Abstractions.Realtime;
 using Deepflow.Platform.Abstractions.Realtime.Messages;
 using Deepflow.Platform.Abstractions.Realtime.Messages.Data;
+using Deepflow.Platform.Abstractions.Realtime.Messages.Subscriptions;
+using Deepflow.Platform.Abstractions.Series;
 using Deepflow.Platform.Common.Data.Persistence;
 using Deepflow.Platform.Core.Tools;
 using Microsoft.Extensions.Logging;
@@ -13,20 +17,18 @@ using Newtonsoft.Json;
 
 namespace Deepflow.Ingestion.Service.Realtime
 {
-    public class RealtimeIngestionReceiver : IWebsocketsReceiver
+    public class RealtimeIngestionReceiver : IWebsocketsReceiver, IDataMessenger, IRealtimeSubscriptions
     {
-        private readonly IIngestionProcessor _processor;
-        private readonly IModelProvider _model;
+
         private readonly IPersistentDataProvider _persistence;
         private readonly ILogger<RealtimeIngestionReceiver> _logger;
         private readonly TripCounterFactory _trip;
         private IWebsocketsSender _sender;
         private readonly AsyncCollection<(string socket, string message)> _queue = new AsyncCollection<(string socket, string message)>(null, 1000);
+        private readonly ConcurrentDictionary<string, Dictionary<Guid, HashSet<Guid>>> _subscriptions = new ConcurrentDictionary<string, Dictionary<Guid, HashSet<Guid>>>();
 
-        public RealtimeIngestionReceiver(IIngestionProcessor processor, IModelProvider model, IPersistentDataProvider persistence, ILogger<RealtimeIngestionReceiver> logger, TripCounterFactory trip)
+        public RealtimeIngestionReceiver(IPersistentDataProvider persistence, ILogger<RealtimeIngestionReceiver> logger, TripCounterFactory trip)
         {
-            _processor = processor;
-            _model = model;
             _persistence = persistence;
             _logger = logger;
             _trip = trip;
@@ -41,6 +43,7 @@ namespace Deepflow.Ingestion.Service.Realtime
 
         public Task OnDisconnected(string socketId)
         {
+            _subscriptions.TryRemove(socketId, out Dictionary<Guid, HashSet<Guid>> _);
             return Task.FromResult(0);
         }
 
@@ -66,7 +69,7 @@ namespace Deepflow.Ingestion.Service.Realtime
                         if (message.MessageClass == IncomingMessageClass.Request)
                         {
                             var request = JsonConvert.DeserializeObject<RequestMessage>(item.message, JsonSettings.Setttings);
-                            var response = await ReceiveRequest(request, item.message);
+                            var response = await ReceiveRequest(request, item.message, item.socket);
                             var responseText = JsonConvert.SerializeObject(response, JsonSettings.Setttings);
                             await _sender.Send(item.socket, responseText).ConfigureAwait(false);
                         }
@@ -80,7 +83,7 @@ namespace Deepflow.Ingestion.Service.Realtime
             }
         }
 
-        private async Task<ResponseMessage> ReceiveRequest(RequestMessage request, string messageString)
+        private async Task<ResponseMessage> ReceiveRequest(RequestMessage request, string messageString, string socketId)
         {
             /*if (request.RequestType == RequestType.AddAggregatedAttributeData)
             {
@@ -92,6 +95,11 @@ namespace Deepflow.Ingestion.Service.Realtime
                 var addHistoricalRequest = JsonConvert.DeserializeObject<AddAggregatedAttributeHistoricalDataRequest>(messageString, JsonSettings.Setttings);
                 return await ReceiveAddAttributeHistoricalSubscriptionsRequest(addHistoricalRequest);
             }*/
+            if (request.RequestType == RequestType.UpdateAttributeSubscriptions)
+            {
+                var updateRequest = JsonConvert.DeserializeObject<UpdateAttributeSubscriptionsRequest>(messageString, JsonSettings.Setttings);
+                return await ReceiveUpdateAttributeSubscriptionsRequest(updateRequest, socketId).ConfigureAwait(false);
+            }
             if (request.RequestType == RequestType.FetchAggregatedAttributeData)
             {
                 var fetchRequest = JsonConvert.DeserializeObject<FetchAggregatedAttributeDataRequest>(messageString, JsonSettings.Setttings);
@@ -126,6 +134,19 @@ namespace Deepflow.Ingestion.Service.Realtime
                 Succeeded = true
             };
         }*/
+        
+        private Task<UpdateAttributeSubscriptionsResponse> ReceiveUpdateAttributeSubscriptionsRequest(UpdateAttributeSubscriptionsRequest request, string socketId)
+        {
+            var nextSubscriptions = request.EntitySubscriptions.ToDictionary(x => x.EntityGuid, x => x.AttributeGuids);
+            _subscriptions.AddOrUpdate(socketId, nextSubscriptions, (id, old) => nextSubscriptions);
+            return Task.FromResult(new UpdateAttributeSubscriptionsResponse
+            {
+                ActionId = request.ActionId,
+                MessageClass = OutgoingMessageClass.Response,
+                ResponseType = ResponseType.UpdateAttributeSubscriptions,
+                Succeeded = true
+            });
+        }
 
         private async Task<FetchAggregatedAttributeDataResponse> ReceiveFetchAggregatedAttributeDataRequest(FetchAggregatedAttributeDataRequest request)
         {
@@ -143,6 +164,81 @@ namespace Deepflow.Ingestion.Service.Realtime
         public void SetSender(IWebsocketsSender sender)
         {
             _sender = sender;
+        }
+
+        public Task NotifyRaw(Guid entity, Guid attribute, RawDataRange dataRange)
+        {
+            string message = null;
+
+            foreach (var subscription in _subscriptions)
+            {
+                if (!subscription.Value.TryGetValue(entity, out HashSet<Guid> attributes))
+                {
+                    continue;
+                }
+
+                if (!attributes.Contains(attribute))
+                {
+                    continue;
+                }
+
+                if (message == null)
+                {
+                    var notification = new ReceiveAttributeRawDataNotification
+                    {
+                        MessageClass = OutgoingMessageClass.Notification,
+                        NotificationType = NotificationType.AttributeRawData,
+                        EntityGuid = entity,
+                        AttributeGuid = attribute,
+                        DataRange = dataRange
+                    };
+                    message = JsonConvert.SerializeObject(notification, JsonSettings.Setttings);
+                }
+                
+                _sender.Send(subscription.Key, message);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public Task NotifyAggregated(Guid entity, Guid attribute, Dictionary<int, AggregatedDataRange> dataRanges)
+        {
+            string message = null;
+
+            foreach (var subscription in _subscriptions)
+            {
+                if (!subscription.Value.TryGetValue(entity, out HashSet<Guid> attributes))
+                {
+                    continue;
+                }
+
+                if (!attributes.Contains(attribute))
+                {
+                    continue;
+                }
+
+                if (message == null)
+                {
+                    var notification = new ReceiveAttributeAggregatedDataNotification
+                    {
+                        MessageClass = OutgoingMessageClass.Notification,
+                        NotificationType = NotificationType.AttributeAggregatedData,
+                        EntityGuid = entity,
+                        AttributeGuid = attribute,
+                        AggregatedRanges = dataRanges
+                    };
+                    message = JsonConvert.SerializeObject(notification, JsonSettings.Setttings);
+                }
+
+                _sender.Send(subscription.Key, message);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public ConcurrentDictionary<string, Dictionary<Guid, HashSet<Guid>>> GetSubscriptions()
+        {
+            return _subscriptions;
         }
     }
 }

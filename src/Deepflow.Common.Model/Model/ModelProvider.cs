@@ -17,7 +17,7 @@ namespace Deepflow.Common.Model.Model
         {
             _dataSourceToModel = new Dictionary<Guid, Dictionary<string, (Guid entity, Guid attribute)>>
             {
-                {_dataSource, model.Entities.SelectMany(entity => model.Attributes.Select(attribute => new ValueTuple<Guid, Guid>(entity, attribute))).ToDictionary(x => x.Item1 + ":" + x.Item2, x => x)}
+                {_dataSource, model.Entities.SelectMany(entity => model.Attributes.Select(attribute => new ValueTuple<Guid, Guid>(entity, attribute))).ToDictionary(x => (x.Item1 + ":" + x.Item2).ToLower(), x => x)}
             };
                 
             _modelToSeries = _dataSourceToModel.SelectMany(x => x.Value.Values.SelectMany(entityAttribute => configuration.AggregationsSeconds.Select(aggregation => new ValueTuple<Guid, Guid, int>(entityAttribute.entity, entityAttribute.attribute, aggregation)))).ToDictionary(x => x, x => GenerateSeriesGuid(x.Item1, x.Item2, x.Item3));
@@ -31,7 +31,7 @@ namespace Deepflow.Common.Model.Model
                 throw new Exception($"Can't find data source {dataSource}");
             }
 
-            if (!names.TryGetValue(sourceName, out (Guid entity, Guid attribute) entityAttribute))
+            if (!names.TryGetValue(sourceName.ToLower(), out (Guid entity, Guid attribute) entityAttribute))
             {
                 throw new Exception($"Can't find source name {sourceName}");
             }
@@ -66,7 +66,7 @@ namespace Deepflow.Common.Model.Model
                 throw new Exception($"Can't find data source {dataSource}");
             }
 
-            return Task.FromResult(names.Select(x => x.Key));
+            return Task.FromResult(names.Select(x => x.Key.ToLower()));
         }
 
         public Guid GenerateSeriesGuid(Guid entity, Guid attribute, int aggregationSeconds)
