@@ -5,13 +5,13 @@ This repository contains the code for the Deepflow Backend and Agent. We will sp
 We have the following environments running Deepflow:
 
 ### Demo:
-URL: `http://deepflow-demo.s3-website-ap-southeast-2.amazonaws.com/0.3.0/`
-Backend Host: `54.252.191.213`
+URL: `http://deepflow-demo.s3-website-ap-southeast-2.amazonaws.com/`
+Backend Host: `52.65.149.115`
 
 ### Test:
-URL: `http://deepflow-test.s3-website-ap-southeast-2.amazonaws.com/0.3.0/`
+URL: `http://deepflow-test.s3-website-ap-southeast-2.amazonaws.com/`
 Backend Host: `54.206.127.10`
-
+ppsett
 # Architecture
 The Deepflow Backend sits in the cloud and receives customer data via an Agent deployed on the customers premises, behind their firewall. The data is visualised with a browser-based interface.
 
