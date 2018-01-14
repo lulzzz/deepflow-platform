@@ -44,6 +44,11 @@ namespace Deepflow.Platform.Abstractions.Series.Validators
 
         private bool BeInsideTimeRange(RawDataRange dataRange, List<double> data)
         {
+            if (dataRange.TimeRange == null)
+            {
+                return true;
+            }
+
             var minTime = dataRange.TimeRange.Min;
             var maxTime = dataRange.TimeRange.Max;
 

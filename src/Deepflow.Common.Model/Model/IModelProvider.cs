@@ -10,5 +10,6 @@ namespace Deepflow.Common.Model.Model
         Task<Guid> ResolveSeries(Guid entity, Guid attribute, int aggregationSeconds);
         Task<int> ResolveAggregationForSeries(Guid series);
         Task<IEnumerable<string>> ResolveSourceNamesForDataSource(Guid dataSource);
+        ModelConfiguration GetModelConfiguration();
     }
 }

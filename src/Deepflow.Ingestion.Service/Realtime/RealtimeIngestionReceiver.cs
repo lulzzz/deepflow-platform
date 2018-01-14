@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Deepflow.Common.Model.Model;
@@ -68,10 +69,16 @@ namespace Deepflow.Ingestion.Service.Realtime
                         var message = JsonConvert.DeserializeObject<IncomingMessage>(item.message, JsonSettings.Setttings);
                         if (message.MessageClass == IncomingMessageClass.Request)
                         {
+                            var totalStopwatch = Stopwatch.StartNew();
                             var request = JsonConvert.DeserializeObject<RequestMessage>(item.message, JsonSettings.Setttings);
+                            var processStopwatch = Stopwatch.StartNew();
                             var response = await ReceiveRequest(request, item.message, item.socket);
+                            var processMs = $"\"processMs\": {processStopwatch.ElapsedMilliseconds}";
                             var responseText = JsonConvert.SerializeObject(response, JsonSettings.Setttings);
-                            await _sender.Send(item.socket, responseText).ConfigureAwait(false);
+                            var totalServerMs = $"\"totalServerMs\": {totalStopwatch.ElapsedMilliseconds}";
+                            var timingJson = $" {processMs}, {totalServerMs}, ";
+                            var fullResponseText = responseText.Insert(1, timingJson);
+                            await _sender.Send(item.socket, fullResponseText).ConfigureAwait(false);
                         }
                     });
                 }
