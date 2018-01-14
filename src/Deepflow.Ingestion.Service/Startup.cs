@@ -75,8 +75,8 @@ namespace Deepflow.Ingestion.Service
             Configuration.GetSection("Series").Bind(seriesConfiguration);
             services.AddSingleton(seriesConfiguration);
 
-            var modelConfiguration = new ModelConfiguration();
-            Configuration.GetSection("Model").Bind(modelConfiguration);
+            var modelConfigurationLoader = new ModelConfigurationLoader();
+            var modelConfiguration = modelConfigurationLoader.Load("model.csv");
             services.AddSingleton(modelConfiguration);
 
             var ingestionConfiguration = new IngestionConfiguration();
@@ -136,6 +136,8 @@ namespace Deepflow.Ingestion.Service
 
             services.AddSingleton<TripCounterFactory>();
             services.AddSingleton<IMetricsReporter, MetricsReporter>();
+
+            services.AddCors();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime lifetime)
@@ -145,7 +147,13 @@ namespace Deepflow.Ingestion.Service
 
             /*app.UseMetrics();
             app.UseMetricsReporting(lifetime);*/
+
+
+            app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod().AllowCredentials());
+
             app.UseMvc();
+            
+            app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod().AllowCredentials());
 
             app.UseWebSocketsHandler("/ws/v1");
         }

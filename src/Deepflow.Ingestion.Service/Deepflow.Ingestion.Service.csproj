@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\" />
+    <Content Include="model.csv" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

@@ -12,7 +12,7 @@ namespace Deepflow.Platform.Sandbox.MakeAggregationFastAgain
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            /*Console.WriteLine("Hello World!");
 
             var data = new List<double>();
             var minTime = new DateTime(2016, 1, 1).SecondsSince1970Utc();
@@ -32,7 +32,7 @@ namespace Deepflow.Platform.Sandbox.MakeAggregationFastAgain
             var result = aggregator.Aggregate(dataRange, dataRange.TimeRange, 300);
 
             Console.WriteLine($"Took {stopwatch.ElapsedMilliseconds} ms");
-            Console.ReadKey();
+            Console.ReadKey();*/
         }
     }
 

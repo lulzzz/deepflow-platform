@@ -60,6 +60,10 @@ namespace Deepflow.Platform.Agent.Client
 
         private async Task ListenConnected()
         {
+            if (_configuration.Disabled)
+            {
+                return;
+            }
             _sourceSeriesList = await FetchSourceSeriesList();
             _processor.SetSourceSeriesList(_sourceSeriesList);
         }
@@ -95,11 +99,6 @@ namespace Deepflow.Platform.Agent.Client
 
         public async Task SendRealtimeAggregatedData(string name, AggregatedDataRange dataRange)
         {
-            if (_configuration.Disabled)
-            {
-                return;
-            }
-
             await _tripCounterFactory.Run("IngestionClient.SendRealtimeAggregatedData", async () =>
             {
                 _logger.LogDebug("About to send realtime data to ingestion API");
@@ -112,11 +111,6 @@ namespace Deepflow.Platform.Agent.Client
 
         public async Task SendRealtimeRawData(string name, RawDataRange dataRange)
         {
-            if (_configuration.Disabled)
-            {
-                return;
-            }
-
             await _tripCounterFactory.Run("IngestionClient.SendRealtimeRawData", async () =>
             {
                 _logger.LogDebug("About to send realtime raw data to ingestion API");
@@ -129,11 +123,6 @@ namespace Deepflow.Platform.Agent.Client
 
         public async Task SendHistoricalData(string name, AggregatedDataRange aggregatedDataRange)
         {
-            if (_configuration.Disabled)
-            {
-                return;
-            }
-
             await _tripCounterFactory.Run("IngestionClient.SendHistoricalData", async () =>
             {
                 _logger.LogDebug("About to send historical data to ingestion API");

@@ -36,7 +36,11 @@ namespace Deepflow.Data.Service
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
-            services.AddMvc();
+            services.AddMvc().AddJsonOptions(options =>
+            {
+                options.SerializerSettings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
+                options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+            });
 
             var dynamoDbConfiguration = new DynamoDbConfiguration();
             Configuration.GetSection("DynamoDb").Bind(dynamoDbConfiguration);
