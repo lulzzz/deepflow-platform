@@ -14,7 +14,6 @@ using Deepflow.Platform.Series;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Orleans.Concurrency;
 using Xunit;
 using SeriesConfiguration = Deepflow.Common.Model.SeriesConfiguration;
 

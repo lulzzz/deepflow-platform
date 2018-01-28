@@ -22,6 +22,7 @@ namespace Deepflow.Platform.Agent.Processor
         private readonly ConcurrentDictionary<string, CancellationTokenSource> _subscriptions = new ConcurrentDictionary<string, CancellationTokenSource>();
         private ConcurrentDictionary<string, AggregationWorker> _workers = new ConcurrentDictionary<string, AggregationWorker>();
         private readonly object _subscriptionsLock = new object();
+        private int _backfillFetches = 0;
 
         private QueueWrapper _fetchQueue = new QueueWrapper();
 
@@ -36,7 +37,7 @@ namespace Deepflow.Platform.Agent.Processor
                 while (true)
                 {
                     await Task.Delay(3000);
-                    _logger.LogWarning($"{_fetchQueue.Queue.Count} remaining in queue");
+                    _logger.LogInformation($"{_fetchQueue.Queue.Count} remaining in queue, {_backfillFetches} backfill fetches waiting for response");
                 }
             });
         }
@@ -109,7 +110,7 @@ namespace Deepflow.Platform.Agent.Processor
 
         private void SwapToNextQueue(QueueWrapper newQueue)
         {
-            _logger.LogInformation($"Switching to new queue with {newQueue.Queue.Count} items");
+            _logger.LogDebug($"Switching to new queue with {newQueue.Queue.Count} items");
 
             var oldQueue = _fetchQueue;
             _fetchQueue = newQueue;
@@ -124,22 +125,31 @@ namespace Deepflow.Platform.Agent.Processor
                 {
                     var queue = _fetchQueue;
                     IngestionFetch fetch = queue.Queue.Take(queue.CancellationToken);
+                    Interlocked.Increment(ref _backfillFetches);
                     try
                     {
+                        _logger.LogInformation($"Fetching {fetch.SourceName} between {fetch.TimeRange.Min} and {fetch.TimeRange.Max}");
                         var data = await _provider.FetchAggregatedData(fetch.SourceName, fetch.TimeRange, _configuration.AggregationSeconds);
+                        _logger.LogInformation($"Fetched {data?.Data?.Count / 2} points for {fetch.SourceName} between {fetch.TimeRange.Min} and {fetch.TimeRange.Max}");
                         await _client.SendHistoricalData(fetch.SourceName, data);
+                        _logger.LogInformation($"Sent");
                         await Task.Delay(_configuration.BetweenFetchPauseSeconds);
                     }
                     catch (Exception exception)
                     {
-                        _logger.LogDebug(new EventId(1003), exception, $"Error fetching data from source {_configuration.DataSourceFriendlyName}, placing back in the queue and trying next one after {_configuration.FetchFailedPauseSeconds} seconds...");
+                        _logger.LogError($"Error fetching data from source {_configuration.DataSourceFriendlyName}, placing back in the queue and trying next one after {_configuration.FetchFailedPauseSeconds} seconds: " + exception.Message);
                         queue.Queue.Add(fetch);
                         await Task.Delay(_configuration.FetchFailedPauseSeconds * 1000);
+                    }
+                    finally
+                    {
+                        Interlocked.Decrement(ref _backfillFetches);
                     }
                 }
                 catch (OperationCanceledException)
                 {
                     // Queue was swapped. This happens all the time, like when we get a new source series list
+                    _logger.LogDebug($"Queue was swapped");
                 }
             }
         }

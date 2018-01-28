@@ -20,15 +20,37 @@ namespace Deepflow.Platform.Agent.Provider
 
         public async Task<AggregatedDataRange> FetchAggregatedData(string sourceName, TimeRange timeRange, int aggregationSeconds)
         {
-            var uri = new Uri(_configuration.BaseUrl, $"api/v1/Tags/{sourceName}/Aggregations/{aggregationSeconds}/Data?minTime={timeRange.Min.FromSecondsSince1970Utc()}&maxTime={timeRange.Min.FromSecondsSince1970Utc()}");
+            if (string.IsNullOrEmpty(sourceName))
+            {
+                throw new ArgumentNullException(nameof(sourceName));
+            }
+            if (timeRange == null)
+            {
+                throw new ArgumentNullException(nameof(timeRange));
+            }
+            if (aggregationSeconds == 0)
+            {
+                throw new InvalidOperationException("aggregationSeconds is 0");
+            }
+
+            var uri = new Uri(_configuration.BaseUrl, $"api/v1/Tags/{sourceName}/Aggregations/{aggregationSeconds}/Data?minTime={timeRange.Min.ToDateTime()}&maxTime={timeRange.Min.ToDateTime()}");
             var response = await _client.GetAsync(uri);
+            response.EnsureSuccessStatusCode();
+            if (response.Content == null)
+            {
+                throw new Exception("Response content from PI Sim Cassandra was null");
+            }
             var responseText = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrEmpty(responseText))
+            {
+                throw new Exception("Response content from PI Sim Cassandra was empty");
+            }
             return JsonConvert.DeserializeObject<AggregatedDataRange>(responseText);
         }
 
         public async Task<RawDataRange> FetchRawData(string sourceName, TimeRange timeRange)
         {
-            var uri = new Uri(_configuration.BaseUrl, $"api/v1/Tags/{sourceName}/Raw/Data?minTime={timeRange.Min.FromSecondsSince1970Utc()}&maxTime={timeRange.Min.FromSecondsSince1970Utc()}");
+            var uri = new Uri(_configuration.BaseUrl, $"api/v1/Tags/{sourceName}/Raw/Data?minTime={timeRange.Min.ToDateTime()}&maxTime={timeRange.Min.ToDateTime()}");
             var response = await _client.GetAsync(uri);
             var responseText = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<RawDataRange>(responseText);

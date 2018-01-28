@@ -60,6 +60,11 @@ namespace Deepflow.Platform.Abstractions.Series
             return one.Min > two.Min;
         }*/
 
+        public void Validate()
+        {
+            _validator.ValidateAndThrow(this);
+        }
+
         public TimeRange Insersect(TimeRange other)
         {
             if (Min > other.Max)

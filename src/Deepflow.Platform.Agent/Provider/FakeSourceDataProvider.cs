@@ -24,14 +24,14 @@ namespace Deepflow.Platform.Agent.Provider
 
         public async Task<AggregatedDataRange> FetchAggregatedData(string sourceName, TimeRange timeRange, int aggregationSeconds)
         {
-            var uri = new Uri(_configuration.ApiBaseUrl, $"api/v1/Data/{sourceName}/aggregations/{aggregationSeconds}?minTimeUtc={timeRange.Min.FromSecondsSince1970Utc():s}&maxTimeUtc={timeRange.Max.FromSecondsSince1970Utc():s}");
+            var uri = new Uri(_configuration.ApiBaseUrl, $"api/v1/Data/{sourceName}/aggregations/{aggregationSeconds}?minTimeUtc={timeRange.Min.ToDateTime():s}&maxTimeUtc={timeRange.Max.ToDateTime():s}");
             var responseMessage = await _client.GetStringAsync(uri);
             return JsonConvert.DeserializeObject<AggregatedDataRange>(responseMessage);
         }
 
         public async Task<RawDataRange> FetchRawData(string sourceName, TimeRange timeRange)
         {
-            var uri = new Uri(_configuration.ApiBaseUrl, $"api/v1/Data/{sourceName}/Raw?minTimeUtc={timeRange.Min.FromSecondsSince1970Utc():s}&maxTimeUtc={timeRange.Max.FromSecondsSince1970Utc():s}");
+            var uri = new Uri(_configuration.ApiBaseUrl, $"api/v1/Data/{sourceName}/Raw?minTimeUtc={timeRange.Min.ToDateTime():s}&maxTimeUtc={timeRange.Max.ToDateTime():s}");
             var responseMessage = await _client.GetStringAsync(uri);
             return JsonConvert.DeserializeObject<RawDataRange>(responseMessage);
         }

@@ -25,10 +25,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Deepflow.Platform.Common.Data\Deepflow.Platform.Common.Data.csproj" />
     <ProjectReference Include="..\Deepflow.Core\Deepflow.Core.csproj" />
     <ProjectReference Include="..\Deepflow.Platform.Abstractions\Deepflow.Platform.Abstractions.csproj" />
     <ProjectReference Include="..\Deepflow.Platform.Core\Deepflow.Platform.Core.csproj" />
     <ProjectReference Include="..\Deepflow.Platform.Realtime\Deepflow.Platform.Realtime.csproj" />
+    <ProjectReference Include="..\Deepflow.Platform.Sources.PISim\Deepflow.Platform.Sources.PISim.csproj" />
   </ItemGroup>
 
 </Project>

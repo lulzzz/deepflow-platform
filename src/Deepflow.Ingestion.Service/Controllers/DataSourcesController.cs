@@ -78,7 +78,7 @@ namespace Deepflow.Ingestion.Service.Controllers
             var entityAttribute = await _modelProvider.ResolveEntityAndAttribute(dataSource, sourceName);
 
             var existingTimeRanges = await _persistence.GetAllTimeRanges(entityAttribute.Item1, entityAttribute.Item2);
-            var desiredTimeRange = new TimeRange(_configuration.MinHistoryUtcSeconds.FromSecondsSince1970Utc(), DateTime.UtcNow);
+            var desiredTimeRange = new TimeRange(_configuration.MinHistoryUtcSeconds.ToDateTime(), DateTime.UtcNow);
             return _filterer.SubtractTimeRangesFromRange(desiredTimeRange, existingTimeRanges);
         }
 

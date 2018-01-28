@@ -8,7 +8,6 @@ using Deepflow.Platform.Abstractions.Series;
 using Deepflow.Platform.Core.Tools;
 using Deepflow.Platform.Series;
 using Microsoft.Extensions.Logging;
-using Orleans;
 
 namespace Deepflow.Platform.Ingestion
 {
@@ -32,11 +31,11 @@ namespace Deepflow.Platform.Ingestion
             {
                 await _tripCounterFactory.Run("IngestionProcessor.AddData", async () =>
                 {
-                    ISourceSeriesGrain series = GrainClient.GrainFactory.GetGrain<ISourceSeriesGrain>(SeriesIdHelper.ToSourceSeriesId(dataSource, sourceName));
+                    /*ISourceSeriesGrain series = GrainClient.GrainFactory.GetGrain<ISourceSeriesGrain>(SeriesIdHelper.ToSourceSeriesId(dataSource, sourceName));
                     _logger.LogDebug("Saving slice");
                     Stopwatch stopwatch = Stopwatch.StartNew();
                     await series.AddData(aggregatedRange);
-                    _logger.LogDebug($"Saved slice number {Interlocked.Increment(ref _count)} in {stopwatch.ElapsedMilliseconds} ms");
+                    _logger.LogDebug($"Saved slice number {Interlocked.Increment(ref _count)} in {stopwatch.ElapsedMilliseconds} ms");*/
                 });
             }
             catch (Exception exception)

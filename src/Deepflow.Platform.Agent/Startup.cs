@@ -1,12 +1,16 @@
 ﻿using Deepflow.Platform.Abstractions.Realtime;
+using Deepflow.Platform.Abstractions.Series;
 using Deepflow.Platform.Agent.Client;
 using Deepflow.Platform.Agent.Core;
 using Deepflow.Platform.Agent.Errors;
 using Deepflow.Platform.Agent.Processor;
 using Deepflow.Platform.Agent.Provider;
 using Deepflow.Platform.Agent.Realtime;
+using Deepflow.Platform.Common.Data.Configuration;
 using Deepflow.Platform.Core.Tools;
 using Deepflow.Platform.Realtime;
+using Deepflow.Platform.Series;
+using Deepflow.Platform.Sources.PISim.Provider;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -42,6 +46,7 @@ namespace Deepflow.Platform.Agent
             services.AddSingleton<IWebsocketsManager, WebsocketsManager>();
             services.AddSingleton<IWebsocketsSender, WebsocketsManager>();
             services.AddSingleton<IWebsocketsReceiver, RealtimeMessageHandler>();
+            services.AddSingleton<IDataAggregator, DataAggregator>();
 
             var ingestionConfiguration = new Core.AgentIngestionConfiguration();
             Configuration.GetSection("Ingestion").Bind(ingestionConfiguration);
@@ -57,11 +62,11 @@ namespace Deepflow.Platform.Agent
             }
             else if (ingestionConfiguration.SourcePlugin == SourcePlugin.PISim)
             {
-                services.AddSingleton<ISourceDataProvider, PiSimDataProvider>();
+                services.AddSingleton<ISourceDataProvider, CassandraPiSimDataProvider>();
 
-                var piSimConfiguration = new PiSimConfiguration();
-                Configuration.GetSection("PiSim").Bind(piSimConfiguration);
-                services.AddSingleton(piSimConfiguration);
+                var cassandraConfiguration = new CassandraConfiguration();
+                Configuration.GetSection("Cassandra").Bind(cassandraConfiguration);
+                services.AddSingleton(cassandraConfiguration);
             }
 
             services.AddCors();

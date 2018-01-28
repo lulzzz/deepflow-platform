@@ -34,10 +34,4 @@
     <ProjectReference Include="..\Deepflow.Platform.Series\Deepflow.Platform.Series.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="InfluxDB.Net">
-      <HintPath>..\..\..\..\Users\cjbel\.nuget\packages\influxdb.net-main\1.0.46\lib\net45\InfluxDB.Net.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>

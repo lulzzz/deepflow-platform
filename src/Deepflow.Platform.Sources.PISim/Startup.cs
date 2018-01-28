@@ -1,6 +1,7 @@
 ﻿using Deepflow.Platform.Abstractions.Series;
 using Deepflow.Platform.Common.Data.Configuration;
 using Deepflow.Platform.Series;
+using Deepflow.Platform.Sources.PISim.Provider;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -31,6 +32,7 @@ namespace Deepflow.Platform.Sources.PISim
             services.AddSingleton(cassandraConfiguration);
 
             services.AddSingleton<IDataAggregator, DataAggregator>();
+            services.AddSingleton<IPiSimDataProvider, CassandraPiSimDataProvider>();
 
             services.AddMvc();
         }

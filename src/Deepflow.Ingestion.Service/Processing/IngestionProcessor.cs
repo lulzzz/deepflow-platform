@@ -79,7 +79,7 @@ namespace Deepflow.Ingestion.Service.Processing
         {
             await _metrics.Run("historicalsubmissions", async () =>
             {
-                _logger.LogDebug("Received historical data");
+                _logger.LogDebug($"Received historical data with {dataRange?.Data.Count / 2} points");
                 await SaveHistoricalData(entity, attribute, dataRange);
             });
         }

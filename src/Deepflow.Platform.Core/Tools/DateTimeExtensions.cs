@@ -9,7 +9,7 @@ namespace Deepflow.Platform.Core.Tools
             return (long) utcDateTime.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
         }
 
-        public static DateTime FromSecondsSince1970Utc(this long utcSeconds)
+        public static DateTime ToDateTime(this long utcSeconds)
         {
             return new DateTime(1970, 1, 1) + TimeSpan.FromSeconds(utcSeconds);
         }
