@@ -22,7 +22,8 @@ namespace Deepflow.Platform.Abstractions.Series.Validators
                 .Cascade(CascadeMode.StopOnFirstFailure)
                 .NotNull().WithMessage("Data must be not null")
                 .Must(BeEven).WithMessage("Size of data in aggregated data range must be an even number")
-                .Must(BeValidTimesAndValues).WithMessage("Values in aggregated data range must be valid")
+                .Must(BeValidTimes).WithMessage(dataRange => $"Timestamps in aggregated data range must be valid. Timestamp at index {GetInvalidTimeIndex(dataRange.Data)} is not valid")
+                .Must(BeValidValues).WithMessage(dataRange => $"Values in aggregated data range must be valid. Value at index {GetInvalidValueIndex(dataRange.Data)} is not valid")
                 .Must(BeInsideTimeRange).WithMessage("Data in aggregated data range must be inside time range and be at least one aggregation interval greater than the min time")
                 .Must(BeInOrder).WithMessage("Data in raw aggregated range must be in order, not duplicated, and quantised to the aggregation seconds interval");
         }
@@ -77,7 +78,33 @@ namespace Deepflow.Platform.Abstractions.Series.Validators
             return true;
         }
 
-        private bool BeValidTimesAndValues(AggregatedDataRange dataRange, List<double> data)
+        private bool BeValidTimes(AggregatedDataRange dataRange, List<double> data)
+        {
+            foreach (var datum in dataRange.GetData())
+            {
+                if (double.IsNaN(datum.Time))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private int GetInvalidTimeIndex(List<double> data)
+        {
+            for (var i = 0; i < data.Count; i += 2)
+            {
+                if (double.IsNaN(data[i]))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private bool BeValidValues(AggregatedDataRange dataRange, List<double> data)
         {
             foreach (var datum in dataRange.GetData())
             {
@@ -88,6 +115,19 @@ namespace Deepflow.Platform.Abstractions.Series.Validators
             }
 
             return true;
+        }
+
+        private int GetInvalidValueIndex(List<double> data)
+        {
+            for (var i = 0; i < data.Count; i += 2)
+            {
+                if (double.IsNaN(data[i + 1]))
+                {
+                    return i + 1;
+                }
+            }
+
+            return -1;
         }
     }
 }

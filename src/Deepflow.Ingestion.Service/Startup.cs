@@ -1,4 +1,6 @@
-﻿using Deepflow.Common.Model;
+﻿using System;
+using System.Diagnostics;
+using Deepflow.Common.Model;
 using Deepflow.Common.Model.Model;
 using Deepflow.Ingestion.Service.Configuration;
 using Deepflow.Ingestion.Service.Metrics;
@@ -135,16 +137,22 @@ namespace Deepflow.Ingestion.Service
             services.AddSingleton<IWebsocketsReceiver>(options => options.GetService<RealtimeIngestionReceiver>());
 
             services.AddSingleton<TripCounterFactory>();
-            services.AddSingleton<IMetricsReporter, MetricsReporter>();
 
             services.AddCors();
+
+            services.AddApplicationInsightsTelemetry(options =>
+            {
+                options.EnableAdaptiveSampling = true;
+                options.InstrumentationKey = "0def8f5e-9482-48ec-880d-4d2a81834a49";
+                options.EnableDebugLogger = false;
+            });
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime lifetime)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime lifetime, IServiceProvider serviceProvider)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
-
+            loggerFactory.AddApplicationInsights(serviceProvider, LogLevel.Warning);
+            
             /*app.UseMetrics();
             app.UseMetricsReporting(lifetime);*/
 

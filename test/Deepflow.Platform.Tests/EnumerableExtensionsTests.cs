@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Deepflow.Platform.Core.Tools;
 using FluentAssertions;
+using FluentAssertions.Common;
 using Xunit;
 
 namespace Deepflow.Platform.Tests.Core
@@ -109,7 +110,7 @@ namespace Deepflow.Platform.Tests.Core
             IEnumerable<IEnumerable<int>> enumerables = new List<IEnumerable<int>> { new List<int> { 1, 2, 3 } };
             var actual = enumerables.MergeMany();
             var expected = new List<int> { 1, 2, 3 };
-            actual.ShouldBeEquivalentTo(expected);
+            actual.IsSameOrEqualTo(expected);
         }
         
         [Fact]
@@ -122,7 +123,7 @@ namespace Deepflow.Platform.Tests.Core
             };
             var actual = enumerables.MergeMany();
             var expected = new List<int> { 1, 4, 2, 5, 3, 6 };
-            actual.ShouldBeEquivalentTo(expected);
+            actual.IsSameOrEqualTo(expected);
         }
 
         [Fact]
@@ -136,7 +137,7 @@ namespace Deepflow.Platform.Tests.Core
             };
             var actual = enumerables.MergeMany();
             var expected = new List<int> { 1, 4, 7, 2, 5, 8, 3, 6, 9 };
-            actual.ShouldBeEquivalentTo(expected);
+            actual.IsSameOrEqualTo(expected);
         }
 
         [Fact]
@@ -150,7 +151,7 @@ namespace Deepflow.Platform.Tests.Core
             };
             var actual = enumerables.MergeMany();
             var expected = new List<int> { 1, 4, 7, 5, 8, 6, 9 };
-            actual.ShouldBeEquivalentTo(expected);
+            actual.IsSameOrEqualTo(expected);
         }
 
         [Fact]
@@ -164,7 +165,7 @@ namespace Deepflow.Platform.Tests.Core
             };
             var actual = enumerables.MergeMany();
             var expected = new List<int> { 1, 4, 7, 2, 8, 3, 9 };
-            actual.ShouldBeEquivalentTo(expected);
+            actual.IsSameOrEqualTo(expected);
         }
 
         [Fact]
@@ -178,7 +179,7 @@ namespace Deepflow.Platform.Tests.Core
             };
             var actual = enumerables.MergeMany();
             var expected = new List<int> { 1, 4, 7, 2, 5, 3, 6 };
-            actual.ShouldBeEquivalentTo(expected);
+            actual.IsSameOrEqualTo(expected);
         }
 
         [Fact]
@@ -192,7 +193,7 @@ namespace Deepflow.Platform.Tests.Core
             };
             var actual = enumerables.MergeMany();
             var expected = new List<int> { 4, 7, 5, 8, 6, 9 };
-            actual.ShouldBeEquivalentTo(expected);
+            actual.IsSameOrEqualTo(expected);
         }
 
         [Fact]
@@ -206,7 +207,7 @@ namespace Deepflow.Platform.Tests.Core
             };
             var actual = enumerables.MergeMany();
             var expected = new List<int> { 1, 7, 2, 8, 3, 9 };
-            actual.ShouldBeEquivalentTo(expected);
+            actual.IsSameOrEqualTo(expected);
         }
 
         [Fact]
@@ -220,7 +221,7 @@ namespace Deepflow.Platform.Tests.Core
             };
             var actual = enumerables.MergeMany();
             var expected = new List<int> { 1, 4, 2, 5, 3, 6 };
-            actual.ShouldBeEquivalentTo(expected);
+            actual.IsSameOrEqualTo(expected);
         }
     }
 }

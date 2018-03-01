@@ -1,4 +1,5 @@
-﻿using Deepflow.Platform.Abstractions.Realtime;
+﻿using System;
+using Deepflow.Platform.Abstractions.Realtime;
 using Deepflow.Platform.Abstractions.Series;
 using Deepflow.Platform.Agent.Client;
 using Deepflow.Platform.Agent.Core;
@@ -70,13 +71,20 @@ namespace Deepflow.Platform.Agent
             }
 
             services.AddCors();
+
+            services.AddApplicationInsightsTelemetry(options =>
+            {
+                options.EnableAdaptiveSampling = true;
+                options.InstrumentationKey = "b772acb1-c0a5-4806-9b23-812113cf3c46";
+                options.EnableDebugLogger = false;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IServiceProvider serviceProvider)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
+            loggerFactory.AddApplicationInsights(serviceProvider, LogLevel.Warning);
 
             var client = app.ApplicationServices.GetService<IIngestionClient>();
             app.ApplicationServices.GetService<IAgentProcessor>().Start();

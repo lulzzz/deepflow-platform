@@ -3,6 +3,7 @@ using System.Linq;
 using Deepflow.Platform.Abstractions.Series;
 using Deepflow.Platform.Series;
 using FluentAssertions;
+using FluentAssertions.Common;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -19,7 +20,7 @@ namespace Deepflow.Platform.Tests.Series
             var insert = new AggregatedDataRange(100, 200, new List<double> { 150, 16, 200, 21 }, 50);
             var actual = _rangeJoiner.JoinDataRangesToDataRanges(new List<AggregatedDataRange>(), new List<AggregatedDataRange> { insert });
             var expected = new List<AggregatedDataRange> { insert };
-            actual.ShouldBeEquivalentTo(expected);
+            actual.IsSameOrEqualTo(expected);
         }
 
         [Fact]
@@ -178,27 +179,27 @@ namespace Deepflow.Platform.Tests.Series
             var expected = new AggregatedDataRange(200, 500, new List<double> { 250, 25, 300, 30, 350, 35, 400, 40, 450, 45, 500, 50 }, 50);
 
             var actual = _rangeJoiner.JoinDataRangeToDataRanges(new List<AggregatedDataRange> { before, after }, insert).ToList();
-            actual.ShouldBeEquivalentTo(new List<AggregatedDataRange> { expected });
+            actual.IsSameOrEqualTo(new List<AggregatedDataRange> { expected });
         }
 
         private void TestJoinTwoDataRanges(AggregatedDataRange insert, AggregatedDataRange old, AggregatedDataRange expected)
         {
             var ranges = new List<AggregatedDataRange> { old };
             var actual = _rangeJoiner.JoinDataRangeToDataRanges(ranges, insert).ToList();
-            actual.ShouldBeEquivalentTo(new List<AggregatedDataRange> { expected });
+            actual.IsSameOrEqualTo(new List<AggregatedDataRange> { expected });
         }
 
         private void TestJoinTwoDataRanges(AggregatedDataRange insert, AggregatedDataRange old, AggregatedDataRange expectedOne, AggregatedDataRange expectedTwo)
         {
             var ranges = new List<AggregatedDataRange> { old };
             var actual = _rangeJoiner.JoinDataRangeToDataRanges(ranges, insert).ToList();
-            actual.ShouldBeEquivalentTo(new List<AggregatedDataRange> { expectedOne, expectedTwo });
+            actual.IsSameOrEqualTo(new List<AggregatedDataRange> { expectedOne, expectedTwo });
         }
 
         private void TestJoinTwoDataRanges(AggregatedDataRange insert, List<AggregatedDataRange> old, AggregatedDataRange expected)
         {
             var actual = _rangeJoiner.JoinDataRangeToDataRanges(old, insert).ToList();
-            actual.ShouldBeEquivalentTo(new List<AggregatedDataRange> { expected });
+            actual.IsSameOrEqualTo(new List<AggregatedDataRange> { expected });
         }
     }
 }

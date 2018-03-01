@@ -17,12 +17,14 @@ namespace Deepflow.Platform.Sources.PISim.Provider
 {
     public class CassandraPiSimDataProvider : IPiSimDataProvider, ISourceDataProvider
     {
+        private readonly CassandraConfiguration _configuration;
         private readonly IDataAggregator _aggregator;
         private readonly ILogger<CassandraPiSimDataProvider> _logger;
         private readonly ISession _session;
 
         public CassandraPiSimDataProvider(CassandraConfiguration configuration, IDataAggregator aggregator, ILogger<CassandraPiSimDataProvider> logger)
         {
+            _configuration = configuration;
             _aggregator = aggregator;
             _logger = logger;
             var cluster = Cluster.Builder()
@@ -53,7 +55,7 @@ namespace Deepflow.Platform.Sources.PISim.Provider
 
         private async Task<RawDataRange> GetRaw(string sourceName, TimeRange timeRange)
         {
-            var query = $"SELECT timestamp, value FROM historian_simulator_int WHERE tag = '{sourceName}' AND timestamp >= {timeRange.Min} AND timestamp < {timeRange.Max};";
+            var query = $"SELECT timestamp, value FROM {_configuration.TableName} WHERE tag = '{sourceName}' AND timestamp >= {timeRange.Min} AND timestamp < {timeRange.Max};";
             var stopwatch = Stopwatch.StartNew();
             var rowSet = await _session.ExecuteAsync(new SimpleStatement(query)).ConfigureAwait(false);
             if (rowSet == null)

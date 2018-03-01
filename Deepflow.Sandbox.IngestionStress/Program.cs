@@ -23,8 +23,10 @@ namespace Deepflow.Sandbox.IngestionStress
             Do().Wait();
         }
 
-        private static async Task Do()
+        private static Task Do()
         {
+            return Task.CompletedTask;
+
             /*var dynamodbConfiguration = new DynamoDbConfiguration { AccessKey = "AKIAJ6RFWYERKM4SI6LA", SecretKey = "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", RegionSystemName = "ap-southeast-2", RangeTableName = "DeepflowTimeRanges", DataTableName = "DeepflowData" };
             var timeCreator = new TimeRangeCreator();
             var timePolicy = new TimeRangeFilteringPolicy();

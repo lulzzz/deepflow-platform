@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Deepflow.Platform.Abstractions.Series.Validators;
 using FluentValidation;
+using Newtonsoft.Json;
 
 namespace Deepflow.Platform.Abstractions.Series
 {
@@ -23,7 +25,15 @@ namespace Deepflow.Platform.Abstractions.Series
             
             if (!skipValidation)
             {
-                Validator.ValidateAndThrow(this);
+                try
+                {
+                    Validator.ValidateAndThrow(this);
+                }
+                catch (Exception)
+                {
+                    File.WriteAllText("ValidationFailed.json", JsonConvert.SerializeObject(data));
+                    throw;
+                }
             }
         }
 
@@ -35,7 +45,15 @@ namespace Deepflow.Platform.Abstractions.Series
             
             if (!skipValidation)
             {
-                Validator.ValidateAndThrow(this);
+                try
+                {
+                    Validator.ValidateAndThrow(this);
+                }
+                catch (Exception)
+                {
+                    File.WriteAllText("ValidationFailed.json", JsonConvert.SerializeObject(data));
+                    throw;
+                }
             }
         }
 

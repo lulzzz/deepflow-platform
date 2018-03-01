@@ -18,6 +18,7 @@ namespace Deepflow.Ingestion.Service.Controllers
     [Route("api/v1/[controller]")]
     public class DataSourcesController : Controller
     {
+        private readonly ILogger<DataSourcesController> _logger;
         private readonly IModelProvider _modelProvider;
         private readonly IPersistentDataProvider _persistence;
         private readonly IRangeFilterer<TimeRange> _filterer;
@@ -27,6 +28,7 @@ namespace Deepflow.Ingestion.Service.Controllers
 
         public DataSourcesController(ILogger<DataSourcesController> logger, IModelProvider modelProvider, IPersistentDataProvider persistence, IRangeFilterer<TimeRange> filterer, IngestionConfiguration configuration, IIngestionProcessor processor, IModelProvider model)
         {
+            _logger = logger;
             _modelProvider = modelProvider;
             _persistence = persistence;
             _filterer = filterer;
@@ -55,6 +57,7 @@ namespace Deepflow.Ingestion.Service.Controllers
         [HttpPost("{dataSource}/Tags/{sourceName}/Data/Aggregations/{aggregationSeconds}/Historical")]
         public async Task AddHistoricalAggregatedData(Guid dataSource, string sourceName, int aggregationSeconds, [FromBody] AggregatedDataRange dataRange)
         {
+            _logger.LogDebug($"Received historical aggregated data for {sourceName} {aggregationSeconds} from {dataRange?.TimeRange?.Min.ToDateTime():s} to {dataRange?.TimeRange?.Max.ToDateTime():s} with {dataRange?.Data?.Count / 2} points");
             var (entity, attribute) = await _model.ResolveEntityAndAttribute(dataSource, sourceName);
             await _processor.ReceiveHistoricalData(entity, attribute, dataRange);
         }

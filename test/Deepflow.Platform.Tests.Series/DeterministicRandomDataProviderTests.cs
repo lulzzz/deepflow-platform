@@ -26,7 +26,7 @@ namespace Deepflow.Platform.Tests.Series
             var generator = new ReverseAverageGenerator(new RangeFilterer(), valueGenerator, new RangeMerger(new RangeFilterer(), new RangeJoiner()));
             var actual = generator.GenerateReverseAverage(name, timeRange, aggregations, aggregationLevel, 500, 1500);
             var expected = new RawDataRange(timeRange, new List<double> { 1000, 10, 1200, 12, 1400, 14 });
-            actual.ShouldBeEquivalentTo(expected);
+            actual.IsSameOrEqualTo(expected);
         }
 
         private class MockValueGenerator : IValueGenerator

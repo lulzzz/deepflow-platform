@@ -27,8 +27,6 @@ namespace Deepflow.Platform.Agent.Client
         private SourceSeriesList _sourceSeriesList;
         private CancellationTokenSource _listenCancellationTokenSource = new CancellationTokenSource();
         private CancellationToken _listenCancellationToken;
-        private readonly SemaphoreSlim _sendSemaphore;
-        private int _nextActionId = 1;
 
         public IngestionClient(ILogger<IngestionClient> logger, AgentIngestionConfiguration configuration, IAgentProcessor processor, TripCounterFactory tripCounterFactory)
         {
@@ -37,7 +35,6 @@ namespace Deepflow.Platform.Agent.Client
             _processor = processor;
             _tripCounterFactory = tripCounterFactory;
             _processor.SetClient(this);
-            _sendSemaphore = new SemaphoreSlim(configuration.SendParallelism);
             _pushClient = new RetryingHttpClient(configuration.PushFailedRetryCount, _configuration.PushFailedPauseSeconds, "Unable to push data to ingestion API", logger);
 
             _logger.LogDebug($"Starting ingestion client with {configuration.SendParallelism} send parallelism");

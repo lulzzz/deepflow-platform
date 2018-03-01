@@ -16,7 +16,7 @@ namespace Deepflow.Platform.Sources.PISim.Controllers
             _piSimDataProvider = piSimDataProvider;
         }
 
-        [HttpGet("{sourceName}/Aggregations/{aggregationSeconds}")]
+        /*[HttpGet("{sourceName}/Aggregations/{aggregationSeconds}")]
         public Task<AggregatedDataRange> GetAggregatedDataRange(string sourceName, int aggregationSeconds, [FromQuery] DateTime minTimeUtc, [FromQuery] DateTime maxTimeUtc)
         {
             return _piSimDataProvider.GetAggregatedDataRange(sourceName, aggregationSeconds, minTimeUtc, maxTimeUtc);
@@ -26,6 +26,6 @@ namespace Deepflow.Platform.Sources.PISim.Controllers
         public Task<RawDataRange> GetRawDataRange(string sourceName, [FromQuery] DateTime minTimeUtc, [FromQuery] DateTime maxTimeUtc)
         {
             return _piSimDataProvider.GetRawDataRange(sourceName, minTimeUtc, maxTimeUtc);
-        }
+        }*/
     }
 }

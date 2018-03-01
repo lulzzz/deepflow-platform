@@ -10,6 +10,7 @@ namespace Deepflow.Platform.Common.Data.Configuration
         public string Username { get; set; }
         public string Password { get; set; }
         public string Keyspace { get; set; }
+        public string TableName { get; set; }
         public int QueryTimeout { get; set; }
     }
 }

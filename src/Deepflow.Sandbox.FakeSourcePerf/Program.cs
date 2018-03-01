@@ -25,7 +25,7 @@ namespace Deepflow.Sandbox.FakeSourcePerf
             
             //dataGenerator.GenerateRawPoint("test", (int)DateTime.UtcNow.SecondsSince1970Utc(), 300);
 
-            Console.ReadKey();
+            //Console.ReadKey();
         }
     }
 

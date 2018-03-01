@@ -16,7 +16,6 @@ namespace Deepflow.Platform.Ingestion
         private readonly IngestionConfiguration _configuration;
         private readonly ILogger<IngestionProcessor> _logger;
         private readonly TripCounterFactory _tripCounterFactory;
-        private static int _count = 0;
 
         public IngestionProcessor(IngestionConfiguration configuration, ILogger<IngestionProcessor> logger, TripCounterFactory tripCounterFactory)
         {
@@ -29,8 +28,9 @@ namespace Deepflow.Platform.Ingestion
         {
             try
             {
-                await _tripCounterFactory.Run("IngestionProcessor.AddData", async () =>
+                await _tripCounterFactory.Run("IngestionProcessor.AddData", () =>
                 {
+                    return Task.CompletedTask;
                     /*ISourceSeriesGrain series = GrainClient.GrainFactory.GetGrain<ISourceSeriesGrain>(SeriesIdHelper.ToSourceSeriesId(dataSource, sourceName));
                     _logger.LogDebug("Saving slice");
                     Stopwatch stopwatch = Stopwatch.StartNew();

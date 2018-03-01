@@ -60,12 +60,12 @@ namespace Deepflow.Ingestion.Service.Tests
             await _processor.ReceiveHistoricalData(_entity, _attribute, aggregatedDataRange);
 
             _persistenceMock.Verify(x => x.SaveTimeRanges(_series50, new List<TimeRange>{ new TimeRange(300, 400) }));
-            saved.ElementAt(0).series.ShouldBeEquivalentTo(_series50);
-            saved.ElementAt(0).dataRanges.ShouldBeEquivalentTo(new List<AggregatedDataRange> { new AggregatedDataRange(300, 400, new List<double> { 350, 35, 400, 40 }, 50) });
-            saved.ElementAt(1).series.ShouldBeEquivalentTo(_series100);
-            saved.ElementAt(1).dataRanges.ShouldBeEquivalentTo(new List<AggregatedDataRange> { new AggregatedDataRange(300, 400, new List<double> { 400, 37.5 }, 100) });
-            saved.ElementAt(2).series.ShouldBeEquivalentTo(_series200);
-            saved.ElementAt(2).dataRanges.ShouldBeEquivalentTo(new List<AggregatedDataRange> { new AggregatedDataRange(200, 400, new List<double> { 400, 37.5 }, 200) });
+            saved.ElementAt(0).series.IsSameOrEqualTo(_series50);
+            saved.ElementAt(0).dataRanges.IsSameOrEqualTo(new List<AggregatedDataRange> { new AggregatedDataRange(300, 400, new List<double> { 350, 35, 400, 40 }, 50) });
+            saved.ElementAt(1).series.IsSameOrEqualTo(_series100);
+            saved.ElementAt(1).dataRanges.IsSameOrEqualTo(new List<AggregatedDataRange> { new AggregatedDataRange(300, 400, new List<double> { 400, 37.5 }, 100) });
+            saved.ElementAt(2).series.IsSameOrEqualTo(_series200);
+            saved.ElementAt(2).dataRanges.IsSameOrEqualTo(new List<AggregatedDataRange> { new AggregatedDataRange(200, 400, new List<double> { 400, 37.5 }, 200) });
         }
 
         [Fact]
@@ -213,8 +213,8 @@ namespace Deepflow.Ingestion.Service.Tests
             foreach (var expectedDataRange in expectedDataRanges)
             {
                 var element = saved.ElementAt(index++);
-                element.series.ShouldBeEquivalentTo(expectedDataRange.Key);
-                element.dataRanges.ShouldBeEquivalentTo(expectedDataRange.Value);
+                element.series.IsSameOrEqualTo(expectedDataRange.Key);
+                element.dataRanges.IsSameOrEqualTo(expectedDataRange.Value);
             }
         }*/
 

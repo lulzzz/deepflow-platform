@@ -48,7 +48,7 @@ namespace Deepflow.Platform.Realtime
                     if (!string.IsNullOrEmpty(message))
                     {
                         _logger.LogDebug($"Received realtime message...");
-                        await _receiver.OnReceive(socketId, message).ConfigureAwait(false);
+                        await _receiver.OnReceive(socketId, message);
                         _logger.LogDebug($"Realtime message complete");
                     }
                 }
