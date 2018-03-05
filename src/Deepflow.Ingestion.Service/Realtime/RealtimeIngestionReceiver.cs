@@ -107,9 +107,9 @@ namespace Deepflow.Ingestion.Service.Realtime
                 var updateRequest = JsonConvert.DeserializeObject<UpdateAttributeSubscriptionsRequest>(messageString, JsonSettings.Setttings);
                 return await ReceiveUpdateAttributeSubscriptionsRequest(updateRequest, socketId).ConfigureAwait(false);
             }
-            if (request.RequestType == RequestType.FetchAggregatedAttributeData)
+            if (request.RequestType == RequestType.FetchAggregatedAttributeDataWithEdges)
             {
-                var fetchRequest = JsonConvert.DeserializeObject<FetchAggregatedAttributeDataRequest>(messageString, JsonSettings.Setttings);
+                var fetchRequest = JsonConvert.DeserializeObject<FetchAggregatedAttributeDataWithEdgesRequest>(messageString, JsonSettings.Setttings);
                 return await ReceiveFetchAggregatedAttributeDataRequest(fetchRequest).ConfigureAwait(false);
             }
             
@@ -155,14 +155,14 @@ namespace Deepflow.Ingestion.Service.Realtime
             });
         }
 
-        private async Task<FetchAggregatedAttributeDataResponse> ReceiveFetchAggregatedAttributeDataRequest(FetchAggregatedAttributeDataRequest request)
+        private async Task<FetchAggregatedAttributeDataWithEdgesResponse> ReceiveFetchAggregatedAttributeDataRequest(FetchAggregatedAttributeDataWithEdgesRequest request)
         {
-            var dataRanges = await _persistence.GetData(request.EntityGuid, request.AttributeGuid, request.AggregationSeconds, request.TimeRange);
-            return new FetchAggregatedAttributeDataResponse
+            var dataRanges = await _persistence.GetAggregatedDataWithEdges(request.EntityGuid, request.AttributeGuid, request.AggregationSeconds, request.TimeRange);
+            return new FetchAggregatedAttributeDataWithEdgesResponse
             {
                 ActionId = request.ActionId,
                 MessageClass = OutgoingMessageClass.Response,
-                ResponseType = ResponseType.FetchAggregatedAttributeData,
+                ResponseType = ResponseType.FetchAggregatedAttributeDataWithEdges,
                 Ranges = dataRanges,
                 Succeeded = true
             };

@@ -6,6 +6,8 @@ namespace Deepflow.Platform.Abstractions.Series
     {
         IEnumerable<TRange> MergeRangeWithRanges(IEnumerable<TRange> ranges, TRange incomingRange);
         IEnumerable<TRange> MergeRangeWithRange(TRange range, TRange incomingRange);
+
+        IEnumerable<TRange> MergeRangesWithRange(TRange range, IEnumerable<TRange> incomingRanges);
         IEnumerable<TRange> MergeRangesWithRanges(IEnumerable<TRange> ranges, IEnumerable<TRange> incomingRanges);
     }
 }

@@ -58,12 +58,12 @@ namespace Deepflow.Platform.Agent.Realtime
 
         private async Task<FetchRawSourceDataResponse> ReceiveFetchRawSourceData(FetchRawSourceDataRequest request)
         {
-            var range = await _data.FetchRawData(request.SourceName, request.TimeRange);
+            var range = await _data.FetchRawDataWithEdges(request.SourceName, request.TimeRange);
             return new FetchRawSourceDataResponse
             {
                 ActionId = request.ActionId,
                 MessageClass = OutgoingMessageClass.Response,
-                ResponseType = ResponseType.FetchAggregatedAttributeData,
+                ResponseType = ResponseType.FetchAggregatedAttributeDataWithEdges,
                 Range = range,
                 Succeeded = true
             };

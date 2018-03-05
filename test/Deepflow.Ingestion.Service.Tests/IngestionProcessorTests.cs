@@ -51,7 +51,7 @@ namespace Deepflow.Ingestion.Service.Tests
         [Fact]
         public async Task TestIngestHistoricalFresh()
         {
-            _persistenceMock.Setup(x => x.GetData(_series50, new TimeRange(200, 400))).Returns(Task.FromResult((IEnumerable<AggregatedDataRange>)new List<AggregatedDataRange>()));
+            _persistenceMock.Setup(x => x.GetAggregatedDataWithEdges(_series50, new TimeRange(200, 400))).Returns(Task.FromResult((IEnumerable<AggregatedDataRange>)new List<AggregatedDataRange>()));
             _persistenceMock.Setup(x => x.GetAllTimeRanges(_series50)).Returns(Task.FromResult((IEnumerable<TimeRange>)new List<TimeRange>()));
             IEnumerable<(Guid series, IEnumerable<AggregatedDataRange> dataRanges)> saved = null;
             _persistenceMock.Setup(x => x.SaveData(It.IsAny<IEnumerable<(Guid entity, Guid attribute, int aggregationSeconds, IEnumerable<AggregatedDataRange> dataRanges)>>())).Returns(Task.CompletedTask).Callback((IEnumerable<(Guid entity, Guid attribute, int aggregationSeconds, IEnumerable<AggregatedDataRange> dataRanges)> savedData) => saved = savedData);
@@ -60,12 +60,12 @@ namespace Deepflow.Ingestion.Service.Tests
             await _processor.ReceiveHistoricalData(_entity, _attribute, aggregatedDataRange);
 
             _persistenceMock.Verify(x => x.SaveTimeRanges(_series50, new List<TimeRange>{ new TimeRange(300, 400) }));
-            saved.ElementAt(0).series.IsSameOrEqualTo(_series50);
-            saved.ElementAt(0).dataRanges.IsSameOrEqualTo(new List<AggregatedDataRange> { new AggregatedDataRange(300, 400, new List<double> { 350, 35, 400, 40 }, 50) });
-            saved.ElementAt(1).series.IsSameOrEqualTo(_series100);
-            saved.ElementAt(1).dataRanges.IsSameOrEqualTo(new List<AggregatedDataRange> { new AggregatedDataRange(300, 400, new List<double> { 400, 37.5 }, 100) });
-            saved.ElementAt(2).series.IsSameOrEqualTo(_series200);
-            saved.ElementAt(2).dataRanges.IsSameOrEqualTo(new List<AggregatedDataRange> { new AggregatedDataRange(200, 400, new List<double> { 400, 37.5 }, 200) });
+            saved.ElementAt(0).series.Should().BeEquivalentTo(_series50);
+            saved.ElementAt(0).dataRanges.Should().BeEquivalentTo(new List<AggregatedDataRange> { new AggregatedDataRange(300, 400, new List<double> { 350, 35, 400, 40 }, 50) });
+            saved.ElementAt(1).series.Should().BeEquivalentTo(_series100);
+            saved.ElementAt(1).dataRanges.Should().BeEquivalentTo(new List<AggregatedDataRange> { new AggregatedDataRange(300, 400, new List<double> { 400, 37.5 }, 100) });
+            saved.ElementAt(2).series.Should().BeEquivalentTo(_series200);
+            saved.ElementAt(2).dataRanges.Should().BeEquivalentTo(new List<AggregatedDataRange> { new AggregatedDataRange(200, 400, new List<double> { 400, 37.5 }, 200) });
         }
 
         [Fact]
@@ -195,7 +195,7 @@ namespace Deepflow.Ingestion.Service.Tests
 
         private async Task RunReceiveHistoricalTest(List<AggregatedDataRange> existingDataRanges, List<TimeRange> existingTimeRanges, TimeRange quantisedTimeRange, AggregatedDataRange newDataRange, List<TimeRange> expectedTimeRanges, Dictionary<Guid, List<AggregatedDataRange>> expectedDataRanges)
         {
-            _persistenceMock.Setup(x => x.GetData(_series50, quantisedTimeRange))
+            _persistenceMock.Setup(x => x.GetAggregatedDataWithEdges(_series50, quantisedTimeRange))
                 .Returns(Task.FromResult((IEnumerable<AggregatedDataRange>) existingDataRanges));
             _persistenceMock.Setup(x => x.GetAllTimeRanges(_series50))
                 .Returns(Task.FromResult((IEnumerable<TimeRange>) existingTimeRanges));
@@ -213,8 +213,8 @@ namespace Deepflow.Ingestion.Service.Tests
             foreach (var expectedDataRange in expectedDataRanges)
             {
                 var element = saved.ElementAt(index++);
-                element.series.IsSameOrEqualTo(expectedDataRange.Key);
-                element.dataRanges.IsSameOrEqualTo(expectedDataRange.Value);
+                element.series.Should().BeEquivalentTo(expectedDataRange.Key);
+                element.dataRanges.Should().BeEquivalentTo(expectedDataRange.Value);
             }
         }*/
 
@@ -223,7 +223,7 @@ namespace Deepflow.Ingestion.Service.Tests
          {
              var existing50 = new AggregatedDataRange(300, 400, new List<double>(), );
 
-             _persistenceMock.Setup(x => x.GetData(_series50, new TimeRange(200, 400))).Returns(Task.FromResult((IEnumerable<AggregatedDataRange>)new List<AggregatedDataRange>()));
+             _persistenceMock.Setup(x => x.GetAggregatedDataWithEdges(_series50, new TimeRange(200, 400))).Returns(Task.FromResult((IEnumerable<AggregatedDataRange>)new List<AggregatedDataRange>()));
              _persistenceMock.Setup(x => x.GetAllTimeRanges(_series50)).Returns(Task.FromResult((IEnumerable<TimeRange>)new List<TimeRange>()));
              _persistenceMock.Setup(x => x.SaveData(It.IsAny<IEnumerable<(Guid series, IEnumerable<AggregatedDataRange> dataRanges)>>())).Returns(Task.CompletedTask);
 

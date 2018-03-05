@@ -18,12 +18,14 @@ namespace Deepflow.Platform.Abstractions.Series.Validators
             RuleFor(x => x.AggregationSeconds)
                 .NotEmpty().WithMessage("Aggregation seconds must be non zero for an aggregated data range");
 
+            var timeIndex = 0;
+            var valueIndex = 0;
             RuleFor(x => x.Data)
                 .Cascade(CascadeMode.StopOnFirstFailure)
                 .NotNull().WithMessage("Data must be not null")
                 .Must(BeEven).WithMessage("Size of data in aggregated data range must be an even number")
-                .Must(BeValidTimes).WithMessage(dataRange => $"Timestamps in aggregated data range must be valid. Timestamp at index {GetInvalidTimeIndex(dataRange.Data)} is not valid")
-                .Must(BeValidValues).WithMessage(dataRange => $"Values in aggregated data range must be valid. Value at index {GetInvalidValueIndex(dataRange.Data)} is not valid")
+                .Must(BeValidTimes).WithMessage(dataRange => $"Timestamps in aggregated data range must be valid. Timestamp at index {timeIndex = GetInvalidTimeIndex(dataRange.Data)} is not valid. ({dataRange.Data[timeIndex]}, {dataRange.Data[timeIndex + 1]})")
+                .Must(BeValidValues).WithMessage(dataRange => $"Values in aggregated data range must be valid. Value at index {valueIndex = GetInvalidValueIndex(dataRange.Data)} is not valid. ({dataRange.Data[valueIndex - 1]}, {dataRange.Data[valueIndex]})")
                 .Must(BeInsideTimeRange).WithMessage("Data in aggregated data range must be inside time range and be at least one aggregation interval greater than the min time")
                 .Must(BeInOrder).WithMessage("Data in raw aggregated range must be in order, not duplicated, and quantised to the aggregation seconds interval");
         }

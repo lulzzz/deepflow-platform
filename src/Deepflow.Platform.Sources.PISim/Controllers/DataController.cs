@@ -23,9 +23,9 @@ namespace Deepflow.Platform.Sources.PISim.Controllers
         }
 
         [HttpGet("{sourceName}/Raw")]
-        public Task<RawDataRange> GetRawDataRange(string sourceName, [FromQuery] DateTime minTimeUtc, [FromQuery] DateTime maxTimeUtc)
+        public Task<RawDataRange> GetRawDataRangeWithEdges(string sourceName, [FromQuery] DateTime minTimeUtc, [FromQuery] DateTime maxTimeUtc)
         {
-            return _piSimDataProvider.GetRawDataRange(sourceName, minTimeUtc, maxTimeUtc);
+            return _piSimDataProvider.GetRawDataRangeWithEdges(sourceName, minTimeUtc, maxTimeUtc);
         }*/
     }
 }

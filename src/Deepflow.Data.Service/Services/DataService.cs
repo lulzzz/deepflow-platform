@@ -28,13 +28,13 @@ namespace Deepflow.Data.Service.Services
 
         public async Task<IEnumerable<AggregatedDataRange>> GetData(Guid entity, Guid attribute, TimeRange timeRange, int aggregationSeconds)
         {
-            /*var cached = await _cache.GetData(series, timeRange, aggregationSeconds);
+            /*var cached = await _cache.GetAggregatedDataWithEdges(series, timeRange, aggregationSeconds);
             var notCovered = _filterer.FilterRanges(cached.Select(x => x.TimeRange), timeRange);
             if (!notCovered.Any())
             {
                 return cached;
             }*/
-            return await _persistence.GetData(entity, attribute, aggregationSeconds, timeRange);
+            return await _persistence.GetAggregatedDataWithEdges(entity, attribute, aggregationSeconds, timeRange);
             //return _merger.MergeRangesWithRanges(cached, persisted.SelectMany(x => x));
         }
     }

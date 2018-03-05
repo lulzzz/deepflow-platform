@@ -48,7 +48,7 @@ namespace Deepflow.Platform.Agent.Provider
             return JsonConvert.DeserializeObject<AggregatedDataRange>(responseText);
         }
 
-        public async Task<RawDataRange> FetchRawData(string sourceName, TimeRange timeRange)
+        public async Task<RawDataRange> FetchRawDataWithEdges(string sourceName, TimeRange timeRange)
         {
             var uri = new Uri(_configuration.BaseUrl, $"api/v1/Tags/{sourceName}/Raw/Data?minTime={timeRange.Min.ToDateTime()}&maxTime={timeRange.Min.ToDateTime()}");
             var response = await _client.GetAsync(uri);

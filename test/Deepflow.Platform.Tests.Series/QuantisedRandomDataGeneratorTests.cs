@@ -21,7 +21,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 50);
             var expectedTimes = new[] { 150 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -32,7 +32,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 50);
             var expectedTimes = new[] { 150, 200 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -43,7 +43,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 50);
             var expectedTimes = new[] { 150, 200, 250 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -54,7 +54,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 50);
             var expectedTimes = new[] { 150, 200, 250, 300 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -65,7 +65,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 50);
             var expectedTimes = new[] { 150, 200, 250, 300, 350 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -76,7 +76,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 50);
             var expectedTimes = new[] { 150, 200, 250, 300, 350, 400 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -87,7 +87,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 50);
             var expectedTimes = new[] { 150, 200, 250, 300, 350, 400, 450 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -98,7 +98,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 50);
             var expectedTimes = new[] { 150, 200, 250, 300, 350, 400, 450, 500 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -109,7 +109,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 100);
             var expectedTimes = new[] { 150 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -120,7 +120,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 100);
             var expectedTimes = new[] { 150, 200 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -131,7 +131,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 100);
             var expectedTimes = new[] { 150, 200, 250 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -142,7 +142,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 100);
             var expectedTimes = new[] { 150, 200, 250, 300 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -153,7 +153,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 100);
             var expectedTimes = new[] { 150, 200, 250, 300, 350 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -164,7 +164,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 100);
             var expectedTimes = new[] { 150, 200, 250, 300, 350, 400 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -175,7 +175,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 100);
             var expectedTimes = new[] { 150, 200, 250, 300, 350, 400, 450 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -186,7 +186,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 100);
             var expectedTimes = new[] { 150, 200, 250, 300, 350, 400, 450, 500 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -197,7 +197,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 200);
             var expectedTimes = new[] { 250 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -208,7 +208,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 200);
             var expectedTimes = new[] { 250, 300 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -219,7 +219,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 200);
             var expectedTimes = new[] { 250, 300, 350 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -230,7 +230,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 200);
             var expectedTimes = new[] { 250, 300, 350, 400 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -241,7 +241,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 200);
             var expectedTimes = new[] { 250, 300, 350, 400, 450 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -252,7 +252,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 200);
             var expectedTimes = new[] { 250, 300, 350, 400, 450, 500 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -263,7 +263,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 200);
             var expectedTimes = new[] { 250, 300, 350, 400, 450, 500, 550 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -274,7 +274,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 200);
             var expectedTimes = new[] { 250, 300, 350, 400, 450, 500, 550, 600 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -285,7 +285,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 150);
             var expectedTimes = new[] { 250 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -296,7 +296,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 150);
             var expectedTimes = new[] { 250, 300 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -307,7 +307,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 150);
             var expectedTimes = new[] { 250, 300, 350 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -318,7 +318,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 150);
             var expectedTimes = new[] { 250, 300, 350, 400 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -329,7 +329,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 150);
             var expectedTimes = new[] { 250, 300, 350, 400, 450 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -340,7 +340,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 150);
             var expectedTimes = new[] { 250, 300, 350, 400, 450, 500 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -351,7 +351,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 150);
             var expectedTimes = new[] { 250, 300, 350, 400, 450, 500, 550 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 
@@ -362,7 +362,7 @@ namespace Deepflow.Platform.Tests.Series
             var actual = _generator.GenerateData("test", timeRange, 1000, 2000, 500, 50, 150);
             var expectedTimes = new[] { 250, 300, 350, 400, 450, 500, 550, 600 };
 
-            actual.TimeRange.IsSameOrEqualTo(timeRange);
+            actual.TimeRange.Should().BeEquivalentTo(timeRange);
             AssertData(actual.Data, expectedTimes);
         }
 

@@ -53,6 +53,9 @@ namespace Deepflow.Platform.Realtime
                     }
                 }
             }
+            catch (OperationCanceledException)
+            {
+            }
             catch (Exception exception)
             {
                 _logger.LogError(new EventId(100), exception, "Error receving websockets message");

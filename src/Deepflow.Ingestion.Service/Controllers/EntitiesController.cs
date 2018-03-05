@@ -23,7 +23,7 @@ namespace Deepflow.Ingestion.Service.Controllers
         [HttpGet("{entity}/Attributes/{attribute}/Aggregations/{aggregationSeconds}/Data")]
         public async Task<IEnumerable<AggregatedDataRange>> GetAggregatedData(Guid entity, Guid attribute, int aggregationSeconds, [FromQuery] DateTimeOffset minTime, [FromQuery] DateTimeOffset maxTime)
         {
-            return await _persistence.GetData(entity, attribute, aggregationSeconds, new TimeRange(minTime.UtcDateTime, maxTime.UtcDateTime));
+            return await _persistence.GetAggregatedDataWithEdges(entity, attribute, aggregationSeconds, new TimeRange(minTime.UtcDateTime, maxTime.UtcDateTime));
         }
     }
 }

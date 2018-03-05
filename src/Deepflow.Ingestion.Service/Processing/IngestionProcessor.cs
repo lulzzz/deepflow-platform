@@ -82,7 +82,7 @@ namespace Deepflow.Ingestion.Service.Processing
             await semaphore.WaitAsync().ConfigureAwait(false);
             try
             {
-                var persisted = await _persistence.GetData(entity, attribute, dataRange.AggregationSeconds, quantised);
+                var persisted = await _persistence.GetAggregatedData(entity, attribute, dataRange.AggregationSeconds, quantised);
                 var existingTimeRanges = await _persistence.GetAllTimeRanges(entity, attribute);
                 var merged = _aggregatedMerger.MergeRangeWithRanges(persisted, dataRange);
                 var aggregations = _aggregator.Aggregate(merged, quantised, _configuration.AggregationsSeconds);

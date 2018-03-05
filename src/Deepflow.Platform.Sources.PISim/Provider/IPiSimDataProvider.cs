@@ -9,6 +9,6 @@ namespace Deepflow.Platform.Sources.PISim.Provider
     {
         Task<AggregatedDataRange> GetAggregatedDataRange(string sourceName, int aggregationSeconds, DateTime minTimeUtc, DateTime maxTimeUtc);
 
-        Task<RawDataRange> GetRawDataRange(string sourceName, [FromQuery] DateTime minTimeUtc, [FromQuery] DateTime maxTimeUtc);
+        Task<RawDataRange> GetRawDataRangeWithEdges(string sourceName, [FromQuery] DateTime minTimeUtc, [FromQuery] DateTime maxTimeUtc);
     }
 }

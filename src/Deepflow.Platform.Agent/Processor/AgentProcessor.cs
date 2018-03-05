@@ -9,6 +9,7 @@ using Deepflow.Platform.Abstractions.Sources;
 using Deepflow.Platform.Agent.Client;
 using Deepflow.Platform.Agent.Provider;
 using Deepflow.Platform.Core.Tools;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 
 namespace Deepflow.Platform.Agent.Processor
@@ -38,6 +39,7 @@ namespace Deepflow.Platform.Agent.Processor
                 {
                     await Task.Delay(3000);
                     _logger.LogInformation($"{_fetchQueue.Queue.Count} remaining in queue, {_backfillFetches} backfill fetches waiting for response");
+                    Console.WriteLine($"{_fetchQueue.Queue.Count} remaining in queue, {_backfillFetches} backfill fetches waiting for response");
                 }
             });
         }
@@ -135,9 +137,15 @@ namespace Deepflow.Platform.Agent.Processor
                         _logger.LogInformation($"Sent");
                         await Task.Delay(_configuration.BetweenFetchPauseSeconds);
                     }
+                    catch (ValidationException exception)
+                    {
+                        _logger.LogWarning($"Error validating data from source {_configuration.DataSourceFriendlyName}, placing back in the queue and trying next one after {_configuration.FetchFailedPauseSeconds} seconds: " + exception.Message);
+                        queue.Queue.Add(fetch);
+                        await Task.Delay(_configuration.FetchFailedPauseSeconds * 1000);
+                    }
                     catch (Exception exception)
                     {
-                        _logger.LogError($"Error fetching data from source {_configuration.DataSourceFriendlyName}, placing back in the queue and trying next one after {_configuration.FetchFailedPauseSeconds} seconds: " + exception.Message);
+                        _logger.LogWarning($"Error fetching data from source {_configuration.DataSourceFriendlyName}, placing back in the queue and trying next one after {_configuration.FetchFailedPauseSeconds} seconds: " + exception.Message);
                         queue.Queue.Add(fetch);
                         await Task.Delay(_configuration.FetchFailedPauseSeconds * 1000);
                     }

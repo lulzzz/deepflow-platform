@@ -7,7 +7,12 @@ namespace Deepflow.Platform.Common.Data.Persistence
 {
     public class NoopPersistenceProvider : IPersistentDataProvider
     {
-        public Task<IEnumerable<AggregatedDataRange>> GetData(Guid entity, Guid attribute, int aggregationSeconds, TimeRange timeRange)
+        public Task<IEnumerable<AggregatedDataRange>> GetAggregatedDataWithEdges(Guid entity, Guid attribute, int aggregationSeconds, TimeRange timeRange)
+        {
+            return Task.FromResult((IEnumerable<AggregatedDataRange>)new List<AggregatedDataRange>());
+        }
+
+        public Task<IEnumerable<AggregatedDataRange>> GetAggregatedData(Guid entity, Guid attribute, int aggregationSeconds, TimeRange timeRange)
         {
             return Task.FromResult((IEnumerable<AggregatedDataRange>)new List<AggregatedDataRange>());
         }

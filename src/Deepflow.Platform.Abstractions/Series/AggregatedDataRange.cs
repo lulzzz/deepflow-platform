@@ -45,15 +45,7 @@ namespace Deepflow.Platform.Abstractions.Series
             
             if (!skipValidation)
             {
-                try
-                {
-                    Validator.ValidateAndThrow(this);
-                }
-                catch (Exception)
-                {
-                    File.WriteAllText("ValidationFailed.json", JsonConvert.SerializeObject(data));
-                    throw;
-                }
+                Validator.ValidateAndThrow(this);
             }
         }
 

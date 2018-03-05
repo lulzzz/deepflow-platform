@@ -44,7 +44,10 @@ namespace Deepflow.Platform.Realtime
                 _logger.LogError(new EventId(102), exception, "Error with websockets request");
             }
 
-            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", cancellationToken);
+            if (socket.State == WebSocketState.Open || socket.State == WebSocketState.CloseReceived || socket.State == WebSocketState.CloseSent)
+            {
+                await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", cancellationToken);
+            }
             socket.Dispose();
         }
     }

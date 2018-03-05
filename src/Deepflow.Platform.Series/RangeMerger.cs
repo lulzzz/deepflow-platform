@@ -22,6 +22,11 @@ namespace Deepflow.Platform.Series
             return MergeRangeWithRanges(new List<TRange> { range }, incomingRange);
         }
 
+        public IEnumerable<TRange> MergeRangesWithRange(TRange range, IEnumerable<TRange> incomingRanges)
+        {
+            return MergeRangesWithRanges(new [] { range }, incomingRanges);
+        }
+
         public IEnumerable<TRange> MergeRangesWithRanges(IEnumerable<TRange> ranges, IEnumerable<TRange> incomingRanges)
         {
             if (incomingRanges == null || !incomingRanges.Any())
@@ -29,8 +34,8 @@ namespace Deepflow.Platform.Series
                 return ranges;
             }
 
-            IEnumerable<TRange> mergedRanges = new List<TRange>();
-            foreach (var incomingRange in incomingRanges)
+            IEnumerable<TRange> mergedRanges = ranges;
+            foreach (var incomingRange in incomingRanges) //.OrderBy(x => _accessor.GetTimeRange(x).Min)
             {
                 mergedRanges = MergeRangeWithRanges(mergedRanges, incomingRange);
             }

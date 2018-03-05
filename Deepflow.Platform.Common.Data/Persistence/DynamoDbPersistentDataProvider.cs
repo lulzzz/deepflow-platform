@@ -59,7 +59,7 @@ namespace Deepflow.Platform.Common.Data.Persistence
         {
             await RunWithRampUp(async () =>
             {
-                var writeRequests = seriesData.SelectMany(x => x.dataRanges.GetData().Select(y => CreateDataWriteRequest(x.series, y)));
+                var writeRequests = seriesData.SelectMany(x => x.dataRanges.GetAggregatedDataWithEdges().Select(y => CreateDataWriteRequest(x.series, y)));
                 if (!writeRequests.Any())
                 {
                     return;
@@ -76,7 +76,7 @@ namespace Deepflow.Platform.Common.Data.Persistence
         {
             await RunWithRampUp(async () =>
             { 
-                var writeRequests = dataRanges.GetData().Select(y => CreateDataWriteRequest(series, y));
+                var writeRequests = dataRanges.GetAggregatedDataWithEdges().Select(y => CreateDataWriteRequest(series, y));
                 if (!writeRequests.Any())
                 {
                     return;
@@ -133,7 +133,7 @@ namespace Deepflow.Platform.Common.Data.Persistence
             }).ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<AggregatedDataRange>> GetData(Guid series, TimeRange timeRange)
+        public async Task<IEnumerable<AggregatedDataRange>> GetAggregatedDataWithEdges(Guid series, TimeRange timeRange)
         {
             return await RunWithRampUp(async () =>
             {

@@ -35,7 +35,15 @@ namespace Deepflow.Platform.Common.Data.Persistence
             _session = cluster.Connect();
         }
 
-        public async Task<IEnumerable<AggregatedDataRange>> GetData(Guid entity, Guid attribute, int aggregationSeconds, TimeRange timeRange)
+        public Task<IEnumerable<AggregatedDataRange>> GetAggregatedDataWithEdges(Guid entity, Guid attribute, int aggregationSeconds, TimeRange timeRange)
+        {
+            var edgeBeforeTime = timeRange.Min - aggregationSeconds;
+            var edgeAfterTime = timeRange.Max - aggregationSeconds;
+            var timeRangeWithEdges = new TimeRange(edgeBeforeTime, edgeAfterTime);
+            return GetAggregatedData(entity, attribute, aggregationSeconds, timeRangeWithEdges);
+        }
+
+        public async Task<IEnumerable<AggregatedDataRange>> GetAggregatedData(Guid entity, Guid attribute, int aggregationSeconds, TimeRange timeRange)
         {
             var series = await _model.ResolveSeries(entity, attribute, aggregationSeconds);
             var query = $"SELECT Time, Value FROM deepflowdata WHERE Guid = {series} AND Time >= {timeRange.Min} AND Time < {timeRange.Max};";

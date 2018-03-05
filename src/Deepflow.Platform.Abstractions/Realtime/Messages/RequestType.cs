@@ -2,7 +2,7 @@
 {
     public enum RequestType
     {
-        FetchAggregatedAttributeData,
+        FetchAggregatedAttributeDataWithEdges,
         FetchRawSourceData,
         UpdateAttributeSubscriptions,
         AddAggregatedAttributeData,

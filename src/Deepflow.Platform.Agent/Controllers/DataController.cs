@@ -19,7 +19,7 @@ namespace Deepflow.Platform.Agent.Controllers
         [HttpGet("{sourceName}/Raw")]
         public Task<RawDataRange> GetData(string sourceName, [FromQuery] DateTime minUtc, [FromQuery] DateTime maxUtc)
         {
-            return _data.FetchRawData(sourceName, new TimeRange(minUtc, maxUtc));
+            return _data.FetchRawDataWithEdges(sourceName, new TimeRange(minUtc, maxUtc));
         }
     }
 }

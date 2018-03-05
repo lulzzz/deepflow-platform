@@ -48,6 +48,13 @@ namespace Deepflow.Platform.Agent
             services.AddSingleton<IWebsocketsSender, WebsocketsManager>();
             services.AddSingleton<IWebsocketsReceiver, RealtimeMessageHandler>();
             services.AddSingleton<IDataAggregator, DataAggregator>();
+            
+            services.AddSingleton<IRangeCreator<RawDataRange>, RawDataRangeCreator>();
+            services.AddSingleton<IRangeAccessor<RawDataRange>, RawDataRangeAccessor>();
+            services.AddSingleton<IRangeFilteringPolicy<RawDataRange>, RawDataRangeFilteringPolicy>();
+            services.AddSingleton<IRangeFilterer<RawDataRange>, RangeFilterer<RawDataRange>>();
+            services.AddSingleton<IRangeJoiner<RawDataRange>, RangeJoiner<RawDataRange>>();
+            services.AddSingleton<IRangeMerger<RawDataRange>, RangeMerger<RawDataRange>>();
 
             var ingestionConfiguration = new Core.AgentIngestionConfiguration();
             Configuration.GetSection("Ingestion").Bind(ingestionConfiguration);
