@@ -26,7 +26,7 @@ namespace Deepflow.Ingestion.Service.Realtime
             await _pusher.TriggerAsync(_configuration.ChannelName, $"{entity}_{attribute}_raw", JsonConvert.SerializeObject(dataRange, JsonSettings.Setttings));
         }
 
-        public async Task NotifyAggregated(Guid entity, Guid attribute, Dictionary<int, AggregatedDataRange> dataRanges)
+        public async Task NotifyAggregated(Guid entity, Guid attribute, Dictionary<int, IEnumerable<AggregatedDataRange>> dataRanges)
         {
             await _pusher.TriggerAsync(_configuration.ChannelName, $"{entity}_{attribute}_aggregated", JsonConvert.SerializeObject(dataRanges, JsonSettings.Setttings));
         }

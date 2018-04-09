@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ using FluentValidation;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Deepflow.Ingestion.Service.Processing
 {
@@ -64,7 +66,7 @@ namespace Deepflow.Ingestion.Service.Processing
             await SaveHistoricalData(entity, attribute, dataRange);
         }
 
-        private async Task<Dictionary<int, AggregatedDataRange>> SaveHistoricalData(Guid entity, Guid attribute, AggregatedDataRange dataRange)
+        private async Task<Dictionary<int, IEnumerable<AggregatedDataRange>>> SaveHistoricalData(Guid entity, Guid attribute, AggregatedDataRange dataRange)
         {
             _aggregatedDataRangeValidator.ValidateAndThrow(dataRange);
 
@@ -82,20 +84,45 @@ namespace Deepflow.Ingestion.Service.Processing
             await semaphore.WaitAsync().ConfigureAwait(false);
             try
             {
+                //Console.WriteLine($"Writing data between {dataRange.TimeRange.Min} and {dataRange.TimeRange.Max}");
+
                 var persisted = await _persistence.GetAggregatedData(entity, attribute, dataRange.AggregationSeconds, quantised);
                 var existingTimeRanges = await _persistence.GetAllTimeRanges(entity, attribute);
+                if (existingTimeRanges.Any(x => x.Intersects(dataRange.TimeRange)))
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("Overwriting data");
+                    Console.ResetColor();
+                }
+
                 var merged = _aggregatedMerger.MergeRangeWithRanges(persisted, dataRange);
                 var aggregations = _aggregator.Aggregate(merged, quantised, _configuration.AggregationsSeconds);
-                var affectedAggregatedPoints = aggregations.Select(x => FilterAggregationToAffectedRange(x.Value, dataRange.TimeRange, x.Key)).Where(x => x != null).ToList();
-                var rangesToPersist = affectedAggregatedPoints.Select(range => new ValueTuple<Guid, Guid, int, IEnumerable<AggregatedDataRange>>(entity, attribute, range.AggregationSeconds, new List<AggregatedDataRange> { range }));
+                //Console.WriteLine("Aggregations: " + JsonConvert.SerializeObject(aggregations));
+                
+                var affectedAggregatedPoints = aggregations.Select(x => FilterAggregationToAffectedRanges(x.Value, dataRange.TimeRange, x.Key)).Where(x => x != null && x.Any()).ToList();
+                var rangesToPersist = affectedAggregatedPoints.Select(ranges => new ValueTuple<Guid, Guid, int, IEnumerable<AggregatedDataRange>>(entity, attribute, ranges.First().AggregationSeconds, ranges));
                 await _persistence.SaveData(rangesToPersist);
                 
                 var afterTimeRanges = _timeMerger.MergeRangeWithRanges(existingTimeRanges, dataRange.TimeRange);
                 await _persistence.SaveTimeRanges(entity, attribute, afterTimeRanges);
 
+                var saved = await _persistence.GetTimeRanges(entity, attribute, new TimeRange(100, 4102444100));
+                if (JsonConvert.SerializeObject(existingTimeRanges) == JsonConvert.SerializeObject(saved))
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("No new time ranges saved");
+                    Console.ResetColor();
+                }
+
+                /*Directory.CreateDirectory("timeRanges");
+                File.WriteAllText($@"timeRanges\{entity}_{attribute}.json", JsonConvert.SerializeObject(afterTimeRanges));
+                Console.WriteLine("Before time ranges: " + JsonConvert.SerializeObject(existingTimeRanges));
+                Console.WriteLine("New time range: " + JsonConvert.SerializeObject(dataRange.TimeRange));
+                Console.WriteLine("After time ranges: " + JsonConvert.SerializeObject(afterTimeRanges));*/
+
                 _telemetry.TrackTrace($"Saved historical data from {dataRange.TimeRange.Min.ToDateTime():s} to {dataRange.TimeRange.Max.ToDateTime():s} after receiving {dataRange.Data.Count / 2} points from source");
 
-                return affectedAggregatedPoints.ToDictionary(x => x.AggregationSeconds, x => x);
+                return affectedAggregatedPoints.ToDictionary(x => x.First().AggregationSeconds, x => x);
             }
             finally
             {
@@ -103,10 +130,20 @@ namespace Deepflow.Ingestion.Service.Processing
             }
         }
 
-        private AggregatedDataRange FilterAggregationToAffectedRange(IEnumerable<AggregatedDataRange> dataRanges, TimeRange timeRange, int aggregationSeconds)
+        private IEnumerable<AggregatedDataRange> FilterAggregationToAffectedRanges(IEnumerable<AggregatedDataRange> dataRanges, TimeRange timeRange, int aggregationSeconds)
         {
-            var filtered = _filterer.FilterRanges(dataRanges, timeRange.Quantise(aggregationSeconds));
-            return filtered.SingleOrDefault();
+            return _filterer.FilterRanges(dataRanges, timeRange.Quantise(aggregationSeconds));
+            /*try
+            {
+                return filtered.SingleOrDefault();
+            }
+            catch (InvalidOperationException e)
+            {
+                Console.WriteLine("aggregationSeconds: " + JsonConvert.SerializeObject(aggregationSeconds));
+                Console.WriteLine("timeRange: " + JsonConvert.SerializeObject(timeRange));
+                Console.WriteLine("dataRanges: " + JsonConvert.SerializeObject(dataRanges));
+                throw;
+            }*/
         }
     }
 }

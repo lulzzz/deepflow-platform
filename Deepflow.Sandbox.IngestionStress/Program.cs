@@ -109,7 +109,7 @@ namespace Deepflow.Sandbox.IngestionStress
             return Task.CompletedTask;
         }
 
-        public Task NotifyAggregated(Guid entity, Guid attribute, Dictionary<int, AggregatedDataRange> dataRanges)
+        public Task NotifyAggregated(Guid entity, Guid attribute, Dictionary<int, IEnumerable<AggregatedDataRange>> dataRanges)
         {
             return Task.CompletedTask;
         }

@@ -79,12 +79,12 @@ namespace Deepflow.Platform.Agent
 
             services.AddCors();
 
-            services.AddApplicationInsightsTelemetry(options =>
+            /*services.AddApplicationInsightsTelemetry(options =>
             {
                 options.EnableAdaptiveSampling = true;
                 options.InstrumentationKey = "b772acb1-c0a5-4806-9b23-812113cf3c46";
                 options.EnableDebugLogger = false;
-            });
+            });*/
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

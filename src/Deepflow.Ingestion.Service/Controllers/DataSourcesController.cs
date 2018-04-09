@@ -11,6 +11,7 @@ using Deepflow.Platform.Common.Data.Persistence;
 using Deepflow.Platform.Core.Tools;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using IIngestionProcessor = Deepflow.Ingestion.Service.Processing.IIngestionProcessor;
 
 namespace Deepflow.Ingestion.Service.Controllers
@@ -82,7 +83,16 @@ namespace Deepflow.Ingestion.Service.Controllers
 
             var existingTimeRanges = await _persistence.GetAllTimeRanges(entityAttribute.Item1, entityAttribute.Item2);
             var desiredTimeRange = new TimeRange(_configuration.MinHistoryUtcSeconds.ToDateTime(), DateTime.UtcNow);
-            return _filterer.SubtractTimeRangesFromRange(desiredTimeRange, existingTimeRanges);
+            
+            var missing = _filterer.SubtractTimeRangesFromRange(desiredTimeRange, existingTimeRanges);
+
+            /*if (sourceName == "KGP.KJF.KEL01.0023.PV")
+            {
+                Console.WriteLine("Existing: " + JsonConvert.SerializeObject(existingTimeRanges));
+                Console.WriteLine("Missing: " + JsonConvert.SerializeObject(missing));
+            }*/
+
+            return missing;
         }
 
         

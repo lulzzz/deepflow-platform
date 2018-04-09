@@ -26,29 +26,36 @@ namespace Deepflow.Platform.Realtime
 
         public async Task Invoke(HttpContext context)
         {
-            if (!context.WebSockets.IsWebSocketRequest || context.Request.Path != _path)
-            {
-                await _next.Invoke(context);
-                return;
-            }
-
-            CancellationToken cancellationToken = context.RequestAborted;
-            WebSocket socket = await context.WebSockets.AcceptWebSocketAsync();
-
             try
             {
-                await _manager.HandleWebsocket(socket, cancellationToken);
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError(new EventId(102), exception, "Error with websockets request");
-            }
+                if (!context.WebSockets.IsWebSocketRequest || context.Request.Path != _path)
+                {
+                    await _next.Invoke(context);
+                    return;
+                }
 
-            if (socket.State == WebSocketState.Open || socket.State == WebSocketState.CloseReceived || socket.State == WebSocketState.CloseSent)
-            {
-                await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", cancellationToken);
+                CancellationToken cancellationToken = context.RequestAborted;
+                WebSocket socket = await context.WebSockets.AcceptWebSocketAsync();
+
+                try
+                {
+                    await _manager.HandleWebsocket(socket, cancellationToken);
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogError(new EventId(102), exception, "Error with websockets request");
+                }
+
+                if (socket.State == WebSocketState.Open || socket.State == WebSocketState.CloseReceived || socket.State == WebSocketState.CloseSent)
+                {
+                    await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", cancellationToken);
+                }
+                socket.Dispose();
             }
-            socket.Dispose();
+            catch (TaskCanceledException)
+            {
+
+            }
         }
     }
 

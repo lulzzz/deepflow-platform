@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using Deepflow.Platform.Agent.Provider;
 using Deepflow.Platform.Core.Tools;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Deepflow.Platform.Agent.Processor
 {
@@ -38,6 +40,11 @@ namespace Deepflow.Platform.Agent.Processor
                 while (true)
                 {
                     await Task.Delay(3000);
+
+                    var items = _fetchQueue.Queue.ToList();
+                    var json = JsonConvert.SerializeObject(items);
+                    File.WriteAllText("queue.json", json);
+
                     _logger.LogInformation($"{_fetchQueue.Queue.Count} remaining in queue, {_backfillFetches} backfill fetches waiting for response");
                     Console.WriteLine($"{_fetchQueue.Queue.Count} remaining in queue, {_backfillFetches} backfill fetches waiting for response");
                 }
@@ -131,6 +138,7 @@ namespace Deepflow.Platform.Agent.Processor
                     try
                     {
                         _logger.LogInformation($"Fetching {fetch.SourceName} between {fetch.TimeRange.Min} and {fetch.TimeRange.Max}");
+                        //Console.WriteLine($"Fetching {fetch.SourceName} between {fetch.TimeRange.Min} and {fetch.TimeRange.Max}");
                         var data = await _provider.FetchAggregatedData(fetch.SourceName, fetch.TimeRange, _configuration.AggregationSeconds);
                         _logger.LogInformation($"Fetched {data?.Data?.Count / 2} points for {fetch.SourceName} between {fetch.TimeRange.Min} and {fetch.TimeRange.Max}");
                         await _client.SendHistoricalData(fetch.SourceName, data);
@@ -164,7 +172,9 @@ namespace Deepflow.Platform.Agent.Processor
 
         private IList<IngestionFetch> ListToFetches(SourceSeriesList sourceSeriesList)
         {
-            return sourceSeriesList.Series.Select(BuildFetchesForSeries).MergeMany().ToList();
+            var fetches = sourceSeriesList.Series.Select(BuildFetchesForSeries); //.Where(x => x.SourceName == "KGP.KJF.KEL01.0023.PV")
+            //Console.WriteLine("Built fetches: " + JsonConvert.SerializeObject(fetches));
+            return fetches.MergeMany().ToList();
         }
 
         private IEnumerable<IngestionFetch> BuildFetchesForSeries(SourceSeriesFetchRequests series)
@@ -174,8 +184,8 @@ namespace Deepflow.Platform.Agent.Processor
 
         private IEnumerable<IngestionFetch> BuildFetchesForTimeRange(string sourceName, TimeRange timeRange)
         {
-            var quantisedRange = timeRange.Quantise(_configuration.MaxFetchSpanSeconds);
-            return quantisedRange.Chop(_configuration.MaxFetchSpanSeconds).Select(range => new IngestionFetch(sourceName, range));
+            //var quantisedRange = timeRange.Quantise(_configuration.MaxFetchSpanSeconds);
+            return timeRange.Chop(_configuration.MaxFetchSpanSeconds).Select(range => new IngestionFetch(sourceName, range));
         }
     }
 

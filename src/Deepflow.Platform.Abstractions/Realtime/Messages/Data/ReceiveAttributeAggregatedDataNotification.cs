@@ -8,6 +8,6 @@ namespace Deepflow.Platform.Abstractions.Realtime.Messages.Data
     {
         public Guid EntityGuid { get; set; }
         public Guid AttributeGuid { get; set; }
-        public Dictionary<int, AggregatedDataRange> AggregatedRanges { get; set; }
+        public Dictionary<int, IEnumerable<AggregatedDataRange>> AggregatedRanges { get; set; }
     }
 }

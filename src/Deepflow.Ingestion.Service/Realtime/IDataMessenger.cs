@@ -8,6 +8,6 @@ namespace Deepflow.Ingestion.Service.Realtime
     public interface IDataMessenger
     {
         Task NotifyRaw(Guid entity, Guid attribute, RawDataRange dataRange);
-        Task NotifyAggregated(Guid entity, Guid attribute, Dictionary<int, AggregatedDataRange> dataRanges);
+        Task NotifyAggregated(Guid entity, Guid attribute, Dictionary<int, IEnumerable<AggregatedDataRange>> dataRanges);
     }
 }

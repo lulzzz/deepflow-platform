@@ -155,6 +155,11 @@ namespace Deepflow.Platform.Abstractions.Series
             return false;
         }
 
+        public bool Intersects(TimeRange otherRange)
+        {
+            return Touches(otherRange) && otherRange.Max != Min && otherRange.Min != Max;
+        }
+
         public bool IsZeroLength()
         {
             return Min == Max;
@@ -199,7 +204,7 @@ namespace Deepflow.Platform.Abstractions.Series
             var minSeconds = Min;
             while (minSeconds < Max)
             {
-                var maxSeconds = minSeconds + spanSeconds;
+                var maxSeconds = Math.Min(minSeconds + spanSeconds, Max);
                 yield return new TimeRange(minSeconds, maxSeconds);
                 minSeconds += spanSeconds;
             }

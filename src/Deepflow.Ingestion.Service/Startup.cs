@@ -140,12 +140,12 @@ namespace Deepflow.Ingestion.Service
 
             services.AddCors();
 
-            services.AddApplicationInsightsTelemetry(options =>
+            /*services.AddApplicationInsightsTelemetry(options =>
             {
                 options.EnableAdaptiveSampling = true;
                 options.InstrumentationKey = "0def8f5e-9482-48ec-880d-4d2a81834a49";
                 options.EnableDebugLogger = false;
-            });
+            });*/
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime lifetime, IServiceProvider serviceProvider)

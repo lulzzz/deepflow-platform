@@ -208,7 +208,7 @@ namespace Deepflow.Ingestion.Service.Realtime
             return Task.CompletedTask;
         }
 
-        public Task NotifyAggregated(Guid entity, Guid attribute, Dictionary<int, AggregatedDataRange> dataRanges)
+        public Task NotifyAggregated(Guid entity, Guid attribute, Dictionary<int, IEnumerable<AggregatedDataRange>> dataRanges)
         {
             string message = null;
 
