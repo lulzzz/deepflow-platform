@@ -1,5 +1,6 @@
 ﻿using System;
 using FluentValidation;
+using Newtonsoft.Json;
 
 namespace Deepflow.Platform.Abstractions.Series.Validators
 {
@@ -13,12 +14,14 @@ namespace Deepflow.Platform.Abstractions.Series.Validators
             RuleFor(x => x.Min)
                 .Cascade(CascadeMode.StopOnFirstFailure)
                 .NotEmpty()
-                .GreaterThan(MinAcceptableTime);
+                .GreaterThan(MinAcceptableTime)
+                .WithMessage(timeRange => $"Time range has a zero min time. {JsonConvert.SerializeObject(timeRange)}");
 
             RuleFor(x => x.Max)
                 .Cascade(CascadeMode.StopOnFirstFailure)
                 .NotEmpty()
-                .LessThan(MaxAcceptableTime);
+                .LessThan(MaxAcceptableTime)
+                .WithMessage(timeRange => $"Time range has a too high max time. {JsonConvert.SerializeObject(timeRange)}");
 
             RuleFor(x => x)
                 .Must(BeInOrder).WithMessage("Time range min must be below or equal to max");

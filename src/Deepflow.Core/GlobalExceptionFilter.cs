@@ -46,7 +46,7 @@ namespace Deepflow.Core
                 context.Result = HandleUnhandledException(exception);
             }
 
-            _logger.LogError("Failed processing request", context.Exception);
+            _logger.LogError(context.Exception, "Failed processing request");
         }
 
         private static ObjectResult HandleFluentValidationException(Exception exception)
